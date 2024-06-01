@@ -1,11 +1,11 @@
 .mediaViewInfo {
-	--web-view-name: Home;
-	--web-view-id: Home;
+	--web-view-name: index;
+	--web-view-id: index;
 	--web-scale-on-resize: true;
 	--web-enable-deep-linking: true;
 }
 :root {
-	--web-view-ids: Home;
+	--web-view-ids: index;
 }
 * {
 	margin: 0;
