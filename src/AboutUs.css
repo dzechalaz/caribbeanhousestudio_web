@@ -1,6 +1,8 @@
 .mediaViewInfo {
 	--web-view-name: AboutUs;
 	--web-view-id: AboutUs;
+	--web-scale-to-fit: true;
+	--web-scale-to-fit-type: width;
 	--web-scale-on-resize: true;
 	--web-enable-deep-linking: true;
 }
@@ -20,6 +22,8 @@
 	overflow: hidden;
 	--web-view-name: AboutUs;
 	--web-view-id: AboutUs;
+	--web-scale-to-fit: true;
+	--web-scale-to-fit-type: width;
 	--web-scale-on-resize: true;
 	--web-enable-deep-linking: true;
 }
@@ -33,7 +37,7 @@
 	}
 
 }
-#afk {
+#afi {
 	position: absolute;
 	width: 1920px;
 	height: 997px;
@@ -41,11 +45,11 @@
 	top: 87px;
 	overflow: visible;
 }
-#afl {
+#afj {
 	opacity: 0.363;
 	fill: rgba(255,255,255,1);
 }
-.afl {
+.afj {
 	position: absolute;
 	overflow: visible;
 	width: 1920px;
@@ -53,7 +57,7 @@
 	left: 0px;
 	top: 87px;
 }
-#afm {
+#afk {
 	opacity: 0.889;
 	position: absolute;
 	width: 1920px;
@@ -62,10 +66,10 @@
 	top: 1079px;
 	overflow: visible;
 }
-#afn {
+#afl {
 	fill: rgba(165,209,206,1);
 }
-.afn {
+.afl {
 	position: absolute;
 	overflow: visible;
 	width: 1920px;
@@ -73,7 +77,7 @@
 	left: 0px;
 	top: 2503px;
 }
-#afo {
+#afm {
 	position: absolute;
 	width: 1069px;
 	height: 585px;
@@ -81,11 +85,11 @@
 	top: 2503px;
 	overflow: visible;
 }
-#afp {
+#afn {
 	opacity: 0.997;
 	fill: rgba(165,209,206,1);
 }
-.afp {
+.afn {
 	mix-blend-mode: multiply;
 	position: absolute;
 	overflow: visible;
@@ -94,7 +98,7 @@
 	left: 228px;
 	top: 451px;
 }
-#afq {
+#afo {
 	position: absolute;
 	width: 1091px;
 	height: 816px;
@@ -102,7 +106,7 @@
 	top: 1612px;
 	overflow: visible;
 }
-#afr {
+#afp {
 	filter: drop-shadow(0px 2px 5px rgba(7, 7, 7, 0.922));
 	border: 0;
 	left: 255px;
@@ -120,7 +124,7 @@
 	font-size: 20px;
 	color: rgba(255,255,255,1);
 }
-#afs {
+#afq {
 	border: 0;
 	left: 228px;
 	top: 353px;
@@ -137,10 +141,10 @@
 	font-size: 65px;
 	color: rgba(65,65,65,1);
 }
-#aft {
+#afr {
 	fill: rgba(165,209,206,1);
 }
-.aft {
+.afr {
 	position: absolute;
 	overflow: visible;
 	width: 1920px;
@@ -148,7 +152,7 @@
 	left: 0px;
 	top: 1079px;
 }
-#afu {
+#afs {
 	border: 0;
 	left: 814px;
 	top: 1174px;
@@ -166,7 +170,7 @@
 	color: rgba(65,65,65,1);
 	text-transform: uppercase;
 }
-#afv {
+#aft {
 	border: 0;
 	left: 274px;
 	top: 1739px;
@@ -183,7 +187,7 @@
 	font-size: 50px;
 	color: rgba(65,65,65,1);
 }
-#afw {
+#afu {
 	border: 0;
 	left: 274px;
 	top: 2043px;
@@ -200,7 +204,7 @@
 	font-size: 28px;
 	color: rgba(65,65,65,1);
 }
-#afx {
+#afv {
 	position: absolute;
 	width: 222px;
 	height: 61px;
@@ -208,10 +212,10 @@
 	top: 2239px;
 	overflow: visible;
 }
-#afy {
+#afw {
 	fill: rgba(99,222,208,1);
 }
-.afy {
+.afw {
 	position: absolute;
 	overflow: visible;
 	width: 222px;
@@ -219,7 +223,7 @@
 	left: 0px;
 	top: 0px;
 }
-#afz {
+#afx {
 	border: 0;
 	left: 44px;
 	top: 19px;
@@ -236,7 +240,7 @@
 	font-size: 20px;
 	color: rgba(255,255,255,1);
 }
-#aga {
+#afy {
 	position: absolute;
 	width: 47px;
 	height: 10px;
@@ -244,10 +248,10 @@
 	top: 2264px;
 	overflow: visible;
 }
-#agb {
+#afz {
 	fill: rgba(112,111,111,1);
 }
-.agb {
+.afz {
 	position: absolute;
 	overflow: visible;
 	width: 10px;
@@ -255,10 +259,10 @@
 	left: 0px;
 	top: 0px;
 }
-#agc {
+#aga {
 	fill: rgba(181,181,181,1);
 }
-.agc {
+.aga {
 	position: absolute;
 	overflow: visible;
 	width: 8px;
@@ -266,10 +270,10 @@
 	left: 21px;
 	top: 1px;
 }
-#agd {
+#agb {
 	fill: rgba(181,181,181,1);
 }
-.agd {
+.agb {
 	position: absolute;
 	overflow: visible;
 	width: 8px;
@@ -277,7 +281,7 @@
 	left: 39px;
 	top: 1px;
 }
-#age {
+#agc {
 	border: 0;
 	left: 1349px;
 	top: 2618px;
@@ -294,7 +298,7 @@
 	font-size: 50px;
 	color: rgba(65,65,65,1);
 }
-#agf {
+#agd {
 	border: 0;
 	left: 1349px;
 	top: 2750.5px;
@@ -311,7 +315,7 @@
 	font-size: 20px;
 	color: rgba(65,65,65,1);
 }
-#agg {
+#age {
 	position: absolute;
 	width: 1725px;
 	height: 193px;
@@ -319,7 +323,7 @@
 	top: 1258px;
 	overflow: hidden;
 }
-#agh {
+#agf {
 	position: absolute;
 	width: 557px;
 	height: 606.536px;
@@ -327,10 +331,10 @@
 	top: 0px;
 	overflow: visible;
 }
-#agi {
+#agg {
 	fill: rgba(237,233,225,1);
 }
-.agi {
+.agg {
 	position: absolute;
 	overflow: visible;
 	width: 557px;
@@ -338,7 +342,7 @@
 	left: 0px;
 	top: 0px;
 }
-#agj {
+#agh {
 	border: 0;
 	left: 32px;
 	top: 24.5px;
@@ -353,7 +357,7 @@
 	font-size: 20px;
 	color: rgba(65,65,65,1);
 }
-#agk {
+#agi {
 	border: 0;
 	left: 374px;
 	top: 158px;
@@ -370,7 +374,7 @@
 	font-size: 20px;
 	color: rgba(65,65,65,1);
 }
-#agl {
+#agj {
 	position: absolute;
 	width: 557px;
 	height: 606.536px;
@@ -378,10 +382,10 @@
 	top: 0px;
 	overflow: visible;
 }
-#agm {
+#agk {
 	fill: rgba(237,233,225,1);
 }
-.agm {
+.agk {
 	position: absolute;
 	overflow: visible;
 	width: 557px;
@@ -389,7 +393,7 @@
 	left: 0px;
 	top: 0px;
 }
-#agn {
+#agl {
 	border: 0;
 	left: 32px;
 	top: 24.5px;
@@ -404,7 +408,7 @@
 	font-size: 20px;
 	color: rgba(65,65,65,1);
 }
-#ago {
+#agm {
 	border: 0;
 	left: 340px;
 	top: 158px;
@@ -421,7 +425,7 @@
 	font-size: 20px;
 	color: rgba(65,65,65,1);
 }
-#agp {
+#agn {
 	position: absolute;
 	width: 557px;
 	height: 606.536px;
@@ -429,10 +433,10 @@
 	top: 0px;
 	overflow: visible;
 }
-#agq {
+#ago {
 	fill: rgba(237,233,225,1);
 }
-.agq {
+.ago {
 	position: absolute;
 	overflow: visible;
 	width: 557px;
@@ -440,7 +444,7 @@
 	left: 0px;
 	top: 0px;
 }
-#agr {
+#agp {
 	border: 0;
 	left: 32px;
 	top: 24.5px;
@@ -455,7 +459,7 @@
 	font-size: 20px;
 	color: rgba(65,65,65,1);
 }
-#ags {
+#agq {
 	border: 0;
 	left: 321px;
 	top: 158px;
@@ -472,7 +476,7 @@
 	font-size: 20px;
 	color: rgba(65,65,65,1);
 }
-#agt {
+#agr {
 	position: absolute;
 	width: 1920px;
 	height: 426.215px;
@@ -480,7 +484,7 @@
 	top: 3153.785px;
 	overflow: visible;
 }
-#agu {
+#ags {
 	position: absolute;
 	width: 30px;
 	height: 30px;
@@ -488,10 +492,10 @@
 	top: 270px;
 	overflow: visible;
 }
-#agv {
+#agt {
 	fill: rgba(112,112,112,1);
 }
-.agv {
+.agt {
 	position: absolute;
 	overflow: visible;
 	width: 30px;
@@ -499,7 +503,7 @@
 	left: 0px;
 	top: 0px;
 }
-#agw {
+#agu {
 	position: absolute;
 	width: 14px;
 	height: 14.495px;
@@ -507,7 +511,7 @@
 	top: 8px;
 	overflow: visible;
 }
-#agx {
+#agv {
 	position: absolute;
 	width: 6.589px;
 	height: 14.231px;
@@ -515,7 +519,7 @@
 	top: 0.264px;
 	overflow: visible;
 }
-#agy {
+#agw {
 	position: absolute;
 	width: 6.589px;
 	height: 14.231px;
@@ -523,10 +527,10 @@
 	top: 0px;
 	overflow: visible;
 }
-#agz {
+#agx {
 	fill: rgba(0,0,0,0);
 }
-.agz {
+.agx {
 	position: absolute;
 	overflow: visible;
 	width: 14px;
@@ -534,7 +538,7 @@
 	left: 0px;
 	top: 0px;
 }
-#aha {
+#agy {
 	position: absolute;
 	width: 31px;
 	height: 30px;
@@ -542,10 +546,10 @@
 	top: 270px;
 	overflow: visible;
 }
-#ahb {
+#agz {
 	fill: rgba(112,112,112,1);
 }
-.ahb {
+.agz {
 	position: absolute;
 	overflow: visible;
 	width: 31px;
@@ -553,7 +557,7 @@
 	left: 0px;
 	top: 0px;
 }
-#ahc {
+#aha {
 	position: absolute;
 	width: 15px;
 	height: 14px;
@@ -561,7 +565,7 @@
 	top: 8px;
 	overflow: visible;
 }
-#ahd {
+#ahb {
 	position: absolute;
 	width: 30px;
 	height: 30px;
@@ -569,7 +573,7 @@
 	top: 270px;
 	overflow: visible;
 }
-#ahe {
+#ahc {
 	position: absolute;
 	width: 30px;
 	height: 30px;
@@ -577,10 +581,10 @@
 	top: 0px;
 	overflow: visible;
 }
-#ahf {
+#ahd {
 	fill: rgba(112,112,112,1);
 }
-.ahf {
+.ahd {
 	position: absolute;
 	overflow: visible;
 	width: 30px;
@@ -588,7 +592,7 @@
 	left: 0px;
 	top: 0px;
 }
-#ahg {
+#ahe {
 	position: absolute;
 	width: 14.231px;
 	height: 13.704px;
@@ -596,7 +600,7 @@
 	top: 7.805px;
 	overflow: visible;
 }
-#ahh {
+#ahf {
 	position: absolute;
 	width: 14.231px;
 	height: 13.704px;
@@ -604,10 +608,10 @@
 	top: 0px;
 	overflow: visible;
 }
-#ahi {
+#ahg {
 	fill: rgba(0,0,0,0);
 }
-.ahi {
+.ahg {
 	position: absolute;
 	overflow: visible;
 	width: 14px;
@@ -615,7 +619,7 @@
 	left: 8.001px;
 	top: 8px;
 }
-#ahj {
+#ahh {
 	position: absolute;
 	width: 31px;
 	height: 30px;
@@ -623,10 +627,10 @@
 	top: 270px;
 	overflow: visible;
 }
-#ahk {
+#ahi {
 	fill: rgba(112,112,112,1);
 }
-.ahk {
+.ahi {
 	position: absolute;
 	overflow: visible;
 	width: 31px;
@@ -634,7 +638,7 @@
 	left: 0px;
 	top: 0px;
 }
-#ahl {
+#ahj {
 	position: absolute;
 	width: 15.397px;
 	height: 15px;
@@ -642,7 +646,7 @@
 	top: 7.999px;
 	overflow: visible;
 }
-#ahm {
+#ahk {
 	position: absolute;
 	width: 15.15px;
 	height: 12.344px;
@@ -650,7 +654,7 @@
 	top: 1.208px;
 	overflow: visible;
 }
-#ahn {
+#ahl {
 	position: absolute;
 	width: 15.149px;
 	height: 12.344px;
@@ -658,10 +662,10 @@
 	top: 0px;
 	overflow: visible;
 }
-#aho {
+#ahm {
 	fill: rgba(0,0,0,0);
 }
-.aho {
+.ahm {
 	position: absolute;
 	overflow: visible;
 	width: 15px;
@@ -669,10 +673,10 @@
 	left: 0px;
 	top: 0px;
 }
-#ahp {
+#ahn {
 	fill: rgba(55,55,55,1);
 }
-.ahp {
+.ahn {
 	overflow: visible;
 	position: absolute;
 	width: 1920px;
@@ -681,7 +685,7 @@
 	top: 0px;
 	transform: matrix(1,0,0,1,0,0);
 }
-#ahq {
+#aho {
 	border: 0;
 	left: 970px;
 	top: 103.629px;
@@ -698,7 +702,7 @@
 	font-size: 14px;
 	color: rgba(99,222,208,1);
 }
-#ahr {
+#ahp {
 	border: 0;
 	left: 970px;
 	top: 179px;
@@ -715,7 +719,7 @@
 	font-size: 12px;
 	color: rgba(255,255,255,1);
 }
-#ahs {
+#ahq {
 	border: 0;
 	left: 1293px;
 	top: 103.629px;
@@ -732,7 +736,7 @@
 	font-size: 14px;
 	color: rgba(99,222,208,1);
 }
-#aht {
+#ahr {
 	border: 0;
 	left: 1293px;
 	top: 179px;
@@ -749,7 +753,7 @@
 	font-size: 12px;
 	color: rgba(255,255,255,1);
 }
-#ahu {
+#ahs {
 	border: 0;
 	left: 240px;
 	top: 154.476px;
@@ -766,7 +770,7 @@
 	font-size: 12px;
 	color: rgba(255,255,255,1);
 }
-#ahv {
+#aht {
 	border: 0;
 	left: 240px;
 	top: 83.754px;
@@ -782,7 +786,7 @@
 	color: rgba(255,255,255,1);
 	text-transform: uppercase;
 }
-#ahw {
+#ahu {
 	position: absolute;
 	width: 1922.132px;
 	height: 87px;
@@ -790,26 +794,26 @@
 	top: -0.5px;
 	overflow: visible;
 }
+#ahv {
+	position: absolute;
+	width: 1922.132px;
+	height: 87px;
+	left: 0px;
+	top: 0px;
+	overflow: visible;
+}
+#ahw {
+	position: absolute;
+	width: 1922.132px;
+	height: 87px;
+	left: 0px;
+	top: 0px;
+	overflow: visible;
+}
 #ahx {
-	position: absolute;
-	width: 1922.132px;
-	height: 87px;
-	left: 0px;
-	top: 0px;
-	overflow: visible;
-}
-#ahy {
-	position: absolute;
-	width: 1922.132px;
-	height: 87px;
-	left: 0px;
-	top: 0px;
-	overflow: visible;
-}
-#ahz {
 	fill: rgba(237,235,235,1);
 }
-.ahz {
+.ahx {
 	filter: drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.133));
 	position: absolute;
 	overflow: visible;
@@ -818,7 +822,7 @@
 	left: 0px;
 	top: 0px;
 }
-#aia {
+#ahy {
 	position: absolute;
 	width: 418px;
 	height: 38px;
@@ -830,7 +834,7 @@
 	--web-action-target: index.html;
 	cursor: pointer;
 }
-#aib {
+#ahz {
 	border: 0;
 	left: 0px;
 	top: 0px;
@@ -845,7 +849,7 @@
 	font-size: 37px;
 	color: rgba(69,69,69,1);
 }
-#aic {
+#aia {
 	position: absolute;
 	width: 113.132px;
 	height: 65.694px;
@@ -857,10 +861,10 @@
 	--web-action-target: index.html;
 	cursor: pointer;
 }
-#aid {
+#aib {
 	fill: rgba(69,69,69,1);
 }
-.aid {
+.aib {
 	overflow: visible;
 	position: absolute;
 	width: 113.132px;
@@ -869,7 +873,7 @@
 	top: 0px;
 	transform: matrix(1,0,0,1,0,0);
 }
-#aie {
+#aic {
 	position: absolute;
 	width: 916px;
 	height: 35px;
@@ -877,7 +881,7 @@
 	top: 29px;
 	overflow: visible;
 }
-#aif {
+#aid {
 	border: 0;
 	left: 0px;
 	top: 10px;
@@ -896,7 +900,7 @@
 	font-size: 16px;
 	color: rgba(65,65,65,1);
 }
-#aig {
+#aie {
 	border: 0;
 	left: 291px;
 	top: 10px;
@@ -911,7 +915,7 @@
 	font-size: 16px;
 	color: rgba(65,65,65,1);
 }
-#aih {
+#aif {
 	border: 0;
 	left: 413px;
 	top: 10px;
@@ -926,7 +930,7 @@
 	font-size: 16px;
 	color: rgba(65,65,65,1);
 }
-#aii {
+#aig {
 	border: 0;
 	left: 129px;
 	top: 10px;
@@ -941,7 +945,7 @@
 	font-size: 16px;
 	color: rgba(56,175,167,1);
 }
-#aij {
+#aih {
 	position: absolute;
 	width: 23px;
 	height: 23px;
@@ -949,7 +953,7 @@
 	top: 6px;
 	overflow: visible;
 }
-#aik {
+#aii {
 	position: absolute;
 	width: 24px;
 	height: 23px;
@@ -957,7 +961,7 @@
 	top: 6px;
 	overflow: visible;
 }
-#ail {
+#aij {
 	border: 0;
 	left: 535px;
 	top: 10px;
@@ -972,7 +976,7 @@
 	font-size: 16px;
 	color: rgba(65,65,65,1);
 }
-#aim {
+#aik {
 	position: absolute;
 	width: 130px;
 	height: 35px;
@@ -980,10 +984,10 @@
 	top: 0px;
 	overflow: visible;
 }
-#ain {
+#ail {
 	fill: rgba(65,65,65,1);
 }
-.ain {
+.ail {
 	position: absolute;
 	overflow: visible;
 	width: 130px;
@@ -991,7 +995,7 @@
 	left: 0px;
 	top: 0px;
 }
-#aio {
+#aim {
 	border: 0;
 	left: 42px;
 	top: 10px;
@@ -1007,10 +1011,10 @@
 	color: rgba(255,255,255,1);
 	text-transform: uppercase;
 }
-#aip {
+#ain {
 	fill: rgba(56,175,167,1);
 }
-.aip {
+.ain {
 	overflow: visible;
 	position: absolute;
 	width: 11.635px;
@@ -1019,7 +1023,7 @@
 	top: 2.182px;
 	transform: matrix(1,0,0,1,0,0);
 }
-#aiq {
+#aio {
 	border: 0;
 	left: 736px;
 	top: 3px;
