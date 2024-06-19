@@ -6,27 +6,46 @@ body {
 :root {
   /* fonts */
   --font-josefin-sans: "Josefin Sans";
-  --font-literata: Literata;
   --font-montserrat: Montserrat;
+  --font-literata: Literata;
 
   /* font sizes */
-  --font-size-base: 16px;
+  --font-size-3xs: 10px;
   --font-size-sm: 14px;
-  --font-size-7xl: 26px;
+  --font-size-base: 16px;
+  --font-size-18xl: 37px;
+  --font-size-5xl: 24px;
   --font-size-xs: 12px;
+  --font-size-7xl: 26px;
   --font-size-xl: 20px;
   --font-size-19xl: 38px;
   --font-size-3xl: 22px;
+  --font-size-31xl: 50px;
+  --font-size-mid: 17px;
+  --font-size-lg: 18px;
+  --font-size-6xl: 25px;
 
   /* Colors */
-  --color-whitesmoke: #edebeb;
-  --color-darkslategray-100: #414141;
+  --color-antiquewhite: #d9cfb8;
   --color-white: #fff;
+  --color-darkslategray-200: #454545;
+  --color-darkslategray-100: #414141;
+  --color-lightseagreen: #38afa7;
+  --color-whitesmoke: #edebeb;
+  --color-thistle: #c1b9d4;
   --color-turquoise: #63ded0;
   --color-dimgray: #707070;
-  --color-gainsboro: #dddbdb;
+  --color-powderblue: #a5d1ce;
   --color-darkgray: #b2b2b2;
+  --color-darkgray-100: #a2a2a2;
+  --color-seashell: #faf4ef;
+  --color-burlywood: #d8a379;
+  --color-steelblue-100: #557e9f;
 
   /* Border radiuses */
+  --br-12xl: 31px;
   --br-21xl: 40px;
+  --br-19xl: 38px;
+  --br-13xl: 32px;
+  --br-4xl: 23px;
 }
