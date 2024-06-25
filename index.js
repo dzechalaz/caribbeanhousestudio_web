@@ -1,10 +1,9 @@
 const express = require('express');
 const app = express();
-
-const port = process.env.PORT || 3000;
-
 const mysql = require('mysql');
 const path = require('path');
+
+const port = process.env.PORT || 3000;
 
 const db = mysql.createConnection({
   host: 'localhost',
@@ -38,8 +37,7 @@ app.get("/seguimiento", (req, res) => {
 app.get("/empleadoTest", (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'empleadoTest.html'));
 });
-/*
+
 app.listen(port, () => {
   console.log(`Servidor escuchando en http://localhost:${port}`);
 });
-*/
