@@ -927,3 +927,28 @@
     justify-content: center;
   }
 }
+
+/* TESTEOOOOO */
+/* Add these new styles */
+.etapas-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.etapa {
+  text-align: center;
+}
+
+.etapa .circulo {
+  display: block;
+  margin: 0 auto;
+  width: 40px;
+  height: 40px;
+}
+
+.etapa .texto {
+  margin-top: 10px;
+}
+
