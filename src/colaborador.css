@@ -1,0 +1,101 @@
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: #FAF4EF;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #FAF4EF;
+    z-index: -1;
+}
+
+.colaborador-container {
+    background-color: #fff;
+    padding: 40px 80px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    text-align: center;
+    width: 80%;
+    max-width: 800px;
+}
+
+h1 {
+    font-size: 48px;
+    margin-bottom: 40px;
+    color: #333;
+}
+
+.pedido-info {
+    text-align: left;
+    margin-bottom: 40px;
+    font-size: 24px;
+}
+
+.pedido-info p {
+    margin: 10px 0;
+}
+
+.botones-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+.boton {
+    border: none;
+    border-radius: 10px;
+    padding: 30px 40px;
+    font-size: 32px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    flex: 1 1 calc(33.333% - 40px);
+    box-sizing: border-box;
+    color: #fff;
+}
+
+.verde {
+    background-color: #009688;
+}
+
+.verde:hover {
+    background-color: #00796b;
+}
+
+.naranja {
+    background-color: #D8A379;
+}
+
+.naranja:hover {
+    background-color: #D8A379;
+}
+
+.gris {
+    background-color: #BDBDBD;
+    cursor: not-allowed;
+}
+
+.gris:hover {
+    background-color: #BDBDBD;
+}
+
+@media (max-width: 768px) {
+    .boton {
+        flex: 1 1 calc(50% - 40px);
+    }
+}
+
+@media (max-width: 480px) {
+    .boton {
+        flex: 1 1 100%;
+    }
+}

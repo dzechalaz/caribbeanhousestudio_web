@@ -1,3 +1,13 @@
+@keyframes slide-in-bottom {
+  0% {
+    transform: translateY(200px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 .fondo-icon,
 .path-253-icon {
   position: absolute;
@@ -191,56 +201,311 @@
   left: -6px;
   height: 426.2px;
 }
-.ingrese-id-de {
+.aadir-id-de {
   position: absolute;
-  top: 29px;
-  left: calc(50% - 196px);
-}
-.path-287 {
-  border: 2px solid var(--color-dimgray);
-  outline: 0;
-  background-color: var(--color-white);
-  position: absolute;
-  width: calc(100% - 108px);
-  top: calc(50% - 35px);
-  right: 54px;
-  left: 54px;
-  box-sizing: border-box;
-  height: 61px;
-}
-.acetpar {
-  position: absolute;
-  top: calc(50% - 17.5px);
-  left: calc(50% - 60px);
-}
-.aceptarbutt {
-  position: absolute;
-  bottom: 13px;
-  left: calc(50% - 111px);
-  border-radius: var(--br-12xl);
-  background-color: var(--color-turquoise);
-  width: 222px;
-  height: 61px;
-  cursor: pointer;
-  text-align: left;
-  font-size: 29px;
-  color: var(--color-white);
+  top: calc(50% - 10.5px);
+  left: 16px;
+  font-size: var(--font-size-lg);
+  font-weight: 500;
   font-family: var(--font-montserrat);
-}
-.box {
-  position: absolute;
-  top: calc(50% - 306.5px);
-  left: calc(50% - 232px);
-  border-radius: 41px;
-  background-color: var(--color-thistle);
-  width: 448px;
-  height: 236px;
-  text-align: center;
-  font-size: 34px;
   color: var(--color-darkslategray-100);
-  font-family: var(--font-josefin-sans);
+  text-align: center;
 }
-.component-1-10-child {
+.aadiridcompra,
+.inputbuscar {
+  position: absolute;
+  border-radius: var(--br-xs);
+}
+.aadiridcompra {
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background-color: var(--color-thistle);
+  top: calc(50% - 235.5px);
+  left: calc(50% - 110px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+  width: 221px;
+  height: 49px;
+  opacity: 0;
+}
+.aadiridcompra.animate {
+  animation: 1s ease 0.5s 1 normal forwards slide-in-bottom;
+}
+.inputbuscar {
+  top: calc(50% - 18.5px);
+  left: calc(50% + 198px);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-dimgray);
+  box-sizing: border-box;
+  width: 361px;
+  height: 37px;
+}
+.buscar-todas-las {
+  border: 0;
+  outline: 0;
+  font-family: var(--font-montserrat);
+  font-size: var(--font-size-lg);
+  background-color: transparent;
+  position: absolute;
+  top: calc(50% - 11.5px);
+  left: calc(50% + 233px);
+  color: var(--color-darkslategray-100);
+  text-align: left;
+  display: inline-block;
+  width: 313px;
+  height: 22px;
+}
+.lupa-icon {
+  position: absolute;
+  top: calc(50% - 10.75px);
+  left: calc(50% + 207.5px);
+  width: 22.3px;
+  height: 22.3px;
+}
+.buscar {
+  position: absolute;
+  top: 5px;
+  left: calc(50% - 37px);
+  font-size: 21px;
+  font-weight: 600;
+  font-family: var(--font-montserrat);
+  color: var(--color-white);
+  text-align: center;
+}
+.btnbusqueda {
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background-color: var(--color-darkslategray-100);
+  position: absolute;
+  top: calc(50% - 18.5px);
+  right: 230px;
+  border-radius: var(--br-xs);
+  width: 160px;
+  height: 37px;
+}
+.seguimiento-de-compras {
+  position: absolute;
+  top: calc(50% - 24.5px);
+  left: 39px;
+}
+.compra-icon,
+.seguimientoheader {
+  position: absolute;
+  width: 100%;
+  right: 0;
+  left: 0;
+}
+.seguimientoheader {
+  top: 86px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+  background-color: var(--color-steelblue-100);
+  height: 105px;
+  text-align: center;
+  font-size: var(--font-size-30xl);
+  font-family: var(--font-josefin-sans);
+
+}
+.compra-icon {
+  height: 100%;
+  top: 0;
+  bottom: 0;
+  max-width: 100%;
+  overflow: hidden;
+  max-height: 100%;
+}
+.compra-realizada {
+  left: 26px;
+}
+.compra-realizada,
+.de-junio-de,
+.div,
+.id {
+  position: absolute;
+  top: calc(50% - 13.65px);
+}
+.de-junio-de {
+  left: calc(50% - 283px);
+  font-weight: 500;
+}
+.div,
+.id {
+  right: 144px;
+}
+.div {
+  right: 24px;
+  font-weight: 500;
+}
+.cabezeracompra {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 59.3px;
+}
+.imagen-icon {
+  position: absolute;
+  bottom: 18px;
+  left: 26px;
+  border-radius: 19px;
+  width: 156px;
+  height: 151px;
+  object-fit: cover;
+}
+.compra-realizada1,
+.credenza {
+  position: absolute;
+  top: 16px;
+  left: 26px;
+}
+.credenza {
+  top: 0;
+  left: 0;
+}
+.mueble-credenza-material-mad-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-size: var(--font-size-mid);
+}
+.detalles {
+  position: absolute;
+  bottom: 25px;
+  left: calc(50% - 360px);
+  width: 261px;
+  height: 141px;
+  font-size: var(--font-size-11xl);
+}
+.calle-av-siempre-container {
+  position: absolute;
+  height: calc(100% - 41px);
+  width: calc(100% + 0.9px);
+  top: 41px;
+  left: 0.12px;
+  font-weight: 500;
+  display: inline-block;
+}
+.enviar-a {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: var(--font-size-11xl);
+  color: var(--color-darkslategray-100);
+}
+.direccionenvio,
+.separador2 {
+  position: absolute;
+  bottom: 27px;
+}
+.direccionenvio {
+  left: calc(50% - 47px);
+  width: 268px;
+  height: 139px;
+  font-size: var(--font-size-lg);
+  color: var(--color-dimgray);
+}
+.separador2 {
+  left: calc(50% - 78px);
+  border-right: 1px solid var(--color-dimgray-100);
+  box-sizing: border-box;
+  width: 2px;
+  height: 143px;
+}
+.realizar-seguimiento {
+  position: absolute;
+  top: calc(50% - 10.5px);
+  left: 25px;
+  font-weight: 500;
+}
+.reseg,
+.ver-artculo {
+  position: absolute;
+  font-size: var(--font-size-lg);
+  text-align: center;
+}
+.reseg {
+  top: calc(50% - 45.5px);
+  right: 39px;
+  border-radius: var(--br-xs);
+  background-color: #ca657e;
+  border: 1px solid var(--color-dimgray);
+  box-sizing: border-box;
+  width: 244px;
+  height: 37px;
+  cursor: pointer;
+  color: var(--color-white);
+}
+.ver-artculo {
+  top: calc(50% - 11.5px);
+  left: calc(50% - 54px);
+  font-weight: 500;
+  font-family: var(--font-montserrat);
+  color: var(--color-darkslategray-100);
+}
+.verart {
+  cursor: pointer;
+  border: 1px solid var(--color-dimgray);
+  padding: 0;
+  background-color: var(--color-peachpuff);
+  position: absolute;
+  top: calc(50% + 5.5px);
+  right: 39px;
+  border-radius: var(--br-xs);
+  box-sizing: border-box;
+  width: 244px;
+  height: 37px;
+}
+.escribir-una-opinin {
+  position: absolute;
+  top: calc(50% - 10.5px);
+  left: 31px;
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  font-family: var(--font-montserrat);
+  color: var(--color-darkslategray-100);
+  text-align: center;
+}
+.opinion,
+.separador1 {
+  position: absolute;
+  box-sizing: border-box;
+}
+.opinion {
+  cursor: pointer;
+  border: 1px solid var(--color-dimgray);
+  padding: 0;
+  background-color: var(--color-peachpuff);
+  right: 39px;
+  bottom: 26px;
+  border-radius: var(--br-xs);
+  width: 244px;
+  height: 37px;
+}
+.separador1 {
+  bottom: 27px;
+  left: calc(50% + 229px);
+  border-right: 1px solid var(--color-dimgray-100);
+  width: 2px;
+  height: 143px;
+}
+.compra {
+  position: absolute;
+  top: calc(50% - 510.5px);
+  left: calc(50% - 564px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+  border-radius: 33px;
+  background-color: var(--color-white);
+  width: 1128px;
+  height: 239px;
+  opacity: 0;
+  font-size: var(--font-size-6xl);
+  color: var(--color-darkslategray-100);
+}
+.compra.animate {
+  animation: 1s ease 0s 1 normal forwards slide-in-bottom;
+}
+.component-1-11-child {
   position: absolute;
   height: 100%;
   width: 100%;
@@ -267,7 +532,7 @@
   height: 37px;
   cursor: pointer;
 }
-.component-1-10 {
+.component-1-11 {
   position: absolute;
   height: 100%;
   width: 100%;
@@ -338,23 +603,21 @@
   color: var(--color-white);
 }
 .path-74-icon {
+  position: absolute;
   top: calc(50% - 13.82px);
   left: calc(50% + 530.69px);
   width: 11.6px;
   height: 11.6px;
 }
-.div,
-.logo-icon,
-.path-74-icon {
+.div1 {
   position: absolute;
-}
-.div {
   top: calc(50% - 13px);
   left: calc(50% + 534.95px);
   font-size: var(--font-size-3xs);
   color: var(--color-white);
 }
 .logo-icon {
+  position: absolute;
   height: calc(100% - 21.3px);
   top: 11.15px;
   bottom: 10.15px;

@@ -12,7 +12,7 @@
     />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,700;1,600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,600&display=swap"
     />
     <link
       rel="stylesheet"
@@ -73,17 +73,71 @@
         </div>
         <div class="caribbean-house-studio">Caribbean House Studio</div>
       </div>
-      <div class="box">
-        <b class="ingrese-id-de">Ingrese ID de la compra</b>
-        <input class="path-287" type="text" maxlength="9" />
+      <button class="aadiridcompra" id="aadirIDCompra" data-animate-on-scroll>
+        <div class="aadir-id-de">Añadir ID de compra</div>
+      </button>
+      <div class="seguimientoheader">
+        <div class="inputbuscar"></div>
+        <input
+          class="buscar-todas-las"
+          placeholder="Buscar todas las compras"
+          type="text"
+          maxlength="100"
+        />
 
-        <div class="aceptarbutt" id="aceptarButtContainer">
-          <b class="acetpar">Acetpar</b>
+        <img class="lupa-icon" alt="" src="./public/lupa.svg" />
+
+        <button class="btnbusqueda">
+          <div class="buscar">Buscar</div>
+        </button>
+        <b class="seguimiento-de-compras">Seguimiento de compras</b>
+      </div>
+      <div class="compra" data-animate-on-scroll>
+        <div class="cabezeracompra">
+          <img class="compra-icon" alt="" src="./public/compra.svg" />
+
+          <b class="compra-realizada">Compra Realizada:</b>
+          <div class="de-junio-de">20 de junio de 2024</div>
+          <b class="id">Id:</b>
+          <div class="div">12345678</div>
         </div>
+        <img class="imagen-icon" alt="" src="./public/imagen@2x.png" />
+
+        <b class="compra-realizada1">Compra Realizada:</b>
+        <div class="detalles">
+          <b class="credenza">Credenza</b>
+          <div class="mueble-credenza-material-mad-container">
+            <p class="profile">Mueble: Credenza</p>
+            <p class="profile">Material: Madera</p>
+            <p class="profile">Dimensiones: 180 x 90 x 40 cm</p>
+            <p class="profile">Acabado: Barnizado</p>
+            <p class="profile">Color: Natural</p>
+          </div>
+        </div>
+        <div class="direccionenvio">
+          <div class="calle-av-siempre-container">
+            <p class="profile">Calle: Av. Siempre Viva 742</p>
+            <p class="profile">Ciudad: Springfield</p>
+            <p class="profile">Estado: IL</p>
+            <p class="profile">Código Postal: 62704</p>
+          </div>
+          <b class="enviar-a">Enviar a:</b>
+        </div>
+        <div class="separador2"></div>
+        <div class="reseg" id="reSegContainer">
+          <div class="realizar-seguimiento">Realizar Seguimiento</div>
+        </div>
+        <button class="verart">
+          <div class="ver-artculo">Ver Artículo</div>
+        </button>
+        <button class="opinion">
+          <div class="escribir-una-opinin">Escribir una opinión</div>
+        </button>
+        <div class="separador1"></div>
       </div>
       <header class="barra-pestaas">
-        <div class="component-1-10">
-          <div class="component-1-10-child"></div>
+        <div class="component-1-11">
+          <div class="component-1-11-child"></div>
           <div class="logo" id="logo">
             <div class="caribbean-house-studio1">Caribbean House Studio</div>
           </div>
@@ -104,15 +158,22 @@
         </div>
         <img class="path-74-icon" alt="" src="./public/path-74.svg" />
 
-        <div class="div">1</div>
+        <div class="div1">1</div>
         <img class="logo-icon" alt="" src="./public/logo.svg" />
       </header>
     </div>
 
     <script>
-      var aceptarButtContainer = document.getElementById("aceptarButtContainer");
-      if (aceptarButtContainer) {
-        aceptarButtContainer.addEventListener("click", function (e) {
+      var aadirIDCompra = document.getElementById("aadirIDCompra");
+      if (aadirIDCompra) {
+        aadirIDCompra.addEventListener("click", function (e) {
+          window.location.href = "./añadirID.html";
+        });
+      }
+      
+      var reSegContainer = document.getElementById("reSegContainer");
+      if (reSegContainer) {
+        reSegContainer.addEventListener("click", function (e) {
           window.location.href = "/seguimiento"; // Ruta de Express
         });
       }
@@ -136,6 +197,25 @@
         nUESTRAHISTORIAText.addEventListener("click", function (e) {
           window.location.href = "./about-us.html";
         });
+      }
+      var scrollAnimElements = document.querySelectorAll("[data-animate-on-scroll]");
+      var observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting || entry.intersectionRatio > 0) {
+              const targetElement = entry.target;
+              targetElement.classList.add("animate");
+              observer.unobserve(targetElement);
+            }
+          }
+        },
+        {
+          threshold: 0.15,
+        }
+      );
+      
+      for (let i = 0; i < scrollAnimElements.length; i++) {
+        observer.observe(scrollAnimElements[i]);
       }
       </script>
   </body>
