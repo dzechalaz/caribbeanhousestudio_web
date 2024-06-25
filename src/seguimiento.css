@@ -375,6 +375,7 @@
   bottom: 20px;
   left: 28.65px;
   height: 225px;
+  top: 620px;
 }
 .progressgray-icon,
 .progressgreen-icon {
@@ -410,7 +411,7 @@
   left: -2px;
   border-top: 2px solid var(--color-lightseagreen);
   box-sizing: border-box;
-  height: 4px;
+  height: 40px;
 }
 .estado-del-pedido {
   position: absolute;
@@ -547,14 +548,14 @@
 .entregado-icon,
 .seguimiento4 {
   position: absolute;
-  top: calc(50% + 2px);
+  top: calc(50% + 50px);
   right: 126.8px;
   width: 28.1px;
   height: 29.4px;
 }
 .seguimiento4 {
   width: 97.07%;
-  top: calc(50% - 19.5px);
+  
   right: 1.47%;
   left: 1.47%;
   height: 183px;
@@ -568,9 +569,9 @@
   top: 50px;
   right: 0;
   left: -2px;
-  border-top: 2px solid var(--color-lightseagreen);
-  box-sizing: border-box;
-  height: 4px;
+  border: 2px solid var(--unnamed-color-38afa7);
+  border: 2px solid #38AFA7;
+  opacity: 1;
 }
 .imagespace,
 .main-image-icon {
@@ -925,6 +926,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    
   }
 }
 
@@ -932,23 +934,133 @@
 /* Add these new styles */
 .etapas-container {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between; /* Opción para distribuir con mayor espacio posible entre ellos */
   align-items: center;
-  margin: 20px 0;
-}
+  margin: 40px 150px;
+  position: relative;
+  } 
 
 .etapa {
+  display: flex;
+  flex-direction: column; /* Coloca los elementos uno debajo del otro */
+  align-items: center; /* Centra los elementos en cada etapa */
   text-align: center;
+  position: relative;
+  
 }
 
 .etapa .circulo {
   display: block;
-  margin: 0 auto;
-  width: 40px;
-  height: 40px;
+  margin: -10px 0px;
+  width: 50px;
+  height: 50px;
+  z-index: 3;
+
 }
 
-.etapa .texto {
-  margin-top: 10px;
+.textos-container {
+  display: flex;
+  left: -31px;
+  justify-content: space-evenly; /* Justifica los textos uniformemente */
+  align-items: top  ;
+  margin: 45px 10px;
+  position: relative;
 }
 
+.texto {
+  text-align: center; /* Asegura que el texto esté centrado */
+  margin-top: -60px;
+  margin-left: 90px;
+  position: relative;
+  font: normal normal medium 17px/20px Montserrat;
+  letter-spacing: 0px;
+  color: #707070;
+  opacity: 1; 
+}
+
+.texto:nth-child(2) {
+  left: -5px;
+}
+.texto:nth-child(3) {
+  left: -8px;
+}
+.texto:nth-child(4) {
+  left: -1px;
+}
+.texto:nth-child(5) {
+  left: 16px;
+}
+.texto:nth-child(6) {
+  left: 16px;
+}
+.texto:nth-child(7) {
+  left: 15px;
+}
+
+.etapa img {
+  position: absolute;
+  top: -20px; /* Ajusta este valor para bajar los íconos */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px; /* Ajusta el tamaño del ícono según sea necesario */
+  height: 30px;
+  z-index: 4; /* Asegura que el ícono esté encima del círculo */
+}
+/* Título del Estado del Pedido */
+.estado-pedido-titulo {
+  position: absolute;
+  margin-left: 20px;
+  margin-top: -150px;
+  text-align: left;
+  top: 50%;
+  font: normal normal normal 31px/41px Josefin Sans;
+  letter-spacing: 0px;
+  color: #414141;
+  opacity: 1;
+}
+/* Línea de progreso */
+.linea-Segment {
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  border: 2px solid var(--unnamed-color-38afa7);
+  border: 2px solid #38AFA7;
+  opacity: 1;
+}
+.linea-base {
+  border: 3px solid #B2B2B2;
+  position: absolute;
+  top: 32px;
+  left: 150px;
+  width: 1000px;
+  height: 0px;
+  z-index: 0;
+
+}
+
+
+
+.linea-Proceso {
+
+  border: 3px solid #44AFA7;
+  position: absolute;
+  top: 50%; /* Ajusta la posición vertical según sea necesario */
+  left: 0;
+  
+  z-index: 2; /* Asegura que la línea esté detrás de los círculos */
+  transition: width 1s ease; /* Añade una transición suave */
+  top: 32px;
+  left: 130px;
+}
+
+.linea-naranja {
+  border: 3px solid #D8A379;
+  position: absolute;
+  top: 50%; /* Ajusta la posición vertical según sea necesario */
+  left: 0;
+  z-index: 1; /* Asegura que la línea esté detrás de los círculos */
+  transition:  1s ease; /* Añade una transición suave */
+  top: 32px;
+  left: 130px;
+}

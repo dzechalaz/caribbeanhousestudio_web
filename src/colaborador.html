@@ -11,8 +11,6 @@
 </head>
 <body>
     <div class="seguimiento-container">
-       
-        </div>
         <div class="botones-container">
             <button class="boton" onclick="cambiarValor(1)">Pedido Confirmado</button>
             <button class="boton" onclick="cambiarValor(2)">Insumos Listos</button>
@@ -36,33 +34,9 @@
             .then(response => response.text())
             .then(data => {
                 alert(data);
-                actualizarCirculos(nuevoValor);
             })
             .catch(error => console.error('Error:', error));
         }
-
-        function actualizarCirculos(valor) {
-            for (let i = 1; i <= 7; i++) {
-                const circulo = document.getElementById(`circulo${i}`);
-                if (i < valor) {
-                    circulo.src = "./public/ellipse-22.svg"; // Verde
-                } else if (i === valor) {
-                    circulo.src = "./public/ellipse-28.svg"; // Naranja
-                } else {
-                    circulo.src = "./public/ellipse-29.svg"; // Gris
-                }
-            }
-        }
-
-        // Aquí puedes inicializar el estado de los círculos según el valor actual de la base de datos
-        document.addEventListener('DOMContentLoaded', (event) => {
-            fetch('/obtener_valor')
-            .then(response => response.json())
-            .then(data => {
-                actualizarCirculos(data.valor);
-            })
-            .catch(error => console.error('Error:', error));
-        });
     </script>
 </body>
 </html>
