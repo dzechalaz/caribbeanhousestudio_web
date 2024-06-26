@@ -1,242 +1,238 @@
+<% 
+const descripciones = {
+    1: 'El pedido ha sido confirmado y está en proceso de preparación.',
+    2: 'Todos los insumos están listos para comenzar la fabricación.',
+    3: 'El producto está en proceso de maquila, se está llevando a cabo la producción.',
+    4: 'El producto está siendo barnizado para asegurar su acabado y durabilidad.',
+    5: 'El producto está siendo armado por nuestros técnicos.',
+    6: 'El producto ha sido empaquetado y enviado a la dirección indicada. Se espera que llegue en los próximos días.',
+    7: 'El producto ha sido entregado al cliente.'
+};
+
+const etapaActual = etapa; // Aquí 'etapa' es el valor obtenido de la base de datos que indica la etapa actual del pedido
+%>
+
+
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1, width=device-width" />
 
     <link rel="stylesheet" href="/global.css" />
     <link rel="stylesheet" href="/seguimiento.css" />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,700;1,600&display=swap"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
-    />
-  </head>
-  <body>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,700;1,600&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap" />
+</head>
+<body>
     <div class="seguimiento3">
-      <img
-        class="bef28-e2d2-463c-ae04-d69b5960f-icon2"
-        alt=""
-        src="/public/080bef28e2d2463cae04d69b5960f9f82@2x.png"
-      />
+        <img class="bef28-e2d2-463c-ae04-d69b5960f-icon2" alt="" src="/public/080bef28e2d2463cae04d69b5960f9f82@2x.png" />
 
-      <div class="barrabutom1">
-        <img class="path-253-icon3" alt="" src="/public/path-2531.svg" />
+        <div class="barrabutom1">
+            <img class="path-253-icon3" alt="" src="/public/path-2531.svg" />
 
-        <div class="facebook3">
-          <div class="facebook-inner1">
-            <div class="group-child5"></div>
-          </div>
-        </div>
-        <div class="instagram3">
-          <img
-            class="vector-smart-object3"
-            alt=""
-            src="/public/vector-smart-object@2x.png"
-          />
-        </div>
-        <div class="linkedin3">
-          <div class="rectangle-81311-copy-4-wrapper1">
-            <div class="rectangle-81311-copy-43"></div>
-          </div>
-          <div class="imagemask3"></div>
-        </div>
-        <div class="twitter3">
-          <div class="rectangle-813111-copy-6-wrapper1">
-            <div class="rectangle-813111-copy-63"></div>
-          </div>
-        </div>
-        <div class="company3">COMPANY</div>
-        <div class="profile-about-us-contact-addre3">
-          <p class="nombre-juan-quintana">Profile</p>
-          <p class="nombre-juan-quintana">About us</p>
-          <p class="nombre-juan-quintana">Contact</p>
-          <p class="nombre-juan-quintana">Address</p>
-        </div>
-        <div class="returns3">RETURNS</div>
-        <div class="faqs-size-guide-contact-us-container3">
-          <p class="nombre-juan-quintana">FAQs</p>
-          <p class="nombre-juan-quintana">Size Guide</p>
-          <p class="nombre-juan-quintana">Contact us</p>
-        </div>
-        <div class="lorem-ipsum-dolor-container3">
-          <p class="nombre-juan-quintana">Lorem ipsum dolor sit amet,</p>
-          <p class="nombre-juan-quintana">consetetur sadipscing elitr,</p>
-          <p class="nombre-juan-quintana">sed diam nonumy</p>
-        </div>
-        <div class="caribbean-house-studio6">Caribbean House Studio</div>
-      </div>
-      <div class="seguimiento-bloque">
-        <div class="direccion-parent">
-          <div class="direccion" data-animate-on-scroll>
-            <b class="direccin-de-envio">Dirección de Envio</b>
-            <div class="nombre-juan-quintana-calle-container">
-              <p class="nombre-juan-quintana">Nombre: Juan Quintana</p>
-              <p class="nombre-juan-quintana">Calle: Av. Siempre Viva 742</p>
-              <p class="nombre-juan-quintana">Ciudad: Springfield</p>
-              <p class="nombre-juan-quintana">Estado: IL</p>
-              <p class="nombre-juan-quintana">Código Postal: 62704</p>
+            <div class="facebook3">
+                <div class="facebook-inner1">
+                    <div class="group-child5"></div>
+                </div>
             </div>
-            <img class="package-2-icon" alt="" src="/public/package-2.svg" />
-          </div>
-          <div class="fecha" data-animate-on-scroll>
-            <b class="tiempo-estimado">Tiempo Estimado</b>
-            <img class="reloj-icon" alt="" src="/public/reloj.svg" />
-
-            <img class="stopwatch-icon" alt="" src="/public/stopwatch.svg" />
-
-            <b class="b">2</b>
-            <div class="ribbon">
-              <img class="path-285-icon" alt="" src="/public/path-285.svg" />
-
-              <img class="path-286-icon" alt="" src="/public/path-286.svg" />
-
-              <b class="das">Días</b>
+            <div class="instagram3">
+                <img class="vector-smart-object3" alt="" src="/public/vector-smart-object@2x.png" />
             </div>
-          </div>
-          <div class="detalleetapaactual" data-animate-on-scroll>
-            <b class="detalles-de-la">Detalles de la Etapa Actual</b>
-            <div class="el-mueble-ha">
-              El mueble ha sido empaquetado y enviado a la dirección indicada.
-              Se espera que llegue en los próximos días.
+            <div class="linkedin3">
+                <div class="rectangle-81311-copy-4-wrapper1">
+                    <div class="rectangle-81311-copy-43"></div>
+                </div>
+                <div class="imagemask3"></div>
             </div>
-            <img
-              class="c77ba59f830c693638c79c15db96bf-icon"
-              alt=""
-              src="/public/c77ba59f830c693638c79c15db96bf70.svg"
-            />
-          </div>
+            <div class="twitter3">
+                <div class="rectangle-813111-copy-6-wrapper1">
+                    <div class="rectangle-813111-copy-63"></div>
+                </div>
+            </div>
+            <div class="company3">COMPANY</div>
+            <div class="profile-about-us-contact-addre3">
+                <p class="nombre-juan-quintana">Profile</p>
+                <p class="nombre-juan-quintana">About us</p>
+                <p class="nombre-juan-quintana">Contact</p>
+                <p class="nombre-juan-quintana">Address</p>
+            </div>
+            <div class="returns3">RETURNS</div>
+            <div class="faqs-size-guide-contact-us-container3">
+                <p class="nombre-juan-quintana">FAQs</p>
+                <p class="nombre-juan-quintana">Size Guide</p>
+                <p class="nombre-juan-quintana">Contact us</p>
+            </div>
+            <div class="lorem-ipsum-dolor-container3">
+                <p class="nombre-juan-quintana">Lorem ipsum dolor sit amet,</p>
+                <p class="nombre-juan-quintana">consetetur sadipscing elitr,</p>
+                <p class="nombre-juan-quintana">sed diam nonumy</p>
+            </div>
+            <div class="caribbean-house-studio6">Caribbean House Studio</div>
         </div>
-        <div class="seguimiento4">
-          <div class="etapas-container">
-            <% for (let i = 1; i <= 7; i++) { %>
-              <div class="etapa">
-                <img class="circulo" src="/public/<%= i < etapa ? 'ellipse-22.svg' : i === etapa ? 'ellipse-28.svg' : 'ellipse-29.svg' %>" />
-                <p class="texto">
-                  <%= i === 1 ? 'Pedido Confirmado' : i === 2 ? 'Insumos Listos' : i === 3 ? 'Maquila en Proceso' : i === 4 ? 'Barniz' : i === 5 ? 'Armado' : i === 6 ? 'En Camino' : 'Entrega' %>
-                </p>
+        <div class="seguimiento-bloque">
+            <div class="direccion-parent">
+                <div class="direccion" data-animate-on-scroll>
+                    <b class="direccin-de-envio">Dirección de Envio</b>
+                    <div class="nombre-juan-quintana-calle-container">
+                        <p class="nombre-juan-quintana">Nombre: Juan Quintana</p>
+                        <p class="nombre-juan-quintana">Calle: Av. Siempre Viva 742</p>
+                        <p class="nombre-juan-quintana">Ciudad: Springfield</p>
+                        <p class="nombre-juan-quintana">Estado: IL</p>
+                        <p class="nombre-juan-quintana">Código Postal: 62704</p>
+                    </div>
+                    <img class="package-2-icon" alt="" src="/public/package-2.svg" />
+                </div>
+                <div class="fecha" data-animate-on-scroll>
+                    <b class="tiempo-estimado">Tiempo Estimado</b>
+                    <img class="reloj-icon" alt="" src="/public/reloj.svg" />
+                    <img class="stopwatch-icon" alt="" src="/public/stopwatch.svg" />
+                    <b class="b">2</b>
+                    <div class="ribbon">
+                        <img class="path-285-icon" alt="" src="/public/path-285.svg" />
+                        <img class="path-286-icon" alt="" src="/public/path-286.svg" />
+                        <b class="das">Días</b>
+                    </div>
+                </div>
+                <div class="detalleetapaactual animate">
+                    <div class="c77ba59f830c693638c79c15db96bf-icon"></div>
+                    <b class="detalles-de-la">Detalles de la Etapa Actual</b>
+                    <div class="el-mueble-ha">
+                        <%= descripciones[etapa] %>
+                    </div>
+                </div>
+            </div>
+           
+            <div class="seguimiento4">
+              <div class="estado-pedido-titulo">Estado del Pedido</div>
+              <div class="linea-Segment"></div>
+              <div class="etapas-container">
+                  <% for (let i = 1; i <= 7; i++) { %>
+                    <div class="etapa">
+                      <img class="circulo" src="/public/<%= i < etapa ? 'ellipse-22.svg' : i === etapa ? 'ellipse-28.svg' : 'ellipse-29.svg' %>" />
+                      <img src="/public/<%= i === 1 ? 'bill.svg' : i === 2 ? 'sumply.svg' : i === 3 ? 'saw.svg' : i === 4 ? 'brush.svg' : i === 5 ? 'hammer.svg' : i === 6 ? 'truck.svg' : 'entregado.svg' %>" alt="" />
+                    </div>
+                  <% } %>
+                </div>
+                <div class="linea-Proceso" style="width: calc(<%= ((etapa - 1) / 7 * 90)-10 %>%);"></div>
+                  <div class="linea-base" ></div>
+                  <div class="linea-naranja" style="width: calc(<%= (etapa - 1) / 7 * 90 %>%);"></div>
+              <div class="textos-container">
+                
+                  <div class="textos-container">
+                    <div class="texto">Pedido<br>Confirmado</div>
+                    <div class="texto">Insumos<br>Listos</div>
+                    <div class="texto">Maquila<br>en Proceso</div>
+                    <div class="texto">Barniz</div>
+                    <div class="texto">Armado</div>
+                    <div class="texto">En Camino</div>
+                    <div class="texto">Entrega</div>
+                  </div>
+                
               </div>
-            <% } %>
-          </div>
-        </div>
-        <div class="informacion">
-          <div class="divisor"></div>
-          <div class="imagespace"></div>
-          <img
-            class="main-image-icon"
-            alt=""
-            src="/public/main-image@2x.png"
-            data-animate-on-scroll
-          />
+            </div>
+            <div class="informacion">
+                <div class="divisor"></div>
+                <div class="imagespace"></div>
+                <img class="main-image-icon" alt="" src="/public/main-image@2x.png" data-animate-on-scroll />
 
-          <div class="description">
-            <b class="informacin-del-pedido">Información del pedido</b>
-            <div class="mueble-credenza-material-mad-container">
-              <p class="nombre-juan-quintana">Mueble: Credenza</p>
-              <p class="nombre-juan-quintana">Material: Madera</p>
-              <p class="nombre-juan-quintana">Dimensiones: 180 x 90 x 40 cm</p>
-              <p class="nombre-juan-quintana">Acabado: Barnizado</p>
-              <p class="nombre-juan-quintana">Color: Natural</p>
+                <div class="description">
+                    <b class="informacin-del-pedido">Información del pedido</b>
+                    <div class="mueble-credenza-material-mad-container">
+                        <p class="nombre-juan-quintana">Mueble: Credenza</p>
+                        <p class="nombre-juan-quintana">Material: Madera</p>
+                        <p class="nombre-juan-quintana">Dimensiones: 180 x 90 x 40 cm</p>
+                        <p class="nombre-juan-quintana">Acabado: Barnizado</p>
+                        <p class="nombre-juan-quintana">Color: Natural</p>
+                    </div>
+                </div>
+                <div class="credenza">Credenza</div>
+                <div class="id-de-envo">ID de Envío:</div>
+                <div class="div18">12345678</div>
+                <div class="repeat-grid-3">
+                    <div class="div19">
+                        <div class="grid-fondo"></div>
+                        <button class="credenza4"></button>
+                    </div>
+                    <div class="div20">
+                        <div class="grid-fondo"></div>
+                        <button class="credenza41"></button>
+                    </div>
+                    <div class="div21">
+                        <div class="grid-fondo"></div>
+                        <button class="credenza42"></button>
+                    </div>
+                    <div class="div22">
+                        <div class="grid-fondo"></div>
+                        <button class="credenza43"></button>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div class="credenza">Credenza</div>
-          <div class="id-de-envo">ID de Envío:</div>
-          <div class="div18">12345678</div>
-          <div class="repeat-grid-3">
-            <div class="div19">
-              <div class="grid-fondo"></div>
-              <button class="credenza4"></button>
-            </div>
-            <div class="div20">
-              <div class="grid-fondo"></div>
-              <button class="credenza41"></button>
-            </div>
-            <div class="div21">
-              <div class="grid-fondo"></div>
-              <button class="credenza42"></button>
-            </div>
-            <div class="div22">
-              <div class="grid-fondo"></div>
-              <button class="credenza43"></button>
-            </div>
-          </div>
         </div>
-      </div>
-      <header class="barra-pestaas3">
-        <div class="component-1-5">
-          <div class="component-1-5-child"></div>
-          <div class="logo3" id="logo">
-            <div class="caribbean-house-studio7">Caribbean House Studio</div>
-          </div>
-        </div>
-        <div class="inicio3" id="iNICIOText">INICIO</div>
-        <div class="catlogo3">CATÁLOGO</div>
-        <div class="blog3">BLOG</div>
-        <div class="nuestra-historia4" id="nUESTRAHISTORIAText">
-          NUESTRA HISTORIA
-        </div>
-        <b class="seguimiento5">SEGUIMIENTO</b>
-        <img class="serach-icon3" alt="" src="/public/serach.svg" />
-
-        <img class="cart-icon3" alt="" src="/public/cart.svg" />
-
-        <div class="login-wrapper1">
-          <div class="login3">Login</div>
-        </div>
-        <img class="path-74-icon3" alt="" src="/public/path-74.svg" />
-
-        <div class="div23">1</div>
-        <img class="logo-icon3" alt="" src="/public/logo.svg" />
-      </header>
+        <header class="barra-pestaas3">
+            <div class="component-1-5">
+                <div class="component-1-5-child"></div>
+                <div class="logo3" id="logo">
+                    <div class="caribbean-house-studio7">Caribbean House Studio</div>
+                </div>
+            </div>
+            <div class="inicio3" id="iNICIOText">INICIO</div>
+            <div class="catlogo3">CATÁLOGO</div>
+            <div class="blog3">BLOG</div>
+            <div class="nuestra-historia4" id="nUESTRAHISTORIAText">NUESTRA HISTORIA</div>
+            <b class="seguimiento5">SEGUIMIENTO</b>
+            <img class="serach-icon3" alt="" src="/public/serach.svg" />
+            <img class="cart-icon3" alt="" src="/public/cart.svg" />
+            <div class="login-wrapper1">
+                <div class="login3">Login</div>
+            </div>
+            <img class="path-74-icon3" alt="" src="/public/path-74.svg" />
+            <div class="div23">1</div>
+            <img class="logo-icon3" alt="" src="/public/logo.svg" />
+        </header>
     </div>
 
     <script>
-      var logo = document.getElementById("logo");
-      if (logo) {
-        logo.addEventListener("click", function (e) {
-          window.location.href = "./index.html";
-        });
-      }
-      
-      var iNICIOText = document.getElementById("iNICIOText");
-      if (iNICIOText) {
-        iNICIOText.addEventListener("click", function (e) {
-          window.location.href = "./index.html";
-        });
-      }
-      
-      var nUESTRAHISTORIAText = document.getElementById("nUESTRAHISTORIAText");
-      if (nUESTRAHISTORIAText) {
-        nUESTRAHISTORIAText.addEventListener("click", function (e) {
-          window.location.href = "./about-us.html";
-        });
-      }
-      var scrollAnimElements = document.querySelectorAll("[data-animate-on-scroll]");
-      var observer = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            if (entry.isIntersecting || entry.intersectionRatio > 0) {
-              const targetElement = entry.target;
-              targetElement.classList.add("animate");
-              observer.unobserve(targetElement);
-            }
-          }
-        },
-        {
-          threshold: 0.15,
+        var logo = document.getElementById("logo");
+        if (logo) {
+            logo.addEventListener("click", function (e) {
+                window.location.href = "./index.html";
+            });
         }
-      );
-      
-      for (let i = 0; i < scrollAnimElements.length; i++) {
-        observer.observe(scrollAnimElements[i]);
-      }
-      </script>
-  </body>
+
+        var iNICIOText = document.getElementById("iNICIOText");
+        if (iNICIOText) {
+            iNICIOText.addEventListener("click", function (e) {
+                window.location.href = "./index.html";
+            });
+        }
+
+        var nUESTRAHISTORIAText = document.getElementById("nUESTRAHISTORIAText");
+        if (nUESTRAHISTORIAText) {
+            nUESTRAHISTORIAText.addEventListener("click", function (e) {
+                window.location.href = "./about-us.html";
+            });
+        }
+        var scrollAnimElements = document.querySelectorAll("[data-animate-on-scroll]");
+        var observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (entry.isIntersecting || entry.intersectionRatio > 0) {
+                        const targetElement = entry.target;
+                        targetElement.classList.add("animate");
+                        observer.unobserve(targetElement);
+                    }
+                }
+            },
+            {
+                threshold: 0.15,
+            }
+        );
+
+        for (let i = 0; i < scrollAnimElements.length; i++) {
+            observer.observe(scrollAnimElements[i]);
+        }
+    </script>
+</body>
 </html>
