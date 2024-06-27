@@ -13,7 +13,6 @@ const mysql = require('mysql');
 const path = require('path');
 const bodyParser = require('body-parser');
 
-
 const db = mysql.createConnection({
   host: DB_HOST,
   user: DB_USER,
@@ -38,9 +37,10 @@ app.get("/", (req, res) => {
 });
 
 app.get("/seguimiento", (req, res) => {
-  db.query('SELECT valor FROM Datos LIMIT 1', (err, results) => {
+  const pedidoId = req.query.id || 1; // Default para pruebas
+  db.query('SELECT etapa FROM Compras WHERE compra_id = ?', [pedidoId], (err, results) => {
     if (err) throw err;
-    const etapa = results[0].valor;
+    const etapa = results[0].etapa;
     res.render('seguimiento', { etapa });
   });
 });
@@ -51,8 +51,9 @@ app.get("/colaborador", (req, res) => {
 
 app.post('/actualizar_valor', (req, res) => {
   const nuevoValor = req.body.valor;
-  const query = 'UPDATE Datos SET valor = ? WHERE id = ?';
-  db.query(query, [nuevoValor, '463912'], (err, result) => {
+  const pedidoId = req.body.pedidoId;
+  const query = 'UPDATE Compras SET etapa = ? WHERE compra_id = ?';
+  db.query(query, [nuevoValor, pedidoId], (err, result) => {
     if (err) {
       console.error('Error al actualizar el valor:', err);
       res.status(500).send('Error al actualizar el valor');
