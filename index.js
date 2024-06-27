@@ -1,16 +1,25 @@
+const {
+  PORT,
+  DB_HOST,
+  DB_NAME,
+  DB_PASSWORD,
+  DB_USER,
+  DB_PORT
+} = require('./config');
+
 const express = require('express');
 const app = express();
 const mysql = require('mysql');
 const path = require('path');
 const bodyParser = require('body-parser');
 
-const port = process.env.PORT || 3000;
 
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'RiasSempai123',
-  database: 'MiBaseDeDatos'
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASSWORD,
+  port: DB_PORT,
+  database: DB_NAME
 });
 
 db.connect((err) => {
@@ -53,6 +62,6 @@ app.post('/actualizar_valor', (req, res) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Servidor escuchando en http://localhost:${port}`);
+app.listen(PORT, () => {
+  console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
