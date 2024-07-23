@@ -4,7 +4,6 @@ const mysql = require('mysql2');
 const path = require('path');
 const bodyParser = require('body-parser');
 const {
-  PORT,
   DB_HOST,
   DB_NAME,
   DB_PASSWORD,
@@ -73,7 +72,7 @@ app.post('/actualizar_valor', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server listening at http://localhost:${PORT}`);
+app.listen(DB_PORT, () => {
+  console.log(`Server listening at http://localhost:${DB_PORT}`);
 });
 
