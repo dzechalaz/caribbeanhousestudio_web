@@ -9,7 +9,7 @@ const descripciones = {
     7: 'El producto ha sido entregado al cliente.'
 };
 
-const etapaActual = etapa; // Aquí 'etapa' es el valor obtenido de la base de datos que indica la etapa actual del pedido
+const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base de datos que indica la estado actual del pedido
 %>
 
 <!DOCTYPE html>
@@ -94,11 +94,11 @@ const etapaActual = etapa; // Aquí 'etapa' es el valor obtenido de la base de d
                         <b class="das">Días</b>
                     </div>
                 </div>
-                <div class="detalleetapaactual animate">
+                <div class="detalleestadoactual animate">
                     <div class="c77ba59f830c693638c79c15db96bf-icon"></div>
-                    <b class="detalles-de-la">Detalles de la Etapa Actual</b>
+                    <b class="detalles-de-la">Detalles de la estado Actual</b>
                     <div class="el-mueble-ha">
-                        <%= descripciones[etapa] %>
+                        <%= descripciones[estado] %>
                     </div>
                 </div>
             </div>
@@ -106,17 +106,17 @@ const etapaActual = etapa; // Aquí 'etapa' es el valor obtenido de la base de d
             <div class="seguimiento4">
               <div class="estado-pedido-titulo">Estado del Pedido</div>
               <div class="linea-Segment"></div>
-              <div class="etapas-container">
+              <div class="estados-container">
                   <% for (let i = 1; i <= 7; i++) { %>
-                    <div class="etapa">
-                      <img class="circulo" src="/public/<%= i < etapa ? 'ellipse-22.svg' : i === etapa ? 'ellipse-28.svg' : 'ellipse-29.svg' %>" />
+                    <div class="estado">
+                      <img class="circulo" src="/public/<%= i < estado ? 'ellipse-22.svg' : i === estado ? 'ellipse-28.svg' : 'ellipse-29.svg' %>" />
                       <img src="/public/<%= i === 1 ? 'bill.svg' : i === 2 ? 'sumply.svg' : i === 3 ? 'saw.svg' : i === 4 ? 'brush.svg' : i === 5 ? 'hammer.svg' : i === 6 ? 'truck.svg' : 'entregado.svg' %>" alt="" />
                     </div>
                   <% } %>
                 </div>
-                <div class="linea-Proceso" style="width: calc(<%= ((etapa - 1) / 7 * 90)-10 %>%);"> </div>
+                <div class="linea-Proceso" style="width: calc(<%= ((estado - 1) / 7 * 90)-10 %>%);"> </div>
                   <div class="linea-base" ></div>
-                  <div class="linea-naranja" style="width: calc(<%= (etapa - 1) / 7 * 90 %>%);"> </div>
+                  <div class="linea-naranja" style="width: calc(<%= (estado - 1) / 7 * 90 %>%);"> </div>
               <div class="textos-container">
                 
                   <div class="textos-container">
