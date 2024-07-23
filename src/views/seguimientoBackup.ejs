@@ -108,12 +108,12 @@ const etapaActual = etapa; // Aquí 'etapa' es el valor obtenido de la base de d
               <div class="estado-pedido-titulo">Estado del Pedido</div>
               <div class="linea-Segment"></div>
               <div class="etapas-container">
-                  <% for (let i = 1; i <= 7; i++) { %>
+                    for (let i = 1; i <= 7; i++) { %>
                     <div class="etapa">
                       <img class="circulo" src="/public/<%= i < etapa ? 'ellipse-22.svg' : i === etapa ? 'ellipse-28.svg' : 'ellipse-29.svg' %>" />
                       <img src="/public/<%= i === 1 ? 'bill.svg' : i === 2 ? 'sumply.svg' : i === 3 ? 'saw.svg' : i === 4 ? 'brush.svg' : i === 5 ? 'hammer.svg' : i === 6 ? 'truck.svg' : 'entregado.svg' %>" alt="" />
                     </div>
-                  <% } %>
+                   } %>
                 </div>
                 <div class="linea-Proceso" style="width: calc(<%= ((etapa - 1) / 7 * 90)-10 %>%);"></div>
                   <div class="linea-base" ></div>
