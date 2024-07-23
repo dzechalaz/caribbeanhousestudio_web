@@ -1,3 +1,8 @@
+const express = require('express');
+const app = express();
+const mysql = require('mysql2');
+const path = require('path');
+const bodyParser = require('body-parser');
 const {
   PORT,
   DB_HOST,
@@ -6,12 +11,6 @@ const {
   DB_USER,
   DB_PORT
 } = require('./config');
-
-const express = require('express');
-const app = express();
-const mysql = require('mysql2');
-const path = require('path');
-const bodyParser = require('body-parser');
 
 const db = mysql.createConnection({
   host: DB_HOST,
@@ -22,7 +21,10 @@ const db = mysql.createConnection({
 });
 
 db.connect((err) => {
-  if (err) throw err;
+  if (err) {
+    console.error('Error connecting to MySQL:', err);
+    return;
+  }
   console.log('Connected to MySQL');
 });
 
@@ -33,36 +35,45 @@ app.use(express.static(path.join(__dirname, 'src')));
 app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
+  console.log("Request received for /");
   res.sendFile(path.join(__dirname, 'src/index.html'));
 });
 
 app.get("/seguimiento", (req, res) => {
-  const pedidoId = req.query.id || 1; // Default para pruebas
+  console.log("Request received for /seguimiento");
+  const pedidoId = req.query.id || 1;
   db.query('SELECT etapa FROM Compras WHERE compra_id = ?', [pedidoId], (err, results) => {
-    if (err) throw err;
+    if (err) {
+      console.error("Error querying database:", err);
+      res.status(500).send("Database query error");
+      return;
+    }
     const etapa = results[0].etapa;
     res.render('seguimiento', { etapa });
   });
 });
 
 app.get("/colaborador", (req, res) => {
+  console.log("Request received for /colaborador");
   res.sendFile(path.join(__dirname, 'src/colaborador.html'));
 });
 
 app.post('/actualizar_valor', (req, res) => {
+  console.log("Request received for /actualizar_valor");
   const nuevoValor = req.body.valor;
   const pedidoId = req.body.pedidoId;
   const query = 'UPDATE Compras SET etapa = ? WHERE compra_id = ?';
   db.query(query, [nuevoValor, pedidoId], (err, result) => {
     if (err) {
-      console.error('Error al actualizar el valor:', err);
-      res.status(500).send('Error al actualizar el valor');
+      console.error('Error updating value:', err);
+      res.status(500).send('Error updating value');
       return;
     }
-    res.send('Valor actualizado correctamente');
+    res.send('Value updated successfully');
   });
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor escuchando en http://localhost:${PORT}`);
+  console.log(`Server listening at http://localhost:${PORT}`);
 });
+
