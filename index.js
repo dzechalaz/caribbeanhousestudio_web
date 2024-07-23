@@ -40,15 +40,15 @@ app.get("/", (req, res) => {
 
 app.get("/seguimiento", (req, res) => {
   console.log("Request received for /seguimiento");
-  const pedidoId = req.query.id || 1;
-  db.query('SELECT etapa FROM Compras WHERE compra_id = ?', [pedidoId], (err, results) => {
+  const pedidoId = req.query.id || 1; // Default para pruebas
+  db.query('SELECT estado FROM Compras WHERE compra_id = ?', [pedidoId], (err, results) => {
     if (err) {
       console.error("Error querying database:", err);
       res.status(500).send("Database query error");
       return;
     }
-    const etapa = results[0].etapa;
-    res.render('seguimiento', { etapa });
+    const estado = results[0].estado;
+    res.render('seguimiento', { estado });
   });
 });
 
