@@ -12,7 +12,7 @@
         <div class="left">
             <div class="top">
                 <div class="logo">
-                    <img src="imagen.png" alt="Logo">
+                    <img src="/imagen.png" alt="Logo">
                     <h2>Daniel Echalaz</h2>
                 </div>
             </div>
@@ -71,46 +71,40 @@
         </div>
         <main>
             <div id="dashboard" class="content-section">
-                <!-- Contenido actual del Dashboard -->
                 <div class="projectCard">
                     <h2>Dashboard Content</h2>
-                    <!-- Aquí va el contenido existente del dashboard -->
-                    <div class="projectCard">
-                        <div class="cardBox">
-                            <!-- Project Card -->
-                            <% clientes.forEach((cliente, index) => { %>
-                                <div class="card">
-                                    <div class="cardName">
-                                        <h3>Proyecto</h3>
-                                        <p><%= cliente %></p>
-                                    <span class="status">En proceso</span>
-                                    <div class="cardInfo">
-                                        <img src="https://placekitten.com/50/50" alt="Person">
-                                        <img src="https://placekitten.com/50/50" alt="Person">
-                                        <img src="https://placekitten.com/50/50" alt="Person">
-                                        <img src="https://placekitten.com/50/50" alt="Person">
-                                        <img src="https://placekitten.com/50/50" alt="Person">
-                                        <p>Tareas hechas: <strong>35</strong> / 50</p>
-                                        <p class="deadline">Fecha de finalización: 25 Agosto</p>
-                                    </div>
+                    <div class="cardBox">
+                        <% clientes.forEach((cliente, index) => { %>
+                        <div class="card">
+                            <div class="cardName">
+                                <h3>Proyecto</h3>
+                                <p><%= cliente %></p>
+                                <span class="status">En proceso</span>
+                                <div class="cardInfo">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <p>Tareas hechas: <strong>35</strong> / 50</p>
+                                    <p class="deadline">Fecha de finalización: 25 Agosto</p>
                                 </div>
                             </div>
-                            <% }) %>
-                            <!-- Pedido Card -->
-                            <div class="card">
-                                <div class="cardName">
-                                    <h3>Pedido</h3>
-                                    <p>Nombre de cliente</p>
-                                    <span class="status">En proceso</span>
-                                    <div class="cardInfo">
-                                        <img src="https://placekitten.com/50/50" alt="Person">
-                                        <img src="https://placekitten.com/50/50" alt="Person">
-                                        <img src="https://placekitten.com/50/50" alt="Person">
-                                        <img src="https://placekitten.com/50/50" alt="Person">
-                                        <img src="https://placekitten.com/50/50" alt="Person">
-                                        <p>Tareas hechas: <strong>35</strong> / 50</p>
-                                        <p class="deadline">Fecha de finalización: 25 Junio</p>
-                                    </div>
+                        </div>
+                        <% }) %>
+                        <div class="card">
+                            <div class="cardName">
+                                <h3>Pedido</h3>
+                                <p>Nombre de cliente</p>
+                                <span class="status">En proceso</span>
+                                <div class="cardInfo">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <p>Tareas hechas: <strong>35</strong> / 50</p>
+                                    <p class="deadline">Fecha de finalización: 25 Junio</p>
                                 </div>
                             </div>
                         </div>

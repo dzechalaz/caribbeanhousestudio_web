@@ -13,6 +13,7 @@ body {
     width: 200px;
     background-color: #f4f4f4;
     padding: 20px;
+    height: 100vh;
 }
 
 .left .logo {
@@ -54,6 +55,7 @@ body {
 main {
     flex-grow: 1;
     padding: 20px;
+    margin-left: 200px; /* Añadido para que el contenido principal no se superponga con la barra de navegación */
 }
 
 .content-section {
@@ -68,7 +70,15 @@ main {
 .projectCard {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: flex-start; /* Alinea las tarjetas a la izquierda */
+    gap: 20px; /* Espacio entre tarjetas */
+}
+
+.cardBox {
+    width: 100%; /* Asegúrate de que el contenedor de las tarjetas tome todo el ancho disponible */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Espacio entre tarjetas */
 }
 
 .card {
@@ -76,8 +86,7 @@ main {
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-    width: calc(50% - 10px);
+    width: calc(50% - 20px); /* Ajusta el ancho de las tarjetas para que se alineen correctamente */
 }
 
 .card h3 {
