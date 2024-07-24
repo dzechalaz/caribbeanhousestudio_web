@@ -77,7 +77,7 @@ app.post('/actualizar_valor', (req, res) => {
 
 
 app.get("/", (req, res) => {
-  db.query('SELECT nombre FROM usuarios', (err, results) => {
+  db.query('SELECT nombre FROM Usuarios', (err, results) => {
     if (err) {
       console.error('Error fetching client names:', err);
       res.status(500).send('Error fetching client names');

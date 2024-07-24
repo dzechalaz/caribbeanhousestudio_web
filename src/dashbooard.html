@@ -78,10 +78,11 @@
                     <div class="projectCard">
                         <div class="cardBox">
                             <!-- Project Card -->
-                            <div class="card">
-                                <div class="cardName">
-                                    <h3>Proyecto</h3>
-                                    <p><%= clientes %></p>
+                            <% clientes.forEach((cliente, index) => { %>
+                                <div class="card">
+                                    <div class="cardName">
+                                        <h3>Proyecto</h3>
+                                        <p><%= cliente %></p>
                                     <span class="status">En proceso</span>
                                     <div class="cardInfo">
                                         <img src="https://placekitten.com/50/50" alt="Person">
@@ -94,6 +95,7 @@
                                     </div>
                                 </div>
                             </div>
+                            <% }) %>
                             <!-- Pedido Card -->
                             <div class="card">
                                 <div class="cardName">
