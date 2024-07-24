@@ -4,6 +4,7 @@ const mysql = require('mysql2');
 const path = require('path');
 const bodyParser = require('body-parser');
 const {
+  PORT,
   DB_HOST,
   DB_NAME,
   DB_PASSWORD,
@@ -40,15 +41,15 @@ app.get("/", (req, res) => {
 
 app.get("/seguimiento", (req, res) => {
   console.log("Request received for /seguimiento");
-  const pedidoId = req.query.id || 1;
-  db.query('SELECT etapa FROM Compras WHERE compra_id = ?', [pedidoId], (err, results) => {
+  const pedidoId = req.query.id || 1; // Default para pruebas
+  db.query('SELECT estado FROM Compras WHERE compra_id = ?', [pedidoId], (err, results) => {
     if (err) {
       console.error("Error querying database:", err);
       res.status(500).send("Database query error");
       return;
     }
-    const etapa = results[0].etapa;
-    res.render('seguimiento', { etapa });
+    const estado = results[0].estado;
+    res.render('seguimiento', { estado });
   });
 });
 
@@ -57,11 +58,13 @@ app.get("/colaborador", (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador.html'));
 });
 
+
+//funcion actualziar valor
 app.post('/actualizar_valor', (req, res) => {
   console.log("Request received for /actualizar_valor");
   const nuevoValor = req.body.valor;
-  const pedidoId = req.body.pedidoId;
-  const query = 'UPDATE Compras SET etapa = ? WHERE compra_id = ?';
+  const pedidoId = 1;
+  const query = 'UPDATE Compras SET estado = ? WHERE compra_id = ?';
   db.query(query, [nuevoValor, pedidoId], (err, result) => {
     if (err) {
       console.error('Error updating value:', err);
