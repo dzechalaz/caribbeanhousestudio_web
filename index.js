@@ -72,7 +72,7 @@ app.post('/actualizar_valor', (req, res) => {
   });
 });
 
-app.listen(DB_PORT, () => {
-  console.log(`Server listening at http://localhost:${DB_PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server listening at http://localhost:${PORT}`);
 });
 
