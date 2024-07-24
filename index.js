@@ -75,6 +75,21 @@ app.post('/actualizar_valor', (req, res) => {
   });
 });
 
+
+app.get("/", (req, res) => {
+  db.query('SELECT nombre FROM usuarios', (err, results) => {
+    if (err) {
+      console.error('Error fetching client names:', err);
+      res.status(500).send('Error fetching client names');
+      return;
+    }
+
+    const clientes = results.map(row => row.nombre);
+
+    res.render('dashboard', { clientes });
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);
 });
