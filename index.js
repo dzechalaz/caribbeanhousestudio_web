@@ -58,11 +58,13 @@ app.get("/colaborador", (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador.html'));
 });
 
+
+//funcion actualziar valor
 app.post('/actualizar_valor', (req, res) => {
   console.log("Request received for /actualizar_valor");
   const nuevoValor = req.body.valor;
-  const pedidoId = req.body.pedidoId;
-  const query = 'UPDATE Compras SET etapa = ? WHERE compra_id = ?';
+  const pedidoId = 1;
+  const query = 'UPDATE Compras SET estado = ? WHERE compra_id = ?';
   db.query(query, [nuevoValor, pedidoId], (err, result) => {
     if (err) {
       console.error('Error updating value:', err);
