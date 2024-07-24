@@ -940,7 +940,7 @@
   position: relative;
   } 
 
-.etapa {
+.estado {
   display: flex;
   flex-direction: column; /* Coloca los elementos uno debajo del otro */
   align-items: center; /* Centra los elementos en cada etapa */
@@ -949,7 +949,7 @@
   
 }
 
-.etapa .circulo {
+.estado .circulo {
   display: block;
   margin: -10px 0px;
   width: 50px;
@@ -978,26 +978,9 @@
   opacity: 1; 
 }
 
-.texto:nth-child(2) {
-  left: -5px;
-}
-.texto:nth-child(3) {
-  left: -8px;
-}
-.texto:nth-child(4) {
-  left: -1px;
-}
-.texto:nth-child(5) {
-  left: 16px;
-}
-.texto:nth-child(6) {
-  left: 16px;
-}
-.texto:nth-child(7) {
-  left: 15px;
-}
 
-.etapa img {
+
+.estado img {
   position: absolute;
   top: -20px; /* Ajusta este valor para bajar los íconos */
   left: 50%;
@@ -1039,15 +1022,10 @@
 
 }
 
-
-
 .linea-Proceso {
 
-  border: 3px solid #44AFA7;
+  border: 4px solid #44AFA7;
   position: absolute;
-  top: 50%; /* Ajusta la posición vertical según sea necesario */
-  left: 0;
-  
   z-index: 2; /* Asegura que la línea esté detrás de los círculos */
   transition: width 1s ease; /* Añade una transición suave */
   top: 32px;
