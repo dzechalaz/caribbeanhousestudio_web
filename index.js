@@ -1,9 +1,8 @@
-require('dotenv').config();
 const express = require('express');
+const app = express();
 const mysql = require('mysql2');
 const path = require('path');
 const bodyParser = require('body-parser');
-
 const {
   PORT,
   DB_HOST,
@@ -12,8 +11,6 @@ const {
   DB_USER,
   DB_PORT
 } = require('./config');
-
-const app = express();
 
 const db = mysql.createConnection({
   host: DB_HOST,
@@ -38,7 +35,49 @@ app.use(express.static(path.join(__dirname, 'src')));
 app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
-  db.query('SELECT nombre FROM usuarios', (err, results) => {
+  console.log("Request received for /");
+  res.sendFile(path.join(__dirname, 'src/index.html'));
+});
+
+app.get("/seguimiento", (req, res) => {
+  console.log("Request received for /seguimiento");
+  const pedidoId = req.query.id || 1; // Default para pruebas
+  db.query('SELECT estado FROM Compras WHERE compra_id = ?', [pedidoId], (err, results) => {
+    if (err) {
+      console.error("Error querying database:", err);
+      res.status(500).send("Database query error");
+      return;
+    }
+    const estado = results[0].estado;
+    res.render('seguimiento', { estado });
+  });
+});
+
+app.get("/colaborador", (req, res) => {
+  console.log("Request received for /colaborador");
+  res.sendFile(path.join(__dirname, 'src/colaborador.html'));
+});
+
+
+//funcion actualziar valor
+app.post('/actualizar_valor', (req, res) => {
+  console.log("Request received for /actualizar_valor");
+  const nuevoValor = req.body.valor;
+  const pedidoId = 1;
+  const query = 'UPDATE Compras SET estado = ? WHERE compra_id = ?';
+  db.query(query, [nuevoValor, pedidoId], (err, result) => {
+    if (err) {
+      console.error('Error updating value:', err);
+      res.status(500).send('Error updating value');
+      return;
+    }
+    res.send('Value updated successfully');
+  });
+});
+
+
+app.get("/", (req, res) => {
+  db.query('SELECT nombre FROM Usuarios', (err, results) => {
     if (err) {
       console.error('Error fetching client names:', err);
       res.status(500).send('Error fetching client names');
@@ -46,39 +85,12 @@ app.get("/", (req, res) => {
     }
 
     const clientes = results.map(row => row.nombre);
-    console.log('Clientes:', clientes); // Verificar que los nombres se obtienen correctamente
 
     res.render('dashboard', { clientes });
-  });
-});
-
-app.get("/seguimiento", (req, res) => {
-  const pedidoId = req.query.id || 1; // Default para pruebas
-  db.query('SELECT etapa FROM Compras WHERE compra_id = ?', [pedidoId], (err, results) => {
-    if (err) throw err;
-    const etapa = results[0]?.etapa || 'No disponible';
-    res.render('seguimiento', { etapa });
-  });
-});
-
-app.get("/colaborador", (req, res) => {
-  res.sendFile(path.join(__dirname, 'src/colaborador.html'));
-});
-
-app.post('/actualizar_valor', (req, res) => {
-  const nuevoValor = req.body.valor;
-  const pedidoId = req.body.pedidoId;
-  const query = 'UPDATE Compras SET etapa = ? WHERE compra_id = ?';
-  db.query(query, [nuevoValor, pedidoId], (err, result) => {
-    if (err) {
-      console.error('Error al actualizar el valor:', err);
-      res.status(500).send('Error al actualizar el valor');
-      return;
-    }
-    res.send('Valor actualizado correctamente');
   });
 });
 
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);
 });
+
