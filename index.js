@@ -36,7 +36,16 @@ app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
   console.log("Request received for /");
-  res.sendFile(path.join(__dirname, 'src/index.html'));
+  db.query('SELECT nombre FROM Usuarios', (err, results) => {
+    if (err) {
+      console.error('Error fetching client names:', err);
+      res.status(500).send('Error fetching client names');
+      return;
+    }
+
+    const clientes = results.map(row => row.nombre);
+    res.render('dashboard', { clientes });
+  });
 });
 
 app.get("/seguimiento", (req, res) => {
@@ -58,7 +67,6 @@ app.get("/colaborador", (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador.html'));
 });
 
-
 //funcion actualziar valor
 app.post('/actualizar_valor', (req, res) => {
   console.log("Request received for /actualizar_valor");
@@ -75,22 +83,6 @@ app.post('/actualizar_valor', (req, res) => {
   });
 });
 
-
-app.get("/", (req, res) => {
-  db.query('SELECT nombre FROM Usuarios', (err, results) => {
-    if (err) {
-      console.error('Error fetching client names:', err);
-      res.status(500).send('Error fetching client names');
-      return;
-    }
-
-    const clientes = results.map(row => row.nombre);
-
-    res.render('dashboard', { clientes });
-  });
-});
-
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);
 });
-
