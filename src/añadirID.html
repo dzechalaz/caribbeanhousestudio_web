@@ -12,7 +12,7 @@
     />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap"
     />
     <link
       rel="stylesheet"
@@ -75,10 +75,10 @@
       </div>
       <div class="box">
         <b class="ingrese-id-de">Ingrese ID de la compra</b>
-        <input class="path-287" type="text" maxlength="9" />
+        <input class="path-287" id="idCompraInput" type="text" maxlength="9" />
 
         <div class="aceptarbutt" id="aceptarButtContainer">
-          <b class="acetpar">Acetpar</b>
+          <b class="acetpar">Aceptar</b>
         </div>
       </div>
       <header class="barra-pestaas4">
@@ -113,21 +113,40 @@
       var aceptarButtContainer = document.getElementById("aceptarButtContainer");
       if (aceptarButtContainer) {
         aceptarButtContainer.addEventListener("click", function (e) {
-          window.location.href = "./seguimiento-p-r-e.html";
+          const idCompra = document.getElementById("idCompraInput").value;
+          fetch('/verificar-id-compra', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ idCompra }),
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.exists) {
+              window.location.href = `/compras?id=${idCompra}`;
+            } else {
+              alert('ID de compra no existe');
+            }
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+            alert('Error verificando ID de compra');
+          });
         });
       }
       
       var logo = document.getElementById("logo");
       if (logo) {
         logo.addEventListener("click", function (e) {
-          window.location.href = "./home.html";
+          window.location.href = "./index.html";
         });
       }
       
       var iNICIOText = document.getElementById("iNICIOText");
       if (iNICIOText) {
         iNICIOText.addEventListener("click", function (e) {
-          window.location.href = "./home.html";
+          window.location.href = "./index.html";
         });
       }
       
@@ -137,6 +156,6 @@
           window.location.href = "./about-us.html";
         });
       }
-      </script>
+    </script>
   </body>
 </html>

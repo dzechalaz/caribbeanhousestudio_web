@@ -5,42 +5,23 @@
     <meta name="viewport" content="initial-scale=1, width=device-width" />
 
     <link rel="stylesheet" href="./global.css" />
-    <link rel="stylesheet" href="./seguimiento-p-r-e.css" />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Josefin Sans:wght@400;600;700&display=swap"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,600&display=swap"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
-    />
+    <link rel="stylesheet" href="./compras.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap" />
   </head>
   <body>
     <div class="seguimientopre">
-      <img
-        class="fondo-icon"
-        alt=""
-        src="./public/080bef28e2d2463cae04d69b5960f9f82@2x.png"
-      />
-
+      <img class="fondo-icon" alt="" src="./public/080bef28e2d2463cae04d69b5960f9f82@2x.png" />
       <div class="barrabutom">
         <img class="path-253-icon" alt="" src="./public/path-2531.svg" />
-
         <div class="facebook">
           <div class="facebook-inner">
             <div class="group-child"></div>
           </div>
         </div>
         <div class="instagram">
-          <img
-            class="vector-smart-object"
-            alt=""
-            src="./public/vector-smart-object@2x.png"
-          />
+          <img class="vector-smart-object" alt="" src="./public/vector-smart-object@2x.png" />
         </div>
         <div class="linkedin">
           <div class="rectangle-81311-copy-4-wrapper">
@@ -78,15 +59,8 @@
       </button>
       <div class="seguimientoheader">
         <div class="inputbuscar"></div>
-        <input
-          class="buscar-todas-las"
-          placeholder="Buscar todas las compras"
-          type="text"
-          maxlength="100"
-        />
-
+        <input class="buscar-todas-las" placeholder="Buscar todas las compras" type="text" maxlength="100" />
         <img class="lupa-icon" alt="" src="./public/lupa.svg" />
-
         <button class="btnbusqueda">
           <div class="buscar">Buscar</div>
         </button>
@@ -95,31 +69,27 @@
       <div class="compra" data-animate-on-scroll>
         <div class="cabezeracompra">
           <img class="compra-icon" alt="" src="./public/compra.svg" />
-
-          <b class="compra-realizada">Compra Realizada:</b>
-          <div class="de-junio-de">20 de junio de 2024</div>
+          <b class="compra-realizada">Compra Realizada: <%= compra.fecha_compra.toLocaleDateString('es-ES') %></b>
           <b class="id">Id:</b>
-          <div class="div">12345678</div>
+          <div class="div"><%= idCompra %></div>
         </div>
-        <img class="imagen-icon" alt="" src="./public/imagen@2x.png" />
-
+        <img class="imagen-icon" alt="" src="<%= producto.imagen_url %>" />
         <b class="compra-realizada1">Compra Realizada:</b>
         <div class="detalles">
-          <b class="credenza">Credenza</b>
-          <div class="mueble-credenza-material-mad-container">
-            <p class="profile">Mueble: Credenza</p>
-            <p class="profile">Material: Madera</p>
-            <p class="profile">Dimensiones: 180 x 90 x 40 cm</p>
-            <p class="profile">Acabado: Barnizado</p>
-            <p class="profile">Color: Natural</p>
+          <b class="credenza"><%= info['Nombre'] %></b>
+          <div class="informacionBasica">
+            <p class="profile">Material: <%= info['Material'] %></p>
+            <p class="profile">Dimensiones: <%= info['Dimensiones'] %></p>
+            <p class="profile">Acabado: <%= info['Acabado'] %></p>
+            <p class="profile">Color: <%= info['Color'] %></p>
           </div>
         </div>
         <div class="direccionenvio">
           <div class="calle-av-siempre-container">
-            <p class="profile">Calle: Av. Siempre Viva 742</p>
-            <p class="profile">Ciudad: Springfield</p>
-            <p class="profile">Estado: IL</p>
-            <p class="profile">Código Postal: 62704</p>
+            <p class="profile">Calle: <%= direccion.calle %></p>
+            <p class="profile">Ciudad: <%= direccion.ciudad %></p>
+            <p class="profile">Estado: <%= direccion.estado %></p>
+            <p class="profile">Código Postal: <%= direccion.codigoPostal %></p>
           </div>
           <b class="enviar-a">Enviar a:</b>
         </div>
@@ -145,19 +115,14 @@
         <div class="inicio" id="iNICIOText">INICIO</div>
         <div class="catlogo">CATÁLOGO</div>
         <div class="blog">BLOG</div>
-        <div class="nuestra-historia" id="nUESTRAHISTORIAText">
-          NUESTRA HISTORIA
-        </div>
+        <div class="nuestra-historia" id="nUESTRAHISTORIAText">NUESTRA HISTORIA</div>
         <b class="seguimiento">SEGUIMIENTO</b>
         <img class="serach-icon" alt="" src="./public/serach.svg" />
-
         <img class="cart-icon" alt="" src="./public/cart.svg" />
-
         <div class="login-wrapper">
           <div class="login">Login</div>
         </div>
         <img class="path-74-icon" alt="" src="./public/path-74.svg" />
-
         <div class="div1">1</div>
         <img class="logo-icon" alt="" src="./public/logo.svg" />
       </header>
@@ -217,6 +182,6 @@
       for (let i = 0; i < scrollAnimElements.length; i++) {
         observer.observe(scrollAnimElements[i]);
       }
-      </script>
+    </script>
   </body>
 </html>
