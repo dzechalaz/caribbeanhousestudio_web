@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1, width=device-width" />
-
-    <link rel="stylesheet" href="./global.css" />
     <link rel="stylesheet" href="./añadirID.css" />
+<<<<<<< Updated upstream
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Josefin Sans:wght@400;600;700&display=swap"
@@ -158,4 +157,25 @@
       }
     </script>
   </body>
+=======
+</head>
+<body>
+    <div class="añadirid">
+        <h1>Añadir ID de compra</h1>
+        <form id="addIdForm">
+            <label for="idCompra">ID de compra:</label>
+            <input type="text" id="idCompra" name="idCompra" required>
+            <button type="submit">Añadir</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('addIdForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const idCompra = document.getElementById('idCompra').value;
+            window.location.href = `/compras?idCompra=${idCompra}`;
+        });
+    </script>
+</body>
+>>>>>>> Stashed changes
 </html>
