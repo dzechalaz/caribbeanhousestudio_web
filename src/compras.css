@@ -9,12 +9,7 @@
   }
 }
 .fondo-icon,
-.path-253-icon {
-  position: absolute;
-  right: 0;
-  max-width: 100%;
-  overflow: hidden;
-}
+
 .fondo-icon {
   width: calc(100% + 17px);
   top: 68px;
@@ -25,10 +20,14 @@
   mix-blend-mode: multiply;
 }
 .path-253-icon {
-  width: 100%;
-  top: calc(50% - 213.1px);
-  left: 0;
-  height: 426.2px;
+  
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4000px; /* Ancho del SVG */
+  height: 426px; /* Altura del SVG */
+  transform: translate(-50%, -50%);
+  
 }
 .group-child {
   position: absolute;

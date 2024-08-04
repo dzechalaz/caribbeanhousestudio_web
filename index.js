@@ -52,23 +52,9 @@ app.get("/colaborador", (req, res) => {
   res.render('colaborador');
 });
 
-<<<<<<< Updated upstream
 app.get('/añadirID', (req, res) => {
   res.sendFile(path.join(__dirname, 'src/añadirID.html'));
 });
-=======
-//--------------------AÑADIR COMPRAS--------------------------------------------------------------------------------
-
-app.get('/añadirID', (req, res) => {
-  res.sendFile(path.join(__dirname, 'src/views/añadirID.html'));
-});
-
-app.get('/compras', (req, res) => {
-  res.render('compras');
-});
-
-//-----------------------------------------------------------------------------------------------------------------------------
->>>>>>> Stashed changes
 
 app.post('/verificar-id-compra', (req, res) => {
   const { idCompra } = req.body;
