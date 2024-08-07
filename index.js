@@ -61,7 +61,6 @@ app.get("/colaborador", (req, res) => {
   res.render('colaborador');
 });
 
-
 app.get('/añadirID', (req, res) => {
   res.sendFile(path.join(__dirname, 'src/añadirID.html'));
 });
@@ -138,6 +137,18 @@ app.get('/compras', (req, res) => {
     } else {
       res.send('Compra no encontrada');
     }
+  });
+});
+
+// Nueva ruta para el catálogo
+app.get('/catalogo', (req, res) => {
+  db.query('SELECT * FROM Productos', (error, productResults) => {
+    if (error) {
+      console.error('Error fetching products:', error);
+      res.status(500).send('Error fetching products');
+      return;
+    }
+    res.render('catalogo', { products: productResults });
   });
 });
 

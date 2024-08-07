@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Compras</title>
+    <link rel="stylesheet" href="src/catalogo.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Filtros</h2>
+            <div class="filter-section">
+                <h3>Disponibilidad en tienda física</h3>
+                <label><input type="checkbox"> Disponible en esta tienda (215)</label>
+                <label><input type="checkbox"> Catálogo extendido (258)</label>
+            </div>
+            <div class="filter-section">
+                <h3>Promociones</h3>
+                <label><input type="checkbox"> Combo (2)</label>
+                <label><input type="checkbox"> Precio aún más bajo (153)</label>
+                <label><input type="checkbox"> Compra especial (45)</label>
+                <label><input type="checkbox"> Remate (4)</label>
+                <label><input type="checkbox"> Meses Sin Intereses (471)</label>
+            </div>
+            <!-- Agrega más secciones de filtros aquí -->
+        </div>
+        <div class="main-content">
+            <h1>Historial de Compras</h1>
+            <% compras.forEach(compra => { %>
+                <div class="compra" data-animate-on-scroll>
+                    <div class="cabezeracompra">
+                        <img class="compra-icon" alt="" src="./public/compra.svg" />
+                        <b class="compra-realizada">Compra Realizada: <%= compra.fecha_compra.toLocaleDateString('es-ES') %></b>
+                        <b class="id">Id:</b>
+                        <div class="div"><%= compra.id %></div>
+                    </div>
+                    <img class="imagen-icon" alt="" src="/public/Products/<%= compra.producto.producto_id %>/a.webp" />
+                    <b class="compra-realizada1">Compra Realizada:</b>
+                    <div class="detalles">
+                        <b class="credenza"><%= compra.info.Nombre %></b>
+                        <div class="informacionBasica">
+                            <p class="profile">Material: <%= compra.info.Material %></p>
+                            <p class="profile">Dimensiones: <%= compra.info.Dimensiones %></p>
+                            <p class="profile">Acabado: <%= compra.info.Acabado %></p>
+                            <p class="profile">Color: <%= compra.info.Color %></p>
+                        </div>
+                    </div>
+                    <div class="direccionenvio">
+                        <div class="calle-av-siempre-container">
+                            <p class="profile">Calle: <%= compra.direccion.calle %></p>
+                            <p class="profile">Ciudad: <%= compra.direccion.ciudad %></p>
+                            <p class="profile">Estado: <%= compra.direccion.estado %></p>
+                            <p class="profile">Código Postal: <%= compra.direccion.codigoPostal %></p>
+                        </div>
+                        <b class="enviar-a">Enviar a:</b>
+                    </div>
+                    <div class="separador2"></div>
+                    <button class="reseg" id="reSegContainer">
+                        <div class="realizar-seguimiento">Realizar Seguimiento</div>
+                    </button>
+                    <button class="verart">
+                        <div class="ver-artculo">Ver Artículo</div>
+                    </button>
+                    <button class="opinion">
+                        <div class="escribir-una-opinin">Escribir una opinión</div>
+                    </button>
+                    <div class="separador1"></div>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+    <script src="src/catalogo.css"></script>
+</body>
+</html>

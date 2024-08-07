@@ -1,0 +1,110 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+}
+
+.container {
+    display: flex;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h2, .sidebar h3 {
+    margin-top: 0;
+}
+
+.sidebar label {
+    display: block;
+    margin: 10px 0;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+}
+
+.main-content h1 {
+    margin-top: 0;
+}
+
+.compra {
+    background-color: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.cabezeracompra {
+    display: flex;
+    align-items: center;
+}
+
+.compra-icon {
+    margin-right: 10px;
+}
+
+.cabezeracompra b {
+    margin-right: 10px;
+}
+
+.imagen-icon {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px 0;
+}
+
+.detalles {
+    margin: 10px 0;
+}
+
+.profile {
+    margin: 0;
+}
+
+.direccionenvio {
+    margin: 10px 0;
+}
+
+.separador2, .separador1 {
+    border-top: 1px solid #ccc;
+    margin: 10px 0;
+}
+
+button {
+    background-color: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+button:hover {
+    background-color: #c0392b;
+}
+
+button div {
+    display: inline-block;
+}
+
+.reseg, .verart, .opinion {
+    margin-top: 10px;
+}
+
+@media screen and (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+    }
+}
