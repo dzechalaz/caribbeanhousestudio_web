@@ -1,0 +1,121 @@
+/* dashboard.css */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+}
+
+.left {
+    width: 200px;
+    background-color: #f4f4f4;
+    padding: 20px;
+    height: 100vh;
+}
+
+.left .logo {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.left .logo img {
+    max-width: 100%;
+    height: auto;
+}
+
+.left nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.left nav ul li {
+    margin: 20px 0;
+}
+
+.left nav ul li a {
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    align-items: center;
+}
+
+.left nav ul li a .material-symbols-outlined {
+    margin-right: 10px;
+}
+
+.left nav ul li a:hover {
+    background-color: #ddd;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+main {
+    flex-grow: 1;
+    padding: 20px;
+    margin-left: 200px; /* Añadido para que el contenido principal no se superponga con la barra de navegación */
+}
+
+.content-section {
+    display: none;
+}
+
+.content-section:first-child {
+    display: block;
+}
+
+/* Estilos específicos del contenido del Dashboard */
+.projectCard {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start; /* Alinea las tarjetas a la izquierda */
+    gap: 20px; /* Espacio entre tarjetas */
+}
+
+.cardBox {
+    width: 100%; /* Asegúrate de que el contenedor de las tarjetas tome todo el ancho disponible */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Espacio entre tarjetas */
+}
+
+.card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    width: calc(50% - 20px); /* Ajusta el ancho de las tarjetas para que se alineen correctamente */
+}
+
+.card h3 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.card p {
+    margin: 5px 0;
+    color: #555;
+}
+
+.status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background-color: #e0e0e0;
+    margin-top: 10px;
+}
+
+.cardInfo {
+    margin-top: 10px;
+}
+
+.cardInfo img {
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.deadline {
+    color: #f00;
+}
