@@ -142,14 +142,7 @@ app.get('/compras', (req, res) => {
 
 // Nueva ruta para el catálogo
 app.get('/catalogo', (req, res) => {
-  db.query('SELECT * FROM Productos', (error, productResults) => {
-    if (error) {
-      console.error('Error fetching products:', error);
-      res.status(500).send('Error fetching products');
-      return;
-    }
-    res.render('catalogo', { products: productResults });
-  });
+  res.render('catalogo');
 });
 
 app.listen(PORT, () => {
