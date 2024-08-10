@@ -30,7 +30,16 @@ app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
   console.log("Request received for /");
-  res.sendFile(path.join(__dirname, 'src/index.html'));
+  db.query('SELECT nombre FROM Usuarios', (err, results) => {
+    if (err) {
+      console.error('Error fetching client names:', err);
+      res.status(500).send('Error fetching client names');
+      return;
+    }
+
+    const clientes = results.map(row => row.nombre);
+    res.render('dashboard', { clientes });
+  });
 });
 
 app.get('/seguimiento', (req, res) => {
@@ -99,6 +108,7 @@ app.get("/colaborador", (req, res) => {
   console.log("Request received for /colaborador");
   es.sendFile(path.join(__dirname, 'src/colaborador'));
 });
+
 
 app.get('/añadirID', (req, res) => {
   res.sendFile(path.join(__dirname, 'src/añadirID.html'));

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="left">
+            <div class="top">
+                <div class="logo">
+                    <img src="/imagen.png" alt="Logo">
+                    <h2>Daniel Echalaz</h2>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <!-- <li>
+                        <a href="#dashboard">
+                            <span class="material-symbols-outlined full">
+                                dashboard
+                            </span>
+                            <span class="title">Dashboard</span>
+                        </a>
+                    </li> -->
+                    <li>
+                        <a href="#project">
+                            <span class="material-symbols-outlined">
+                                check_box
+                            </span>
+                            <span class="title">Project</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#myClient">
+                            <span class="material-symbols-outlined">
+                                group
+                            </span>
+                            <span class="title">My Client</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#miTarea">
+                            <span class="material-symbols-outlined">
+                                task
+                            </span>
+                            <span class="title">Mi Tarea</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#message">
+                            <span class="material-symbols-outlined">
+                                chat_bubble
+                            </span>
+                            <span class="title">Message</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#myBilling">
+                            <span class="material-symbols-outlined">
+                                account_balance_wallet
+                            </span>
+                            <span class="title">My Billing</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <main>
+            <div id="dashboard" class="content-section">
+                <div class="projectCard">
+                    <h2>Dashboard Content</h2>
+                    <div class="cardBox">
+                        <% clientes.forEach((cliente, index) => { %>
+                        <div class="card">
+                            <div class="cardName">
+                                <h3>Proyecto</h3>
+                                <p><%= cliente %></p>
+                                <span class="status">En proceso</span>
+                                <div class="cardInfo">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <p>Tareas hechas: <strong>35</strong> / 50</p>
+                                    <p class="deadline">Fecha de finalización: 25 Agosto</p>
+                                </div>
+                            </div>
+                        </div>
+                        <% }) %>
+                        <div class="card">
+                            <div class="cardName">
+                                <h3>Pedido</h3>
+                                <p>Nombre de cliente</p>
+                                <span class="status">En proceso</span>
+                                <div class="cardInfo">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <img src="https://placekitten.com/50/50" alt="Person">
+                                    <p>Tareas hechas: <strong>35</strong> / 50</p>
+                                    <p class="deadline">Fecha de finalización: 25 Junio</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="project" class="content-section" style="display: none;">
+                <h2>Project Section</h2>
+                <!-- Contenido de la sección Project -->
+            </div>
+
+            <div id="myClient" class="content-section" style="display: none;">
+                <h2>My Client Section</h2>
+                <!-- Contenido de la sección My Client -->
+            </div>
+
+            <div id="miTarea" class="content-section" style="display: none;">
+                <h2>Mi Tarea Section</h2>
+                <!-- Contenido de la sección Mi Tarea -->
+            </div>
+
+            <div id="message" class="content-section" style="display: none;">
+                <h2>Message Section</h2>
+                <!-- Contenido de la sección Message -->
+            </div>
+
+            <div id="myBilling" class="content-section" style="display: none;">
+                <h2>My Billing Section</h2>
+                <!-- Contenido de la sección My Billing -->
+            </div>
+        </main>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const navLinks = document.querySelectorAll(".left nav ul li a");
+            const sections = document.querySelectorAll(".content-section");
+            
+            navLinks.forEach(link => {
+                link.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute("href").substring(1);
+                    
+                    sections.forEach(section => {
+                        if (section.id === targetId) {
+                            section.style.display = "block";
+                        } else {
+                            section.style.display = "none";
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
