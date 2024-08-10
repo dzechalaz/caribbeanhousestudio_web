@@ -29,7 +29,7 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
         <img class="bef28-e2d2-463c-ae04-d69b5960f-icon2" alt="" src="/public/080bef28e2d2463cae04d69b5960f9f82@2x.png" />
 
         <div class="barrabutom1">
-            <img class="path-253-icon3" alt="" src="/public/path-2531.svg" />
+            <img class="path-253-icon3" alt="" src="/public/path-253.svg" />
 
             <div class="facebook3">
                 <div class="facebook-inner1">
@@ -76,10 +76,10 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
                     <b class="direccin-de-envio">Dirección de Envio</b>
                     <div class="nombre-juan-quintana-calle-container">
                         <p class="nombre-juan-quintana">Nombre: Juan Quintana</p>
-                        <p class="nombre-juan-quintana">Calle: Av. Siempre Viva 742</p>
-                        <p class="nombre-juan-quintana">Ciudad: Springfield</p>
-                        <p class="nombre-juan-quintana">Estado: IL</p>
-                        <p class="nombre-juan-quintana">Código Postal: 62704</p>
+                        <p class="nombre-juan-quintana">Calle: <%= direccion.calle %></p>
+                        <p class="nombre-juan-quintana">Ciudad: <%= direccion.ciudad %></p>
+                        <p class="nombre-juan-quintana">Estado: <%= direccion.estado %></p>
+                        <p class="nombre-juan-quintana">Código Postal: <%= direccion.codigoPostal %></p>
                     </div>
                     <img class="package-2-icon" alt="" src="/public/package-2.svg" />
                 </div>
@@ -134,37 +134,45 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
             <div class="informacion">
                 <div class="divisor"></div>
                 <div class="imagespace"></div>
-                <img class="main-image-icon" alt="" src="/public/main-image@2x.png" data-animate-on-scroll />
+                <img id="mainImage" class="main-image-icon" alt="" src="/public/Products/<%= producto.producto_id  %>/a.webp" data-animate-on-scroll />
 
                 <div class="description">
                     <b class="informacin-del-pedido">Información del pedido</b>
                     <div class="mueble-credenza-material-mad-container">
-                        <p class="nombre-juan-quintana">Mueble: Credenza</p>
-                        <p class="nombre-juan-quintana">Material: Madera</p>
-                        <p class="nombre-juan-quintana">Dimensiones: 180 x 90 x 40 cm</p>
-                        <p class="nombre-juan-quintana">Acabado: Barnizado</p>
-                        <p class="nombre-juan-quintana">Color: Natural</p>
+                        <p class="nombre-juan-quintana">Mueble: <%= info['Nombre'] %></p>
+                        <p class="nombre-juan-quintana">Material: <%= info['Material'] %></p>
+                        <p class="nombre-juan-quintana">Dimensiones: <%= info['Dimensiones'] %></p>
+                        <p class="nombre-juan-quintana">Acabado: <%= info['Acabado'] %></p>
+                        <p class="nombre-juan-quintana">Color: <%= info['Color'] %></p>
                     </div>
                 </div>
-                <div class="credenza">Credenza</div>
+                <div class="credenza"><%= info['Nombre'] %></div>
                 <div class="id-de-envo">ID de Envío:</div>
-                <div class="div18">12345678</div>
+                <div class="div18"><%= idCompra %></div>
                 <div class="repeat-grid-3">
                     <div class="div19">
                         <div class="grid-fondo"></div>
-                        <button class="credenza4"></button>
+                        <button class="credenza4" onclick="changeMainImage('a.webp')">
+                            <img src="/public/Products/<%= producto.producto_id  %>/a.webp" alt="Imagen A" 
+                        </button>
                     </div>
                     <div class="div20">
                         <div class="grid-fondo"></div>
-                        <button class="credenza41"></button>
+                        <button class="credenza41" onclick="changeMainImage('b.webp')">
+                          <img src="/public/Products/<%= producto.producto_id  %>/b.webp" alt="Imagen B">
+                        </button>
                     </div>
                     <div class="div21">
                         <div class="grid-fondo"></div>
-                        <button class="credenza42"></button>
+                        <button class="credenza42" onclick="changeMainImage('c.webp')">
+                          <img src="/public/Products/<%= producto.producto_id  %>/c.webp" alt="Imagen C">
+                        </button>
                     </div>
                     <div class="div22">
                         <div class="grid-fondo"></div>
-                        <button class="credenza43"></button>
+                        <button class="credenza43" onclick="changeMainImage('d.webp')">
+                          <img src="/public/Products/<%= producto.producto_id  %>/d.webp" alt="Imagen D">
+                        </button>
                     </div>
                 </div>
             </div>
@@ -213,6 +221,11 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
                 window.location.href = "./about-us.html";
             });
         }
+
+        function changeMainImage(imageName) {
+            document.getElementById('mainImage').src = `/public/Products/<%= producto.producto_id  %>/${imageName}`;
+        }
+
         var scrollAnimElements = document.querySelectorAll("[data-animate-on-scroll]");
         var observer = new IntersectionObserver(
             (entries) => {

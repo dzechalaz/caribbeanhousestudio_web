@@ -157,9 +157,9 @@
           <b class="enviar-a">Enviar a:</b>
         </div>
         <div class="separador2"></div>
-        <div class="reseg" id="reSegContainer">
+        <button class="reseg" id="reSegContainer">
           <div class="realizar-seguimiento">Realizar Seguimiento</div>
-        </div>
+        </button>
         <button class="verart">
           <div class="ver-artculo">Ver Artículo</div>
         </button>
@@ -201,12 +201,12 @@
       }
       
       var reSegContainer = document.getElementById("reSegContainer");
-      if (reSegContainer) {
-        reSegContainer.addEventListener("click", function (e) {
-          window.location.href = "/seguimiento"; // Ruta de Express
+        if (reSegContainer) {
+          reSegContainer.addEventListener("click", function (e) {
+          const idCompra = "<%= idCompra %>";
+        window.location.href = `/seguimiento?id=${idCompra}`; // Ruta de Express con ID de compra
         });
       }
-      
       var logo = document.getElementById("logo");
       if (logo) {
         logo.addEventListener("click", function (e) {

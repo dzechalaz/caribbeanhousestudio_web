@@ -16,8 +16,7 @@
     transform: scale(1);
   }
 }
-.bef28-e2d2-463c-ae04-d69b5960f-icon2,
-.path-253-icon3 {
+.bef28-e2d2-463c-ae04-d69b5960f-icon2{
   position: absolute;
   right: 0;
   max-width: 100%;
@@ -33,10 +32,14 @@
   mix-blend-mode: multiply;
 }
 .path-253-icon3 {
-  width: 100%;
-  top: calc(50% - 213.1px);
-  left: 0;
-  height: 426.2px;
+  
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4000px; /* Ancho del SVG */
+  height: 426px; /* Altura del SVG */
+  transform: translate(-50%, -50%);
+  
 }
 .group-child5 {
   position: absolute;
@@ -615,7 +618,13 @@
   height: 271px;
   font-size: 27px;
 }
-.credenza,
+.credenza{
+  position: absolute;
+  font-family: var(--font-josefin-sans);
+  white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+
+
+}
 .id-de-envo {
   position: absolute;
   font-family: var(--font-josefin-sans);
@@ -664,7 +673,7 @@
   width: 100%;
   right: 0;
   bottom: 0;
-  background-image: url(./public/credenza4@3x.png);
+  
   background-size: cover;
   background-repeat: no-repeat;
   background-position: top;
@@ -684,7 +693,7 @@
   top: 0;
   right: 0;
   bottom: 0;
-  background-image: url(./public/credenza41@3x.png);
+
   background-size: cover;
   background-repeat: no-repeat;
   background-position: top;
@@ -711,7 +720,7 @@
   top: 0;
   right: 0;
   bottom: 0;
-  background-image: url(./public/credenza42@3x.png);
+ 
   background-size: cover;
   background-repeat: no-repeat;
   background-position: top;
@@ -738,7 +747,7 @@
   top: 0;
   right: 0;
   bottom: 0;
-  background-image: url(./public/credenza43@3x.png);
+
   background-size: cover;
   background-repeat: no-repeat;
   background-position: top;
@@ -1041,4 +1050,20 @@
   transition:  1s ease; /* Añade una transición suave */
   top: 32px;
   left: 130px;
+}
+
+.grid-fondo img {
+  width: 100%;
+  height: auto;
+}
+
+.credenza4 img,
+.credenza41 img,
+.credenza42 img,
+.credenza43 img {
+  position: relative; /* o absolute, si necesitas un posicionamiento específico */
+  width: 62px; /* Ajusta el ancho según sea necesario */
+  height: 62px; /* Ajusta la altura según sea necesario */
+  object-fit: cover; /* Asegura que la imagen se recorte si es necesario */
+  margin-bottom: 10px; /* Espaciado entre las imágenes, ajusta según sea necesario */
 }
