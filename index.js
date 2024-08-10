@@ -33,23 +33,71 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, 'src/index.html'));
 });
 
-app.get("/seguimiento", (req, res) => {
-  console.log("Request received for /seguimiento");
-  const pedidoId = req.query.id || 1; // Default para pruebas
-  db.query('SELECT estado FROM Compras WHERE compra_id = ?', [pedidoId], (err, results) => {
-    if (err) {
-      console.error("Error querying database:", err);
-      res.status(500).send("Database query error");
-      return;
+app.get('/seguimiento', (req, res) => {
+  const idCompra = req.query.id;
+  db.query('SELECT * FROM Compras WHERE compra_id = ?', [idCompra], (error, compraResults) => {
+    if (error) throw error;
+    if (compraResults.length > 0) {
+      const compra = compraResults[0];
+      db.query('SELECT * FROM Productos WHERE producto_id = ?', [compra.producto_id], (error, productoResults) => {
+        if (error) throw error;
+        if (productoResults.length > 0) {
+          const producto = productoResults[0];
+
+          // Read product info from file
+          const productInfoPath = path.join(__dirname, 'src', 'public', 'Products', String(producto.producto_id), 'info.txt');
+          fs.readFile(productInfoPath, 'utf8', (err, data) => {
+            if (err) throw err;
+            
+            // Parse the info.txt file content
+            const infoLines = data.split('\n');
+            const info = {};
+            let currentSection = null;
+
+            infoLines.forEach(line => {
+              if (line.trim() === "Información Básica") {
+                currentSection = "basic";
+                info[currentSection] = {};
+              } else if (line.trim() === "Información de Catálogo") {
+                currentSection = "catalog";
+                info[currentSection] = {};
+              } else if (line.trim() !== "") {
+                const [key, value] = line.split(': ');
+                if (currentSection && key && value) {
+                  info[currentSection][key.trim()] = value.trim();
+                }
+              }
+            });
+
+            const direccionParts = compra.direccion_envio.split(', ');
+
+            res.render('seguimiento', {
+              idCompra,
+              estado: compra.estado,
+              producto: {
+                ...producto,
+                path_imagen: `/public/Products/${compra.producto_id}`
+              },
+              info: info.basic,
+              direccion: {
+                calle: direccionParts[0],
+                ciudad: direccionParts[1],
+                estado: direccionParts[2],
+                codigoPostal: direccionParts[3]
+              }
+            });
+          });
+        }
+      });
+    } else {
+      res.send('Compra no encontrada');
     }
-    const estado = results[0].estado;
-    res.render('seguimiento', { estado });
   });
 });
 
 app.get("/colaborador", (req, res) => {
   console.log("Request received for /colaborador");
-  res.render('colaborador');
+  es.sendFile(path.join(__dirname, 'src/colaborador'));
 });
 
 app.get('/añadirID', (req, res) => {
@@ -83,12 +131,10 @@ app.get('/compras', (req, res) => {
         if (productoResults.length > 0) {
           const producto = productoResults[0];
 
-          // Read product info from file
           const productInfoPath = path.join(__dirname, 'src', 'public', 'Products', String(producto.producto_id), 'info.txt');
           fs.readFile(productInfoPath, 'utf8', (err, data) => {
             if (err) throw err;
-            
-            // Parse the info.txt file content
+
             const infoLines = data.split('\n');
             const info = {};
             let currentSection = null;
