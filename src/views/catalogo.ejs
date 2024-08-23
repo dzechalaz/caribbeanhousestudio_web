@@ -119,13 +119,7 @@
         <img class="logo-icon" alt="" src="./public/logo.svg" />
       </header>
     <script>
-          var reSegContainer = document.getElementById("reSegContainer");
-        if (reSegContainer) {
-          reSegContainer.addEventListener("click", function (e) {
-          const idCompra = "<%= idCompra %>";
-        window.location.href = `/seguimiento?id=${idCompra}`; // Ruta de Express con ID de compra
-        });
-      }
+
       var logo = document.getElementById("logo");
       if (logo) {
         logo.addEventListener("click", function (e) {
