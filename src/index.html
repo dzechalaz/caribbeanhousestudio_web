@@ -289,7 +289,7 @@
           </div>
         </div>
         <b class="inicio1">INICIO</b>
-        <div class="catlogo1">CATÁLOGO</div>
+        <div class="catlogo1" id = "CatalogoText">CATÁLOGO</div>
         <div class="blog1">BLOG</div>
         <div class="nuestra-historia1" id="nUESTRAHISTORIAText">
           NUESTRA HISTORIA
@@ -321,6 +321,13 @@
       if (sEGUIMIENTOText) {
         sEGUIMIENTOText.addEventListener("click", function (e) {
           window.location.href = "./añadirID.html";
+        });
+      }
+
+      var CatalogoText = document.getElementById("CatalogoText");
+      if (CatalogoText) {
+        CatalogoText.addEventListener("click", function (e) {
+          window.location.href = "./catalogo";
         });
       }
       </script>

@@ -109,7 +109,6 @@ app.get("/colaborador", (req, res) => {
   es.sendFile(path.join(__dirname, 'src/colaborador'));
 });
 
-
 app.get('/añadirID', (req, res) => {
   res.sendFile(path.join(__dirname, 'src/añadirID.html'));
 });
@@ -188,6 +187,7 @@ app.get('/compras', (req, res) => {
 });
 
 
+
 app.get('/producto', (req, res) => {
   const productoId = req.query.id;
 
@@ -256,6 +256,11 @@ app.get('/producto', (req, res) => {
       res.status(404).send('Producto no encontrado');
     }
   });
+
+
+app.get('/catalogo', (req, res) => {
+  res.render('catalogo');
+
 });
 
 app.listen(PORT, () => {
