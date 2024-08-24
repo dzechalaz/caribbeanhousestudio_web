@@ -752,7 +752,7 @@ button div {
 
 .product-list {
     position: absolute;
-    top: calc(85px);
+    top: calc(100px);
     left: calc(320px);
     display: flex;
     flex-wrap: wrap;
