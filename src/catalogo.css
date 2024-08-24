@@ -660,6 +660,7 @@
 .sidebar {
     width: 250px;
     position: absolute;
+    font-family: var(--font-montserrat);
     top: calc(85px);
     background-color: #D9CFB8;
     padding: 20px;
@@ -760,6 +761,7 @@ button div {
 }
 
 .product-item {
+    font-family: var(--font-montserrat);
     border: 1px solid #ddd;
     padding: 10px;
     text-align: center;
