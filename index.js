@@ -256,6 +256,7 @@ app.get('/producto', (req, res) => {
       res.status(404).send('Producto no encontrado');
     }
   });
+});
 
 
 app.get('/catalogo', (req, res) => {
@@ -266,5 +267,3 @@ app.get('/catalogo', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);
 });
-
-
