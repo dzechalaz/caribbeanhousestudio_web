@@ -659,7 +659,9 @@
 
 .sidebar {
     width: 250px;
-    background-color: #fff;
+    position: absolute;
+    top: calc(85px);
+    background-color: #D9CFB8;
     padding: 20px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
@@ -683,7 +685,7 @@
 }
 
 .compra {
-    background-color: #fff;
+    background-color: #FAF4EF;
     padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -749,6 +751,9 @@ button div {
 }
 
 .product-list {
+    position: absolute;
+    top: calc(85px);
+    left: calc(320px);
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
@@ -770,7 +775,7 @@ button div {
 }
 
 .price {
-    color: #f00;
+    color: #111;
     font-weight: bold;
 }
 
