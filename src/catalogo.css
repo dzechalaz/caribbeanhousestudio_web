@@ -762,6 +762,7 @@ button div {
 
 .product-item {
     font-family: var(--font-montserrat);
+    background-color: #d6cac0;
     border: 1px solid #ddd;
     padding: 10px;
     text-align: center;
