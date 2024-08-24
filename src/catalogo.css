@@ -772,9 +772,10 @@ button div {
 
 /* Image size adjustment */
 .product-item img {
-    max-width: 100%;
-    height: auto;
-    max-height: 150px; /* Adjust this value as needed */
+  width: 200px; 
+  height: 200px; 
+  object-fit: cover; 
+  overflow: hidden; 
 }
 
 .price {
