@@ -178,7 +178,7 @@ if (producto) {
           </div>
         </div>
         <div class="inicio6" id="iNICIOText">INICIO</div>
-        <b class="catlogo6">CATÁLOGO</b>
+        <b class="catlogo6" id="catlogo6" >CATÁLOGO</b>
         <div class="blog6">BLOG</div>
         <div class="nuestra-historia7" id="nUESTRAHISTORIAText">
           NUESTRA HISTORIA
@@ -273,6 +273,13 @@ if (producto) {
       if (iNICIOText) {
         iNICIOText.addEventListener("click", function (e) {
           window.location.href = "./index.html";
+        });
+      }
+
+      var CatalogoText = document.getElementById("catlogo6");
+      if (CatalogoText) {
+        CatalogoText.addEventListener("click", function (e) {
+          window.location.href = "./catalogo";
         });
       }
       
