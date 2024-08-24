@@ -187,6 +187,79 @@ app.get('/compras', (req, res) => {
   });
 });
 
+
+app.get('/producto', (req, res) => {
+  const productoId = req.query.id;
+
+  db.query('SELECT * FROM Productos WHERE producto_id = ?', [productoId], (err, results) => {
+    if (err) {
+      console.error('Error querying database:', err);
+      return res.status(500).send('Error interno del servidor');
+    }
+
+    if (results.length > 0) {
+      const producto = results[0];
+
+      // Leer el archivo info.txt correspondiente al producto
+      const productInfoPath = path.join(__dirname, 'src', 'public', 'Products', String(productoId), 'info.txt');
+      fs.readFile(productInfoPath, 'utf8', (err, data) => {
+        if (err) {
+          console.error('Error reading file:', err);
+          return res.status(500).send('Error interno del servidor');
+        }
+
+        // Procesar el contenido del archivo info.txt
+        const infoLines = data.split('\n');
+        const info = {};
+        let currentSection = null;
+
+        infoLines.forEach(line => {
+          if (line.trim() === "Información Básica") {
+            currentSection = "basic";
+            info[currentSection] = {};
+          } else if (line.trim() === "Información de Catálogo") {
+            currentSection = "catalog";
+            info[currentSection] = {};
+          } else if (line.trim() !== "") {
+            const [key, value] = line.split(': ');
+            if (currentSection && key && value) {
+              info[currentSection][key.trim()] = value.trim();
+            }
+          }
+        });
+
+        // Seleccionar tres productos relacionados al azar de la misma categoría
+        db.query(
+          'SELECT * FROM Productos WHERE categoria = ? AND producto_id != ? ORDER BY RAND() LIMIT 3',
+          [producto.categoria, productoId],
+          (err, relatedProducts) => {
+            if (err) {
+              console.error('Error al buscar productos relacionados:', err);
+              return res.status(500).send('Error en el servidor');
+            }
+
+            // Renderizar la plantilla EJS con la información del producto, el archivo, y los productos relacionados
+            res.render('producto', {
+              producto,
+              descripcion1: info.catalog['Descripción 1'],
+              descripcion2: info.catalog['Descripción 2'], // Aquí pasamos la Descripción 2
+              material: info.basic['Material'],
+              dimensiones: info.basic['Dimensiones'],
+              acabado: info.basic['Acabado'],
+              color: info.basic['Color'],
+              productosRelacionados: relatedProducts // Pasamos los productos relacionados a la vista
+            });
+          }
+        );
+      });
+    } else {
+      res.status(404).send('Producto no encontrado');
+    }
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);
 });
+
+
