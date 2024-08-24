@@ -178,7 +178,7 @@
           </div>
         </div>
         <div class="inicio2" id="iNICIOText">INICIO</div>
-        <div class="catlogo2">CATÁLOGO</div>
+        <div class="catlogo2" id="catlogo6">CATÁLOGO</div>
         <div class="blog2">BLOG</div>
         <b class="nuestra-historia3">NUESTRA HISTORIA</b>
         <div class="seguimiento2" id="sEGUIMIENTOText">SEGUIMIENTO</div>
@@ -201,6 +201,12 @@
       if (logo) {
         logo.addEventListener("click", function (e) {
           window.location.href = "./index.html";
+        });
+      }
+      var CatalogoText = document.getElementById("catlogo6");
+      if (CatalogoText) {
+        CatalogoText.addEventListener("click", function (e) {
+          window.location.href = "./catalogo";
         });
       }
       

@@ -104,10 +104,6 @@ app.get('/seguimiento', (req, res) => {
   });
 });
 
-app.get("/colaborador", (req, res) => {
-  console.log("Request received for /colaborador");
-  es.sendFile(path.join(__dirname, 'src/colaborador'));
-});
 
 app.get('/añadirID', (req, res) => {
   res.sendFile(path.join(__dirname, 'src/añadirID.html'));
@@ -187,6 +183,51 @@ app.get('/compras', (req, res) => {
 });
 
 
+// colaborador
+
+
+app.post('/buscar_usuario', (req, res) => {
+  const correo = req.body.correo;
+
+  const query = 'SELECT usuario_id FROM Usuarios WHERE correo = ?';
+  db.query(query, [correo], (err, results) => {
+    if (err) throw err;
+
+    if (results.length > 0) {
+      res.json({ usuario_id: results[0].usuario_id });
+    } else {
+      res.json({ usuario_id: null });
+    }
+  });
+});
+
+app.post('/registrar_usuario', (req, res) => {
+  const { nombre, correo } = req.body;
+
+  const query = 'INSERT INTO Usuarios (nombre, correo) VALUES (?, ?)';
+  db.query(query, [nombre, correo], (err, result) => {
+    if (err) throw err;
+
+    res.json({ usuario_id: result.insertId });
+  });
+});
+
+
+app.post('/crear_compra', (req, res) => {
+  const { producto_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad } = req.body;
+
+  const query = 'INSERT INTO Compras (producto_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad) VALUES (?, ?, ?, ?, ?, ?)';
+  db.query(query, [producto_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad], (err, result) => {
+    if (err) throw err;
+
+    res.send('Compra creada exitosamente');
+  });
+});
+
+
+
+
+
 
 app.get('/producto', (req, res) => {
   const productoId = req.query.id;
@@ -258,6 +299,40 @@ app.get('/producto', (req, res) => {
   });
 });
 
+app.get('/get_compra_info', (req, res) => {
+  const compraId = req.query.id;
+  db.query('SELECT * FROM Compras WHERE compra_id = ?', [compraId], (error, compraResults) => {
+    if (error) throw error;
+    if (compraResults.length > 0) {
+      const compra = compraResults[0];
+      db.query('SELECT * FROM Productos WHERE producto_id = ?', [compra.producto_id], (error, productoResults) => {
+        if (error) throw error;
+        const producto = productoResults[0];
+        db.query('SELECT * FROM Usuarios WHERE usuario_id = ?', [compra.usuario_id], (error, usuarioResults) => {
+          if (error) throw error;
+          const usuario = usuarioResults[0];
+          res.json({
+            success: true,
+            compra,
+            producto,
+            usuario
+          });
+        });
+      });
+    } else {
+      res.json({ success: false });
+    }
+  });
+});
+
+// Route to update the purchase status
+app.post('/actualizar_valor', (req, res) => {
+  const { valor, compra_id } = req.body;
+  db.query('UPDATE Compras SET estado = ? WHERE compra_id = ?', [valor, compra_id], (error, results) => {
+    if (error) throw error;
+    res.send('Estado actualizado correctamente');
+  });
+});
 
 app.get('/catalogo', (req, res) => {
   res.render('catalogo');

@@ -9,24 +9,27 @@
     }
   }
 
-  
+  .barraLateral,
+
   .fondo-icon {
     width: calc(100% + 17px);
     top: 68px;
     left: -17px;
     height: 1107px;
-    object-fit: cover;
+    object-fit: fill;
     opacity: 0.63;
     mix-blend-mode: multiply;
   }
+
   .path-253-icon {
     
     position: absolute;
     top: 50%;
-    left: 50%;
+    left: 1000px;
     width: 4000px; /* Ancho del SVG */
     height: 426px; /* Altura del SVG */
     transform: translate(-50%, -50%);
+  
     
   }
   .group-child {
@@ -421,7 +424,7 @@
     position: absolute;
     top: calc(50% - 10.5px);
     left: 25px;
-    font-weight: 500;
+    
   }
   .reseg,
   .ver-artculo {
@@ -557,8 +560,11 @@
   }
   .catlogo {
     position: absolute;
-    top: calc(50% - 8px);
+    top: calc(50% - 5px);
     left: calc(50% + 102.95px);
+    cursor: pointer;
+    color: var(--color-lightseagreen);
+    font-weight: bold;
   }
   .blog {
     left: calc(50% + 239.95px);
@@ -568,6 +574,7 @@
   .seguimiento {
     position: absolute;
     top: calc(50% - 5px);
+    cursor: pointer;
   }
   .nuestra-historia {
     left: calc(50% - 101.05px);
@@ -575,7 +582,7 @@
   }
   .seguimiento {
     left: calc(50% + 333.95px);
-    color: var(--color-lightseagreen);
+  
   }
   .cart-icon,
   .serach-icon {
@@ -762,8 +769,8 @@ button div {
 
 .product-item {
     font-family: var(--font-montserrat);
-    background-color: #d6cac0;
-    border: 1px solid #ddd;
+    background-color: #a5d1ce;
+    
     padding: 10px;
     text-align: center;
     width: calc(33.333% - 20px); /* 3 items per row */
@@ -772,8 +779,8 @@ button div {
 
 /* Image size adjustment */
 .product-item img {
-  width: 200px; 
-  height: 200px; 
+  width: 180px; 
+  height: 180px; 
   object-fit: cover; 
   overflow: hidden; 
 }

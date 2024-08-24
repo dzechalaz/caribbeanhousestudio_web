@@ -435,8 +435,9 @@
 }
 .catlogo2 {
   position: absolute;
-  top: calc(50% - 8px);
+  top: calc(50% - 5px);
   left: calc(50% + 102.95px);
+  cursor: pointer;
 }
 .blog2 {
   left: calc(50% + 239.95px);

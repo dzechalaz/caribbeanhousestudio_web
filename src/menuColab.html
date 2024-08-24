@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Colaboradores</title>
+    <link rel="stylesheet" href="./global.css" />
+    <link rel="stylesheet" href="./colaborador.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,700&display=swap" />
+    <style>
+        .menu-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 2rem;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .opciones {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+
+        .opciones button {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.2rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .opciones button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="menu-container">
+        <h1>Acceso a Panel de Colaboradores</h1>
+        <div class="opciones">
+            <button onclick="navigateTo('crear_compra.html')">Crear Compra</button>
+            <button onclick="navigateTo('modificar_estado.html')">Modificar Estado</button>
+        </div>
+    </div>
+
+    <script>
+        function navigateTo(page) {
+            const password = prompt('Ingrese la contraseña para acceder:');
+            if (password === '1234') {
+                window.location.href = page;
+            } else {
+                alert('Contraseña incorrecta. Acceso denegado.');
+            }
+        }
+    </script>
+</body>
+</html>
