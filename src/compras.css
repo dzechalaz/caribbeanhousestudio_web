@@ -361,6 +361,10 @@
 .credenza {
   top: 0;
   left: 0;
+  width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .informacionBasica{
   position: absolute;

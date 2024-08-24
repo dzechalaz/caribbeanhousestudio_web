@@ -8,4 +8,5 @@ Color: Gris
 Información de Catálogo
 Precio: 6699.00
 Categoría: Muebles
-Descripción: Este puff jumbo es ideal para tu sala de estar, ofreciendo un asiento cómodo y moderno.
+Descripción 1: Sillón ocasional cómodo, tapizado en tela gris oscuro de alta calidad, estilo contemporáneo, que lucirá impecable en cualquier espacio. Ideal para sala, recámara, recibidor u oficina. Tela lavable en casa y diseño ergonómico.
+Descripción 2: DescriptionEste puff de gran tamaño, tapizado en tela gris de alta calidad, ofrece un estilo contemporáneo que se integra perfectamente en cualquier ambiente moderno. Su generoso tamaño y suave textura proporcionan un asiento cómodo, ideal para el salón, la recámara, o incluso la oficina. Además, su diseño ergonómico y tela lavable garantizan durabilidad y facilidad de mantenimiento. Este puff es perfecto para añadir un toque acogedor y elegante a cualquier espacio.
