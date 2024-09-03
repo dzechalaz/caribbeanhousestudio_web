@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Nueva Compra</title>
+    <link rel="stylesheet" href="./crear_compra.css"/>
+    <link rel="stylesheet" href="./global.css" />
+    <link rel="stylesheet" href="./colaborador.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,700&display=swap" />
+</head>
+<body>
+    <div class="background"></div>
+    <div class="colaborador-container">
+        <h1>Crear Nueva Compra</h1>
+        
+        <div class="botones-container">
+            <button class="boton-usuario" onclick="mostrarFormularioUsuarioExistente()">Usuario Registrado</button>
+            <button class="boton-usuario" onclick="mostrarFormularioNuevoUsuario()">Nuevo Usuario</button>
+        </div>
+
+        <div id="formulario-usuario-registrado" style="display: none;">
+            <label for="correo_usuario"><strong>Correo del Usuario Registrado:</strong></label>
+            <input type="email" id="correo_usuario" placeholder="Ingresa el correo del usuario">
+            <button class="boton-usuario" onclick="buscarUsuario()">Buscar Usuario</button>
+        </div>
+
+        <form id="crear-compra-form" style="display: none;">
+            <div class="pedido-info">
+                <label for="producto_id"><strong>ID del Producto:</strong></label>
+                <input type="number" id="producto_id" name="producto_id" required>
+
+                <label for="usuario_id"><strong>ID del Usuario:</strong></label>
+                <input type="number" id="usuario_id" name="usuario_id" readonly required>
+
+                <label for="fecha_compra"><strong>Fecha de Compra:</strong></label>
+                <input type="date" id="fecha_compra" name="fecha_compra" required>
+
+                <label for="estado"><strong>Estado de proceso:</strong></label>
+                <input type="number" id="estado" name="estado" required>
+
+                <label for="calle"><strong>Calle:</strong></label>
+                <input type="text" id="calle" name="calle" required>
+
+                <label for="ciudad"><strong>Ciudad:</strong></label>
+                <input type="text" id="ciudad" name="ciudad" required>
+
+                <label for="estado_input"><strong>Estado:</strong></label>
+                <input type="text" id="estado_input" name="estado_input" required>
+
+                <label for="codigo_postal"><strong>Código Postal:</strong></label>
+                <input type="text" id="codigo_postal" name="codigo_postal" required>
+
+                <label for="cantidad"><strong>Cantidad:</strong></label>
+                <input type="number" id="cantidad" name="cantidad" required>
+            </div>
+
+            <div class="botones-container">
+                <button type="submit" class="boton verde">Crear Compra</button>
+            </div>
+        </form>
+
+        <form id="crear-usuario-form" style="display: none;">
+            <div class="pedido-info">
+                <label for="nombre_usuario"><strong>Nombre del Usuario:</strong></label>
+                <input type="text" id="nombre_usuario" name="nombre_usuario" required>
+
+                <label for="correo_usuario_nuevo"><strong>Correo del Usuario:</strong></label>
+                <input type="email" id="correo_usuario_nuevo" name="correo_usuario_nuevo" required>
+            </div>
+
+            <div class="botones-container">
+                <button type="submit" class="boton verde">Registrar Usuario</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function mostrarFormularioUsuarioExistente() {
+            document.getElementById('formulario-usuario-registrado').style.display = 'block';
+            document.getElementById('crear-usuario-form').style.display = 'none';
+            document.getElementById('crear-compra-form').style.display = 'none';
+        }
+
+        function mostrarFormularioNuevoUsuario() {
+            document.getElementById('formulario-usuario-registrado').style.display = 'none';
+            document.getElementById('crear-usuario-form').style.display = 'block';
+            document.getElementById('crear-compra-form').style.display = 'none';
+        }
+
+        function buscarUsuario() {
+            const correo = document.getElementById('correo_usuario').value;
+            fetch('/buscar_usuario', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ correo })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.usuario_id) {
+                    document.getElementById('usuario_id').value = data.usuario_id;
+                    document.getElementById('formulario-usuario-registrado').style.display = 'none';
+                    document.getElementById('crear-compra-form').style.display = 'block';
+                } else {
+                    alert('Usuario no encontrado');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        document.getElementById('crear-compra-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            // Concatenar la dirección
+            const direccionEnvio = `${document.getElementById('calle').value}, ${document.getElementById('ciudad').value}, ${document.getElementById('estado_input').value}, ${document.getElementById('codigo_postal').value}`;
+
+            const formData = {
+                producto_id: document.getElementById('producto_id').value,
+                usuario_id: document.getElementById('usuario_id').value,
+                fecha_compra: document.getElementById('fecha_compra').value,
+                estado: document.getElementById('estado').value,
+                direccion_envio: direccionEnvio,
+                cantidad: document.getElementById('cantidad').value
+            };
+
+            fetch('/crear_compra', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert('Compra creada exitosamente');
+                window.location.reload();
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('crear-usuario-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = {
+                nombre: document.getElementById('nombre_usuario').value,
+                correo: document.getElementById('correo_usuario_nuevo').value,
+            };
+
+            fetch('/registrar_usuario', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('usuario_id').value = data.usuario_id;
+                document.getElementById('crear-usuario-form').style.display = 'none';
+                document.getElementById('crear-compra-form').style.display = 'block';
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>

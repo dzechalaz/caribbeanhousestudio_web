@@ -97,7 +97,7 @@
         <button class="reseg" id="reSegContainer">
           <div class="realizar-seguimiento">Realizar Seguimiento</div>
         </button>
-        <button class="verart">
+        <button class="verart" id="verataContainer">
           <div class="ver-artculo">Ver Artículo</div>
         </button>
         <button class="opinion">
@@ -113,7 +113,7 @@
           </div>
         </div>
         <div class="inicio" id="iNICIOText">INICIO</div>
-        <div class="catlogo">CATÁLOGO</div>
+        <div class="catlogo"id="catlogo6">CATÁLOGO</div>
         <div class="blog">BLOG</div>
         <div class="nuestra-historia" id="nUESTRAHISTORIAText">NUESTRA HISTORIA</div>
         <b class="seguimiento">SEGUIMIENTO</b>
@@ -143,6 +143,16 @@
         window.location.href = `/seguimiento?id=${idCompra}`; // Ruta de Express con ID de compra
         });
       }
+
+      document.addEventListener('DOMContentLoaded', function () {
+    var verataContainer = document.getElementById("verataContainer");
+    if (verataContainer) {
+        verataContainer.addEventListener("click", function (e) {
+            const productoId = "<%= producto.producto_id %>";
+            window.location.href = `/producto?id=${productoId}`; // Redirige a la página del producto con su ID
+        });
+    }
+});
       var logo = document.getElementById("logo");
       if (logo) {
         logo.addEventListener("click", function (e) {
@@ -154,6 +164,13 @@
       if (iNICIOText) {
         iNICIOText.addEventListener("click", function (e) {
           window.location.href = "./index.html";
+        });
+      }
+
+      var CatalogoText = document.getElementById("catlogo6");
+      if (CatalogoText) {
+        CatalogoText.addEventListener("click", function (e) {
+          window.location.href = "./catalogo";
         });
       }
       

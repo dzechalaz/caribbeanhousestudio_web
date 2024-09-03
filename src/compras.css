@@ -8,14 +8,12 @@
     opacity: 1;
   }
 }
-.fondo-icon,
 
 .fondo-icon {
   width: calc(100% + 17px);
-  top: 68px;
   left: -17px;
-  height: 1107px;
-  object-fit: cover;
+  height: 2000px;
+  object-fit: fill;
   opacity: 0.63;
   mix-blend-mode: multiply;
 }
@@ -24,6 +22,7 @@
   position: absolute;
   top: 50%;
   left: 50%;
+
   width: 4000px; /* Ancho del SVG */
   height: 426px; /* Altura del SVG */
   transform: translate(-50%, -50%);
@@ -287,6 +286,7 @@
   position: absolute;
   top: calc(50% - 24.5px);
   left: 39px;
+  
 }
 .compra-icon,
 .seguimientoheader {
@@ -361,6 +361,10 @@
 .credenza {
   top: 0;
   left: 0;
+  width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .informacionBasica{
   position: absolute;
@@ -422,6 +426,8 @@
   top: calc(50% - 10.5px);
   left: 25px;
   font-weight: 500;
+  cursor: pointer;
+
 }
 .reseg,
 .ver-artculo {
@@ -557,8 +563,9 @@
 }
 .catlogo {
   position: absolute;
-  top: calc(50% - 8px);
+  top: calc(50% - 5px);
   left: calc(50% + 102.95px);
+  cursor: pointer;
 }
 .blog {
   left: calc(50% + 239.95px);
@@ -568,6 +575,8 @@
 .seguimiento {
   position: absolute;
   top: calc(50% - 5px);
+  cursor: pointer;
+
 }
 .nuestra-historia {
   left: calc(50% - 101.05px);
@@ -576,6 +585,7 @@
 .seguimiento {
   left: calc(50% + 333.95px);
   color: var(--color-lightseagreen);
+  cursor: pointer;
 }
 .cart-icon,
 .serach-icon {
@@ -651,4 +661,6 @@
   font-size: var(--font-size-xs);
   color: var(--color-white);
   font-family: var(--font-montserrat);
+
+
 }

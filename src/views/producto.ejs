@@ -1,0 +1,343 @@
+<% 
+// Verificamos si el producto existe
+if (producto) { 
+%>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, width=device-width" />
+
+    <link rel="stylesheet" href="/global.css" />
+    <link rel="stylesheet" href="/producto.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Josefin Sans:wght@400;600;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,600&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
+    />
+  </head>
+  <body>
+    <div class="producto">
+      <img class="background-icon" alt="" src="/public/background@2x.png" />
+
+      <div class="fondobajo"></div>
+      <div class="footter-final2">
+        <img class="path-253-icon6" alt="" src="/public/path-253.svg" />
+
+        <div class="facebook6">
+          <div class="facebook-inner4">
+            <div class="group-child8"></div>
+          </div>
+        </div>
+        <div class="instagram6">
+          <img
+            class="vector-smart-object6"
+            alt=""
+            src="/public/vector-smart-object1@2x.png"
+          />
+        </div>
+        <div class="linkedin6">
+          <div class="rectangle-81311-copy-4-wrapper4">
+            <div class="rectangle-81311-copy-46"></div>
+          </div>
+          <div class="imagemask6"></div>
+        </div>
+        <div class="twitter6">
+          <div class="rectangle-813111-copy-6-wrapper4">
+            <div class="rectangle-813111-copy-66"></div>
+          </div>
+        </div>
+        <div class="company6">COMPANY</div>
+        <div class="profile-about-us-contact-addre6">
+          <p class="material-tela">Profile</p>
+          <p class="material-tela">About us</p>
+          <p class="material-tela">Contact</p>
+          <p class="material-tela">Address</p>
+        </div>
+        <div class="returns6">RETURNS</div>
+        <div class="faqs-size-guide-contact-us-container6">
+          <p class="material-tela">FAQs</p>
+          <p class="material-tela">Size Guide</p>
+          <p class="material-tela">Contact us</p>
+        </div>
+        <div class="lorem-ipsum-dolor-container6">
+          
+        </div>
+        <div class="caribbean-house-studio12">Caribbean House Studio</div>
+      </div>
+      <div class="divisor3"></div>
+      <div class="historial">
+        <div class="historial-de-precios">Historial de precios</div>
+        <div id="price-chart-container" style="display: flex; justify-content: center;">
+            <div id="price-chart"></div>
+        </div>
+    </div>
+      <div class="descripcion">
+        <div class="description1">Descripción</div>
+        <div class="desc">
+            <%= descripcion2 %> <!-- Mostramos la Descripción 2 aquí -->
+        </div>
+        <div class="review">Opiniones</div>
+    </div>
+
+    <div class="related-products">
+        <% productosRelacionados.forEach((relatedProduct, index) => { %>
+            <div class="sqr-related-product-<%= index + 1 %>">
+                <a href="/producto?id=<%= relatedProduct.producto_id %>" class="related-product-link">
+                    <img src="/public/Products/<%= relatedProduct.producto_id %>/a.webp" alt="Producto <%= index + 1 %>" class="related-product-img">
+                </a>
+                <div class="related-product-name"><%= relatedProduct.nombre %></div>
+                <div class="related-product-price">$ <%= relatedProduct.precio %></div>
+            </div>
+        <% }) %>
+        <div class="related-products-tittle">Productos Relacionados</div>
+    </div>
+    
+    
+    
+    
+    
+      <div class="divisor0"></div>
+      <div class="info">
+        <img
+          id="mainImage"
+          class="imagenprincipal-icon"
+          alt=""
+          src="/public/Products/<%= producto.producto_id %>/a.webp"
+          data-animate-on-scroll
+        />
+
+        <div class="adder">
+            <div class="menos">-</div>
+            <div class="cantidad">1</div>
+            <div class="mas">+</div>
+        </div>
+        <div class="addcart">
+          <div class="add-to-cart">+ add to cart</div>
+        </div>
+        <img class="like-icon" alt="" src="/public/like.svg" />
+
+        <img class="share-icon" alt="" src="/public/share.svg" />
+
+        <div class="imagenes">
+            <div class="a">
+              <img src="/public/Products/<%= producto.producto_id %>/a.webp" alt="Imagen A" onclick="changeMainImage('a.webp')">
+            </div>
+            <div class="b">
+              <img src="/public/Products/<%= producto.producto_id %>/b.webp" alt="Imagen B" onclick="changeMainImage('b.webp')">
+            </div>
+            <div class="c">
+              <img src="/public/Products/<%= producto.producto_id %>/c.webp" alt="Imagen C" onclick="changeMainImage('c.webp')">
+            </div>
+            <div class="d">
+              <img src="/public/Products/<%= producto.producto_id %>/d.webp" alt="Imagen D" onclick="changeMainImage('d.webp')">
+            </div>
+          </div>
+        <img
+          class="proximamente-icon"
+          alt=""
+          src="/public/proximamente@2x.png"
+        />
+
+        <div class="precio">$ <%= producto.precio %></div>
+        <div class="descripcionbasica">
+            <%= descripcion1 %> <!-- Mostramos la Descripción 1 aquí -->
+        </div>
+        <div class="caracteristicas">
+            <p class="material-tela">
+                <b>Material:</b>
+                <span class="tela"> <%= material %></span> <!-- Material desde info.txt -->
+            </p>
+            <p class="material-tela">
+                <b class="tela">Dimensiones: </b>
+                <span><%= dimensiones %></span> <!-- Dimensiones desde info.txt -->
+            </p>
+            <p class="material-tela">
+                <b>Acabado: </b>
+                <span class="tela"><%= acabado %></span> <!-- Acabado desde info.txt -->
+            </p>
+            <p class="material-tela">
+                <b>Color: </b>
+                <span class="tela"><%= color %></span> <!-- Color desde info.txt -->
+            </p>
+        </div>
+        <b class="nombreproducto"><%= producto.nombre.toUpperCase() %></b>
+      </div>
+      <div class="header">
+        <div class="component-1-12">
+          <div class="component-1-12-child"></div>
+          <div class="logo6" id="logo">
+            <div class="caribbean-house-studio13">Caribbean House Studio</div>
+          </div>
+        </div>
+        <div class="inicio6" id="iNICIOText">INICIO</div>
+        <b class="catlogo6" id="catlogo6" >CATÁLOGO</b>
+        <div class="blog6">BLOG</div>
+        <div class="nuestra-historia7" id="nUESTRAHISTORIAText">
+          NUESTRA HISTORIA
+        </div>
+        <div class="seguimiento8" id="sEGUIMIENTOText">SEGUIMIENTO</div>
+        <img class="serach-icon6" alt="" src="/public/serach1.svg" />
+
+        <img class="cart-icon6" alt="" src="/public/cart1.svg" />
+
+        <div class="login-wrapper4">
+          <div class="login6">Login</div>
+        </div>
+        <img class="path-74-icon6" alt="" src="/public/path-74.svg" />
+
+        <div class="div28">1</div>
+        <img class="logo-icon6" alt="" src="/public/logo1.svg" />
+      </div>
+    </div>
+
+
+
+    <!-- scripts -->
+
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var chart = LightweightCharts.createChart(document.getElementById('price-chart'), {
+                width: 1200,
+                height: 500,  // Ajuste de altura
+                layout: {
+                    backgroundColor: { type: 'solid', color: '#eeeeee' },  // Esto hace que el fondo sea transparente
+                    textColor: '#333',
+                    fontSize: 20,
+                },
+                grid: {
+                    vertLines: {
+                        color: '#eeeeee',
+                    },
+                    horzLines: {
+                        color: '#eeeeee',
+                    },
+                },
+                priceScale: {
+                    borderColor: '#cccccc',
+                 
+                },
+                timeScale: {
+                    borderColor: '#cccccc',
+                },
+            });
+    
+            var lineSeries = chart.addLineSeries({
+                color: '#a5d1ce',
+                lineWidth: 2,
+            });
+    
+            // Datos simulados para la última semana
+            lineSeries.setData([
+                { time: '2023-12-01', value: 6699.00 },
+                { time: '2023-12-02', value: 6600.00 },
+                { time: '2023-12-03', value: 6500.00 },
+                { time: '2023-12-04', value: 6400.00 },
+                { time: '2023-12-05', value: 6450.00 },
+                { time: '2023-12-06', value: 6550.00 },
+                { time: '2023-12-07', value: 6699.00 },
+            ]);
+    
+            // Configura el timeScale para mostrar solo la última semana
+            chart.timeScale().setVisibleRange({
+                from: (new Date('2023-12-01T00:00:00Z').getTime() / 1000),
+                to: (new Date('2023-12-07T00:00:00Z').getTime() / 1000),
+            });
+        });
+    </script>
+    
+    
+
+    <script>
+      function changeMainImage(imageName) {
+          document.getElementById('mainImage').src = `/public/Products/<%= producto.producto_id %>/${imageName}`;
+      }
+
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.addEventListener("click", function (e) {
+          window.location.href = "./index.html";
+        });
+      }
+      
+      var iNICIOText = document.getElementById("iNICIOText");
+      if (iNICIOText) {
+        iNICIOText.addEventListener("click", function (e) {
+          window.location.href = "./index.html";
+        });
+      }
+
+      var CatalogoText = document.getElementById("catlogo6");
+      if (CatalogoText) {
+        CatalogoText.addEventListener("click", function (e) {
+          window.location.href = "./catalogo";
+        });
+      }
+      
+      var sEGUIMIENTOText = document.getElementById("sEGUIMIENTOText");
+      if (sEGUIMIENTOText) {
+        sEGUIMIENTOText.addEventListener("click", function (e) {
+          window.location.href = "./añadirID.html";
+        });
+      }
+   
+      
+      var nUESTRAHISTORIAText = document.getElementById("nUESTRAHISTORIAText");
+      if (nUESTRAHISTORIAText) {
+        nUESTRAHISTORIAText.addEventListener("click", function (e) {
+          window.location.href = "./about-us.html";
+        });
+      }
+      
+      
+      var scrollAnimElements = document.querySelectorAll("[data-animate-on-scroll]");
+      var observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting || entry.intersectionRatio > 0) {
+              const targetElement = entry.target;
+              targetElement.classList.add("animate");
+              observer.unobserve(targetElement);
+            }
+          }
+        },
+        {
+          threshold: 0.15,
+        }
+      );
+      
+      for (let i = 0; i < scrollAnimElements.length; i++) {
+        observer.observe(scrollAnimElements[i]);
+      }
+      </script>
+  </body>
+</html>
+<% 
+} else { 
+%>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, width=device-width" />
+    <link rel="stylesheet" href="/global.css" />
+  </head>
+  <body>
+    <div class="producto-no-encontrado">
+      <h1>Producto no encontrado</h1>
+      <p>Lo sentimos, el producto que buscas no existe.</p>
+    </div>
+  </body>
+</html>
+<% 
+} 
+%>
