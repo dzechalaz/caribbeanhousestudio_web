@@ -334,10 +334,155 @@ app.post('/actualizar_valor', (req, res) => {
   });
 });
 
+// --------------------------------------- catalogo ---------------------------------------
 app.get('/catalogo', (req, res) => {
-  res.render('catalogo');
+  const productosPorPagina = 12;
+  const paginaActual = parseInt(req.query.page) || 1;
+  const offset = (paginaActual - 1) * productosPorPagina;
+  const categoriaSeleccionada = req.query.categoria || 'Todos'; // Por defecto "Todos"
+  const searchQuery = req.query.query || ''; // Verificar si hay término de búsqueda
 
+  // Consulta base de productos
+  let queryProductos = 'SELECT producto_id, nombre, precio, codigo FROM Productos WHERE 1=1';
+  let values = [];
+
+  // Si la categoría no es "Todos", aplicar el filtro
+  if (categoriaSeleccionada && categoriaSeleccionada !== 'Todos') {
+    queryProductos += ' AND categoria = ?';
+    values.push(categoriaSeleccionada);
+  }
+
+  // Añadir filtro de búsqueda si hay un término de búsqueda
+  if (searchQuery) {
+    queryProductos += ' AND nombre LIKE ?';
+    values.push(`%${searchQuery}%`);
+  }
+
+  // Añadir límite y desplazamiento para la paginación
+  queryProductos += ' LIMIT ? OFFSET ?';
+  values.push(productosPorPagina, offset);
+
+  // Consultar productos con la búsqueda o la categoría
+  db.query(queryProductos, values, (err, productos) => {
+    if (err) {
+      console.error('Error fetching products:', err);
+      return res.status(500).send('Error fetching products');
+    }
+
+    // Añadir la lógica para obtener la imagen principal de cada producto
+    productos.forEach(producto => {
+      const productImagePath = path.join(__dirname, 'src', 'public', 'Products', String(producto.producto_id), 'a.webp');
+
+      // Verificar si la imagen existe
+      if (fs.existsSync(productImagePath)) {
+        producto.imagePath = `/public/Products/${producto.producto_id}/a.webp`;
+      } else {
+        producto.imagePath = '/public/placeholder.png'; // Imagen placeholder si no existe la imagen
+      }
+    });
+
+    // Consulta para contar el número total de productos
+    let queryCount = 'SELECT COUNT(*) AS total FROM Productos WHERE 1=1';
+    let countValues = [];
+
+    // Aplicar la lógica para la categoría en el conteo de productos, excepto si es "Todos"
+    if (categoriaSeleccionada && categoriaSeleccionada !== 'Todos') {
+      queryCount += ' AND categoria = ?';
+      countValues.push(categoriaSeleccionada);
+    }
+
+    if (searchQuery) {
+      queryCount += ' AND nombre LIKE ?';
+      countValues.push(`%${searchQuery}%`);
+    }
+
+    // Ejecutar la consulta de conteo de productos
+    db.query(queryCount, countValues, (err, countResults) => {
+      if (err) {
+        console.error('Error counting products:', err);
+        return res.status(500).send('Error counting products');
+      }
+
+      const totalProductos = countResults[0].total;
+      const totalPaginas = Math.ceil(totalProductos / productosPorPagina);
+
+      // Consulta para contar las categorías
+      let queryCategorias = 'SELECT categoria, COUNT(*) AS cantidad FROM Productos GROUP BY categoria';
+
+      db.query(queryCategorias, (err, categorias) => {
+        if (err) {
+          console.error('Error fetching categories:', err);
+          return res.status(500).send('Error fetching categories');
+        }
+
+        // Añadir manualmente la categoría "Todos" al principio de la lista
+        const totalProductosQuery = 'SELECT COUNT(*) AS cantidad FROM Productos';
+        db.query(totalProductosQuery, (err, resultadoTotal) => {
+          if (err) {
+            console.error('Error fetching total product count:', err);
+            return res.status(500).send('Error fetching total product count');
+          }
+
+          const totalProductosEnDB = resultadoTotal[0].cantidad;
+
+          // Agregar "Todos" como categoría manualmente
+          categorias.unshift({ categoria: 'Todos', cantidad: totalProductosEnDB });
+
+          // Renderizar la vista
+          res.render('catalogo', {
+            productos: productos,
+            paginaActual: paginaActual,
+            totalPaginas: totalPaginas,
+            categorias: categorias, // Enviar categorías con la cantidad de productos
+            categoriaSeleccionada: categoriaSeleccionada, // Pasar la categoría seleccionada
+            searchQuery: searchQuery // Pasar el término de búsqueda
+          });
+        });
+      });
+    });
+  });
 });
+
+
+
+app.get('/buscar', (req, res) => {
+  const searchQuery = req.query.query; // Obtener la consulta de búsqueda
+  const productosPorPagina = 12; // Número de productos por página
+  const paginaActual = parseInt(req.query.page) || 1; // Página actual (por defecto la 1)
+  const offset = (paginaActual - 1) * productosPorPagina;
+
+  const query = `SELECT producto_id, nombre, precio, codigo FROM Productos WHERE nombre LIKE ? OR codigo LIKE ? LIMIT ? OFFSET ?`;
+  const values = [`%${searchQuery}%`, `%${searchQuery}%`, productosPorPagina, offset];
+
+  db.query(query, values, (err, results) => {
+    if (err) {
+      console.error('Error during search:', err);
+      return res.status(500).send('Error fetching products');
+    }
+
+    // Obtener el número total de productos que coinciden con la búsqueda
+    db.query(`SELECT COUNT(*) AS total FROM Productos WHERE nombre LIKE ? OR codigo LIKE ?`, [`%${searchQuery}%`, `%${searchQuery}%`], (err, countResults) => {
+      if (err) {
+        console.error('Error counting products:', err);
+        return res.status(500).send('Error counting products');
+      }
+
+      const totalProductos = countResults[0].total;
+      const totalPaginas = Math.ceil(totalProductos / productosPorPagina);
+
+      // Renderizar la vista con los productos encontrados, y los valores de paginación
+      res.render('catalogo', {
+        productos: results,
+        paginaActual: paginaActual,
+        totalPaginas: totalPaginas,
+        searchQuery: searchQuery // Pasar también la consulta de búsqueda
+      });
+    });
+  });
+});
+
+
+
 
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);

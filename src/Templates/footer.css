@@ -1,0 +1,77 @@
+/* Footer styling */
+footer {
+    background-color: #373737; /* Color de fondo */
+    background-image: url('path-2531.svg'); /* Usamos el SVG como fondo */
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Distribuye los elementos a izquierda y derecha */
+    font-family: 'Montserrat', sans-serif;
+    padding: 0 60px; /* Espaciado desde los bordes izquierdo y derecho */
+  }
+  
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    text-align: left;
+  }
+  
+  .footer-section {
+    padding: 150px;
+  }
+  
+  .footer-section.brand {
+    display: flex;
+    align-items: center; /* Centra verticalmente el texto */
+  }
+  
+  .footer-section.links {
+    display: flex;
+    justify-content: flex-end; /* Alinea las secciones a la derecha */
+    gap: 50px; /* Espacio entre las secciones */
+  }
+  
+  .footer-section h1 {
+    color: #fff; /* Color blanco */
+    text-transform: uppercase;
+    font-size: 2em; /* Tamaño grande para el título */
+    font-weight: 400;
+    margin: 0;
+  }
+  
+  .footer-section h4 {
+    margin-bottom: 10px;
+    color: #63ded0;
+    text-transform: uppercase;
+    font-size: 1.2em;
+  }
+  
+  .footer-section p {
+    margin: 5px 0;
+    color: #b2b2b2;
+  }
+  
+  @media screen and (max-width: 768px) {
+    footer {
+      flex-direction: column;
+      padding: 20px;
+    }
+  
+    .footer-content {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .footer-section.brand {
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+  
+    .footer-section.links {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+  
