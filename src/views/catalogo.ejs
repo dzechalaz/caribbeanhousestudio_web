@@ -1,185 +1,179 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de Productos</title>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, width=device-width" />
+
     <link rel="stylesheet" href="./global.css" />
-    <link rel="stylesheet" href="/catalogo.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap" />
-</head>
-<body>
-  <img class="fondo-icon" alt="" src="./public/080bef28e2d2463cae04d69b5960f9f82@2x.png" />
-
-    <div class="container">
-      
-        <div class="sidebar">
-            <h2>Filtros</h2>
-            <div class="filter-section">
-                <h3>Disponibilidad en tienda física</h3>
-                <label><input type="checkbox"> Disponible en esta tienda (0)</label>
-                <label><input type="checkbox"> Catálogo extendido (0)</label>
-            </div>
-            <div class="filter-section">
-                <h3>Promociones</h3>
-                <label><input type="checkbox"> Combo (0)</label>
-                <label><input type="checkbox"> Precio aún más bajo (0)</label>
-                <label><input type="checkbox"> Compra especial (0)</label>
-                <label><input type="checkbox"> Remate (0)</label>
-                <label><input type="checkbox"> Meses Sin Intereses (0)</label>
-            </div>
-    <img class="barraLateral"  />
-    <div class="barrabutom">
-      <img class="path-253-icon" alt="" src="./public/path-253.svg" />
-      <div class="facebook">
-        <div class="facebook-inner">
-          <div class="group-child"></div>
-        </div>
-      </div>
-      <div class="instagram">
-        <img class="vector-smart-object" alt="" src="./public/vector-smart-object@2x.png" />
-      </div>
-      <div class="linkedin">
-        <div class="rectangle-81311-copy-4-wrapper">
-          <div class="rectangle-81311-copy-4"></div>
-        </div>
-        <div class="imagemask"></div>
-      </div>
-      <div class="twitter">
-        <div class="rectangle-813111-copy-6-wrapper">
-          <div class="rectangle-813111-copy-6"></div>
-        </div>
-      </div>
-      <div class="company">COMPANY</div>
-      <div class="profile-about-us-contact-addre">
-        <p class="profile">Profile</p>
-        <p class="profile">About us</p>
-        <p class="profile">Contact</p>
-        <p class="profile">Address</p>
-      </div>
-      <div class="returns">RETURNS</div>
-      <div class="faqs-size-guide-contact-us-container">
-        <p class="profile">FAQs</p>
-        <p class="profile">Size Guide</p>
-        <p class="profile">Contact us</p>
-      </div>
-      <div class="lorem-ipsum-dolor-container">
-        <p class="profile">Lorem ipsum dolor sit amet,</p>
-        <p class="profile">consetetur sadipscing elitr,</p>
-        <p class="profile">sed diam nonumy</p>
-      </div>
-      <div class="caribbean-house-studio">Caribbean House Studio</div>
-    </div>
-        </div>
-        <div class="main-content">
-            <h1>Catálogo</h1>
-            <div class="product-list">
-                <!-- Producto 1 -->
-                <div class="product-item">
-                    <img src="/public/Products/1/a.webp" alt="Producto 1">
-                    <h3>Puff Jumbo gris</h3>
-                    <p class="price">$ 6699.00</p>
-                    <button onclick="window.location.href='/producto?id=1'">Ver</button>
-                </div>
-
-                <!-- Producto 2 -->
-                <div class="product-item">
-                    <img src="/public/Products/2/a.webp" alt="Producto 2">
-                    <h3>Puff couch/taburete</h3>
-                    <p class="price">$ 4348.00</p>
-                    <button onclick="window.location.href='/producto?id=2'">Ver</button>
-                </div>
-
-                <!-- Producto 3 -->
-                <div class="product-item">
-                    <img src="/public/Products/3/a.webp" alt="Producto 3">
-                    <h3>Puff básico naranja</h3>
-                    <p class="price">$ 2958.00</p>
-                    <button onclick="window.location.href='/producto?id=3'">Ver</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <header class="barra-pestaas">
-        <div class="component-1-11">
-          <div class="component-1-11-child"></div>
-          <div class="logo" id="logo">
-            <div class="caribbean-house-studio1">Caribbean House Studio</div>
+    <link rel="stylesheet" href="./catalogo.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
+    />
+  </head>
+  <body>
+    <div class="canvas">
+      <!-- Barra de navegación fija -->
+      <header class="barra-pestaas5">
+        <div class="component-1-13">
+          <div class="component-1-13-child"></div>
+          <div class="logo5" id="logo">
+            <div class="caribbean-house-studio11">Caribbean House Studio</div>
           </div>
         </div>
-        <div class="inicio" id="iNICIOText">INICIO</div>
-        <div class="catlogo"id="catlogo6">CATÁLOGO</div>
-        <div class="blog">BLOG</div>
-        <div class="nuestra-historia" id="nUESTRAHISTORIAText">NUESTRA HISTORIA</div>
-        <div class="seguimiento" id="sEGUIMIENTOText">SEGUIMIENTO</div>
-        <img class="serach-icon" alt="" src="./public/serach.svg" />
-        <img class="cart-icon" alt="" src="./public/cart.svg" />
-        <div class="login-wrapper">
-          <div class="login">Login</div>
+        <div class="inicio5" id="in">INICIO</div>
+        <div class="catlogo5">CATÁLOGO</div>
+        <div class="blog5">BLOG</div>
+        <div class="nuestra-historia6" id="nh">NUESTRA HISTORIA</div>
+        <div class="seguimiento7" id="seg">SEGUIMIENTO</div>
+        <img class="serach-icon5" alt="" src="./public/serach.svg" />
+        <img class="cart-icon5" alt="" src="./public/cart.svg" />
+        <div class="login-wrapper3">
+          <div class="login5">Login</div>
         </div>
-        <img class="path-74-icon" alt="" src="./public/path-74.svg" />
-        <div class="div1">1</div>
-        <img class="logo-icon" alt="" src="./public/logo.svg" />
+        <img class="path-74-icon5" alt="" src="./public/path-74.svg" />
+        <div class="div26">1</div>
+        <img class="logo-icon5" alt="" src="./public/logo.svg" />
       </header>
 
-    <script>
+        
 
-      var logo = document.getElementById("logo");
-      if (logo) {
-        logo.addEventListener("click", function (e) {
-          window.location.href = "./index.html";
-        });
-      }
-      
-      var iNICIOText = document.getElementById("iNICIOText");
-      if (iNICIOText) {
-        iNICIOText.addEventListener("click", function (e) {
-          window.location.href = "./index.html";
-        });
-      }
-      
-      var nUESTRAHISTORIAText = document.getElementById("nUESTRAHISTORIAText");
+      <!-- Contenedor para el catálogo -->
+      <div class="catalog-container">
+
+        
+        <!-- Barra lateral de filtros -->
+        <aside class="sidebar">
+          <!-- Barra de búsqueda -->
+          <div class="search-bar">
+            <form action="/catalogo" method="GET">
+              <input 
+                type="text" 
+                name="query" 
+                placeholder="Buscar productos" 
+                value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>" 
+                class="search-input"
+              />
+              <!-- Mantener la categoría seleccionada cuando se realiza una búsqueda -->
+              <input type="hidden" name="categoria" value="<%= typeof categoriaSeleccionada !== 'undefined' ? categoriaSeleccionada : '' %>">
+              <button type="submit" class="search-button">Buscar</button>
+            </form>
+          </div>
+          
+          <h3>Categorías</h3>
+          <ul>   
+            <!-- Listar dinámicamente las categorías -->
+            <% categorias.forEach(function(categoria) { %>
+              <li class="<%= categoria.categoria === categoriaSeleccionada ? 'active' : '' %>">
+                <a 
+                  href="/catalogo?categoria=<%= categoria.categoria %>" 
+                  class="<%= categoria.categoria === categoriaSeleccionada ? 'active' : '' %>"
+                >
+                  <%= categoria.categoria %> (<%= categoria.cantidad %>)
+                </a>
+              </li>
+            <% }); %>
+          </ul>
+        </aside>
+        
+        
+  
+        <section class="product-grid">
+          <!-- Aquí se mostrarán los productos en el futuro -->
+          <!-- Lista dinámica de productos -->
+          <div class="product-list">
+            <% productos.forEach(function(producto) { %>
+              <a href="/producto?id=<%= producto.producto_id %>" class="product-link"> <!-- Hacemos que el card entero sea clicable -->
+                <div class="product-card">
+                  <img src="<%= producto.imagePath %>" alt="<%= producto.nombre %>" class="product-image">
+                  <div class="product-details">
+                    <h3 class="product-title"><%= producto.nombre %></h3>
+                    <p class="product-sku">SKU <%= producto.codigo %></p>
+                    <div class="product-price">
+                      <p class="discounted-price">$<%= producto.precio %></p>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            <% }); %>
+          </div>
+        
+          <!-- Paginación -->
+          <div class="pagination">
+            <% if (paginaActual > 1) { %>
+              <a href="/catalogo?page=<%= paginaActual - 1 %>" class="page-button">Anterior</a>
+            <% } %>
+        
+            <% for (let i = 1; i <= totalPaginas; i++) { %>
+              <a href="/catalogo?page=<%= i %>" class="page-button <%= i === paginaActual ? 'active' : '' %>"><%= i %></a>
+            <% } %>
+        
+            <% if (paginaActual < totalPaginas) { %>
+              <a href="/catalogo?page=<%= paginaActual + 1 %>" class="page-button">Siguiente</a>
+            <% } %>
+          </div>
+        </section>
+        
+    
+                
+
+        <img
+        class="fondo"
+        alt=""
+        />
+      </div>
+     
+    </div>
+    
+    <!-- Footer -->
+    <div id="footer"></div>
+
+    <script>
+      // Carga el archivo footer.html dinámicamente
+      window.onload = function () {
+        fetch("/Templates/footer.html")
+          .then((response) => response.text())
+          .then((data) => {
+            document.getElementById("footer").innerHTML = data;
+          });
+      };
+
+      // Navegación
+      var nUESTRAHISTORIAText = document.getElementById("nh");
       if (nUESTRAHISTORIAText) {
         nUESTRAHISTORIAText.addEventListener("click", function (e) {
           window.location.href = "./about-us.html";
         });
-      }      
+      }
 
-      var CatalogoText = document.getElementById("catlogo6");
-      if (CatalogoText) {
-        CatalogoText.addEventListener("click", function (e) {
-          window.location.href = "./catalogo";
+      var inicio = document.getElementById("in");
+      if (inicio) {
+        inicio.addEventListener("click", function (e) {
+          window.location.href = "./";
         });
       }
-      var sEGUIMIENTOText = document.getElementById("sEGUIMIENTOText");
+
+      var sEGUIMIENTOText = document.getElementById("seg");
       if (sEGUIMIENTOText) {
         sEGUIMIENTOText.addEventListener("click", function (e) {
           window.location.href = "./añadirID.html";
         });
       }
-   
-      var scrollAnimElements = document.querySelectorAll("[data-animate-on-scroll]");
-      var observer = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            if (entry.isIntersecting || entry.intersectionRatio > 0) {
-              const targetElement = entry.target;
-              targetElement.classList.add("animate");
-              observer.unobserve(targetElement);
-            }
-          }
-        },
-        {
-          threshold: 0.15,
-        }
-      );
-      
-      for (let i = 0; i < scrollAnimElements.length; i++) {
-        observer.observe(scrollAnimElements[i]);
+
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.addEventListener("click", function (e) {
+          window.location.href = "/";
+        });
       }
     </script>
-</body>
+  </body>
 </html>
