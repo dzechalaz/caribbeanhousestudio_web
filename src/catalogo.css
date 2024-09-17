@@ -82,7 +82,7 @@
   bottom: 0;
   left: 0;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.13);
-  background-color: var(--color-whitesmoke);
+  background-color: #edebeb;
 }
 .caribbean-house-studio11 {
   position: absolute;
@@ -371,52 +371,126 @@
 
 .menu-button {
   display: none;
+  position: absolute;
+  top: calc(20% - 5px);
+  left: calc(90% - 50px);
   cursor: pointer;
+  width: 65px;  /* Ajusta el ancho del botón */
+  height: 60px; /* Ajusta la altura del botón */
 }
+
+.menu-button svg {
+  width: 100%;  /* El SVG tomará el 100% del contenedor */
+  height: 100%; /* El SVG tomará el 100% del contenedor */
+}
+
+/* Estilo de la barra lateral */
+.sidebar-burger {
+  position: fixed;
+  top: 0; 
+  right: 0;
+  height: 100vh;
+  width: calc(50% + 1px);
+  background-color: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  box-shadow: -10px 0 10px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 20px; /* Añade espacio entre cada ítem */
+  padding: 20px; /* Añade un espacio interno */
+}
+
+.sidebar-burger li {
+  width: 100%; /* Cada ítem ocupa todo el ancho disponible */
+}
+
+.sidebar-burger a {
+  display: block;
+  width: 100%;
+  padding: 15px 20px;
+  text-decoration: none;
+  color: #fff; /* Color del texto */
+  background-color: #333; /* Color de fondo del ítem */
+  border-radius: 5px;
+  text-align: left;
+}
+
+.sidebar-burger a:hover {
+  background-color: #555; /* Color al pasar el ratón por encima */
+}
+
+.sidebar-burger svg {
+  width: 26px;
+  height: 26px;
+  fill: #fff;
+}
+
+.menu-container {
+  display: none; /* Oculto inicialmente */
+}
+
+/* Cuando el menú esté activo */
+
+
+
 /* Estilos responsivos */
 @media(max-width: 1540px) {
+  .menu-button {
+    display: block;
+  }
   .menu-items {
     display: none;
-    flex-direction: column;
-    position: absolute;
-    top: 60px;
-    right: 0;
-    background-color: var(--color-whitesmoke);
-    width: 100%;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
   }
 
   .menu-items.active {
     display: flex;
   }
-
-  .menu-button {
-    display: block;
+  .menu-container.active {
+    display: flex; /* Mostrar cuando esté activo */
+  }
+  .component-1-13-child{
+    display: flex;
   }
 
-  .component-1-13-child, .path-74-icon5, .div26 {
-    display: none;
-  }
+
 }
 
-@media(max-width: 400px) {
+@media(max-width: 700px) {
   .caribbean-house-studio11 {
-    font-size: 1.2em;
+    position: absolute;
+    width: calc(50% + 1px);
+    top: calc(50% - 18.5px);
+    left: 0;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .component-1-13-child{
+    position: absolute;
+    height: 130%;
+    width: 100%;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.13);
+    background-color: #edebeb;
   }
 
   .menu-items {
     gap: 10px;
   }
-
-  .logo5 {
+  .menu-button {
     position: absolute;
-    top: calc(50% - 16px);
-    left: 150px;
-    width: 472px;
-    height: 37px;
+    top: calc(30% - 5px);
+    left: calc(90% - 50px);
     cursor: pointer;
+    width: 65px;  /* Ajusta el ancho del botón */
+    height: 60px; /* Ajusta la altura del botón */
   }
-
+  
 }

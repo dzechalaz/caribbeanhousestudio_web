@@ -23,17 +23,24 @@
     <div class="canvas">
       <!-- Barra de navegación fija -->
       <header class="barra-pestaas5">
+        
         <div class="component-1-13">
-          <div class="component-1-13-child"></div>
+          
+          <div class="component-1-13-child">
+            <div class="menu-button" onclick="toggleMenu()">
+              <svg xmlns="http://www.w3.org/2000/svg" height="26" viewBox="0 96 960 960" width="26">
+                <path d="M120 816v-60h720v60H120Zm0-210v-60h720v60H120Zm0-210v-60h720v60H120Z"/>
+              </svg>
+            </div>
+          </div>
+          
           <div class="logo5" id="logo">
             <div class="caribbean-house-studio11">Caribbean House Studio</div>
           </div>
+          <img class="logo-icon5" alt="" src="./public/logo.svg" />
+          
         </div>
-        <div class="menu-button" onclick="toggleMenu()">
-          <svg xmlns="http://www.w3.org/2000/svg" height="26" viewBox="0 96 960 960" width="26">
-            <path d="M120 816v-60h720v60H120Zm0-210v-60h720v60H120Zm0-210v-60h720v60H120Z"/>
-          </svg>
-        </div>
+        
         <div class="menu-items">
           <div class="inicio5" id="in">INICIO</div>
           <div class="catlogo5">CATÁLOGO</div>
@@ -47,11 +54,28 @@
           </div>
           <img class="path-74-icon5" alt="" src="./public/path-74.svg" />
           <div class="div26">1</div>
-          <img class="logo-icon5" alt="" src="./public/logo.svg" />
+          
         </div>
-      </header>
 
+        <div class="menu-container">
+          <ul class="sidebar-burger">
+            <li onclick="hideSidebar()">
+              <a href="#">
+                <svg xmlns="http://www.w3.org/2000/svg" height="26" viewBox="0 96 960 960" width="26">
+                  <path d="m249 849-42-42 231-231-231-231 42-42 231 231 231-231 42 42-231 231 231 231-42 42-231-231-231 231Z"/>
+                </svg>
+              </a>
+            </li>
+            <li><a href="./"  id="in">INICIO</a></li>
+            <li><a href="#">CATÁLOGO</a></li>
+            <li><a href="#">BLOG</a></li>
+            <li><a href="./about-us.html">NUESTRA HISTORIA</a></li>
+            <li><a href="#">SEGUIMIENTO</a></li>
+            <li><a href="#">Login</a></li>
+          </ul>
+        </div>
         
+      </header>
 
       <!-- Contenedor para el catálogo -->
       <div class="catalog-container">
@@ -181,10 +205,16 @@
           window.location.href = "/";
         });
       }
-      function toggleMenu() {
-      const menuItems = document.querySelector('.menu-items');
-      menuItems.classList.toggle('active');
+        function toggleMenu() {
+        const menu = document.querySelector('.menu-container');
+      menu.classList.toggle('active'); // Activa o desactiva el menú
       }
+
+      function hideSidebar() {
+      const menu = document.querySelector('.menu-container');
+      menu.classList.remove('active'); // Oculta el menú
+      }
+      
     </script>
   </body>
 </html>
