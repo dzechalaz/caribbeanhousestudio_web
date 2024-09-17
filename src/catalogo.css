@@ -381,7 +381,7 @@
     position: absolute;
     top: 60px;
     right: 0;
-    background-color: #fff;
+    background-color: var(--color-whitesmoke);
     width: 100%;
     padding: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -409,4 +409,14 @@
   .menu-items {
     gap: 10px;
   }
+
+  .logo5 {
+    position: absolute;
+    top: calc(50% - 16px);
+    left: 150px;
+    width: 472px;
+    height: 37px;
+    cursor: pointer;
+  }
+
 }
