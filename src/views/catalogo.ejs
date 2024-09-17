@@ -29,19 +29,26 @@
             <div class="caribbean-house-studio11">Caribbean House Studio</div>
           </div>
         </div>
-        <div class="inicio5" id="in">INICIO</div>
-        <div class="catlogo5">CATÁLOGO</div>
-        <div class="blog5">BLOG</div>
-        <div class="nuestra-historia6" id="nh">NUESTRA HISTORIA</div>
-        <div class="seguimiento7" id="seg">SEGUIMIENTO</div>
-        <img class="serach-icon5" alt="" src="./public/serach.svg" />
-        <img class="cart-icon5" alt="" src="./public/cart.svg" />
-        <div class="login-wrapper3">
-          <div class="login5">Login</div>
+        <div class="menu-button" onclick="toggleMenu()">
+          <svg xmlns="http://www.w3.org/2000/svg" height="26" viewBox="0 96 960 960" width="26">
+            <path d="M120 816v-60h720v60H120Zm0-210v-60h720v60H120Zm0-210v-60h720v60H120Z"/>
+          </svg>
         </div>
-        <img class="path-74-icon5" alt="" src="./public/path-74.svg" />
-        <div class="div26">1</div>
-        <img class="logo-icon5" alt="" src="./public/logo.svg" />
+        <div class="menu-items">
+          <div class="inicio5" id="in">INICIO</div>
+          <div class="catlogo5">CATÁLOGO</div>
+          <div class="blog5">BLOG</div>
+          <div class="nuestra-historia6" id="nh">NUESTRA HISTORIA</div>
+          <div class="seguimiento7" id="seg">SEGUIMIENTO</div>
+          <img class="serach-icon5" alt="" src="./public/serach.svg" />
+          <img class="cart-icon5" alt="" src="./public/cart.svg" />
+          <div class="login-wrapper3">
+            <div class="login5">Login</div>
+          </div>
+          <img class="path-74-icon5" alt="" src="./public/path-74.svg" />
+          <div class="div26">1</div>
+          <img class="logo-icon5" alt="" src="./public/logo.svg" />
+        </div>
       </header>
 
         
@@ -173,6 +180,10 @@
         logo.addEventListener("click", function (e) {
           window.location.href = "/";
         });
+      }
+      function toggleMenu() {
+      const menuItems = document.querySelector('.menu-items');
+      menuItems.classList.toggle('active');
       }
     </script>
   </body>
