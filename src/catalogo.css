@@ -374,7 +374,7 @@
   cursor: pointer;
 }
 /* Estilos responsivos */
-@media(max-width: 800px) {
+@media(max-width: 1600px) {
   .menu-items {
     display: none;
     flex-direction: column;
