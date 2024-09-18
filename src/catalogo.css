@@ -8,6 +8,7 @@
   padding: 20px;
   gap: 20px; /* Espacio entre la barra lateral y el área de productos */
   min-height: 1000px;
+  min-width: 400px;
 
 }
 /* Estilo de la barra lateral */
@@ -90,6 +91,7 @@
   top: calc(50% - 18.5px);
   left: 0;
   font-weight: 600;
+  font-size: calc(100%) ;
   display: inline-block;
 }
 .logo5 {
@@ -229,8 +231,9 @@
 .product-card {
   border: 1px solid #C19A6B; /* Borde con color estilo chukum */
   border-radius: 8px;
-  padding: 20px;
-  width: 300px;
+  padding: calc(15%);
+  width: calc(65%);
+  height: 380px;
   background-color: #a5d1ce; /* Fondo estilo chukum */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
@@ -284,7 +287,7 @@
 
 .product-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(329px, 1fr));
   gap: 20px;
   padding: 20px;
 }
@@ -293,8 +296,6 @@
 .product-details {
   text-align: left;
 }
-
-
 
 /*paginacion*/
 
@@ -390,7 +391,7 @@
   top: 0; 
   right: 0;
   height: 100vh;
-  width: calc(50% + 1px);
+  width: calc(30% + 1px);
   background-color: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(12px);
   box-shadow: -10px 0 10px rgba(0, 0, 0, 0.1);
@@ -413,8 +414,8 @@
   width: 100%;
   padding: 15px 20px;
   text-decoration: none;
-  color: #fff; /* Color del texto */
-  background-color: #333; /* Color de fondo del ítem */
+  color: #333; /* Color del texto */
+  background-color: #fff; /* Color de fondo del ítem */
   border-radius: 5px;
   text-align: left;
 }
@@ -426,7 +427,7 @@
 .sidebar-burger svg {
   width: 26px;
   height: 26px;
-  fill: #fff;
+  fill: #333;
 }
 
 .menu-container {
@@ -459,19 +460,40 @@
 
 }
 
-@media(max-width: 700px) {
+@media(max-width: 440px) {
+  
+  .logo5 {
+    position: absolute;
+    top: calc(50% - 16px);
+    left: 150px;
+    width: 120px;
+    height: 37px;
+    cursor: pointer;
+  }
+
+  .logo-icon5 {
+    position: absolute;
+    height: calc(100% - 21.3px);
+    top: 6.15px;
+    bottom: 10.15px;
+    left: 13px;
+    max-height: 100%;
+    width: calc(12%);
+  }
+
   .caribbean-house-studio11 {
     position: absolute;
-    width: calc(50% + 1px);
-    top: calc(50% - 18.5px);
-    left: 0;
+    width: calc(100% + 100px);
+    top: calc(50% - 12.5px);
+    left: -50px;
     font-weight: 600;
     display: inline-block;
+    font-size: calc(50%)
   }
 
   .component-1-13-child{
     position: absolute;
-    height: 130%;
+    height: 85%;
     width: 100%;
     top: 0;
     right: 0;
@@ -486,11 +508,11 @@
   }
   .menu-button {
     position: absolute;
-    top: calc(30% - 5px);
-    left: calc(90% - 50px);
+    top: calc(32% - 5px);
+    left: calc(52%);
     cursor: pointer;
-    width: 65px;  /* Ajusta el ancho del botón */
-    height: 60px; /* Ajusta la altura del botón */
+    width: 45px;  /* Ajusta el ancho del botón */
+    height: 40px; /* Ajusta la altura del botón */
   }
   
 }
