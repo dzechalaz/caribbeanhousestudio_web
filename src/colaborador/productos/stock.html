@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Productos</title>
+  <link rel="stylesheet" href="stock.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Gestión de Productos</h1>
+
+    <!-- Tabla para mostrar los productos -->
+    <table id="productos-table" class="display">
+      <thead>
+        <tr>
+         
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Precio</th>
+          <th>Categoría</th>
+          <th>Stock</th>
+        </tr>
+      </thead>
+      <tbody id="productos-body">
+        <!-- Aquí se insertarán las filas de productos dinámicamente -->
+      </tbody>
+    </table>
+
+    <!-- Botones para crear, modificar y eliminar productos -->
+    <div class="buttons">
+      <button id="crear-producto">Crear Producto</button>
+      <button id="modificar-producto">Modificar Producto</button>
+      <button id="eliminar-producto">Eliminar Producto</button>
+    </div>
+  </div>
+
+  <!-- Cargar el script de gestión de productos -->
+  <script src="stock.js"></script>
+</body>
+</html>
