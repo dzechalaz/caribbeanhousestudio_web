@@ -6,6 +6,7 @@ const fs = require('fs');
 const bodyParser = require('body-parser');
 const { PORT, DB_HOST, DB_NAME, DB_PASSWORD, DB_USER, DB_PORT } = require('./config');
 
+
 const db = mysql.createConnection({
   host: DB_HOST,
   user: DB_USER,
@@ -42,6 +43,95 @@ app.get("/", (req, res) => {
   });
 });
 
+
+// ########################################## AUTENTICACIÓN SIMPLE
+// Middleware de autenticación simple para las rutas del colaborador
+const authMiddleware = (req, res, next) => {
+  const auth = { login: 'admin', password: 'caribean2024' }; // Usuario y contraseña
+
+  const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
+  const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
+
+  if (login && password && login === auth.login && password === auth.password) {
+    return next();
+  }
+
+  // Si la autenticación falla
+  res.set('WWW-Authenticate', 'Basic realm="Colaborador"');
+  res.status(401).send('Autenticación requerida.');
+};
+
+// ########################################## MENÚ DE COLABORADOR
+// Rutas protegidas por la autenticación para el colaborador
+app.get('/colaborador/menu', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src/colaborador/menu.html'));
+});
+
+app.get('/colaborador/compras/ver', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src/colaborador/compras/ver_compras.html'));
+});
+
+app.get('/colaborador/compras/modificar', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src/colaborador/compras/modificar_estado_compra.html'));
+});
+
+app.get('/colaborador/productos/crear', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src/colaborador/productos/crear_producto.html'));
+});
+
+app.get('/colaborador/productos/modificar', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src/colaborador/productos/modificar_producto.html'));
+});
+
+
+
+
+
+
+
+
+
+
+
+//############### stock
+
+
+
+app.get('/colaborador/productos/stock', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src/colaborador/productos/stock.html'));
+});
+
+// Ruta para obtener los productos y enviar los datos al frontend
+app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
+  const query = 'SELECT * FROM Productos'; // Consulta a la base de datos para obtener todos los productos
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching products:', err);
+      return res.status(500).json({ error: 'Error fetching products' });
+    }
+
+    res.json({ productos: results }); // Enviar los productos como respuesta JSON
+  });
+});
+
+app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, (req, res) => {
+  const productoId = req.params.codigo;
+  db.query('DELETE FROM Productos WHERE codigo = ?', [productoId], (err, result) => {
+      if (err) {
+          console.error('Error al eliminar producto:', err);
+          return res.status(500).json({ success: false, error: 'Error al eliminar producto' });
+      }
+      res.json({ success: true });
+  });
+});
+
+
+
+
+
+
+//########################################## SEGUIMIENTO
 app.get('/seguimiento', (req, res) => {
   const idCompra = req.query.id;
   db.query('SELECT * FROM Compras WHERE compra_id = ?', [idCompra], (error, compraResults) => {
@@ -104,10 +194,13 @@ app.get('/seguimiento', (req, res) => {
   });
 });
 
+//########################################## AÑADIR ID
 
 app.get('/añadirID', (req, res) => {
   res.sendFile(path.join(__dirname, 'src/añadirID.html'));
 });
+
+
 
 app.post('/verificar-id-compra', (req, res) => {
   const { idCompra } = req.body;
@@ -124,6 +217,8 @@ app.post('/verificar-id-compra', (req, res) => {
     }
   });
 });
+
+
 
 app.get('/compras', (req, res) => {
   const idCompra = req.query.id;
@@ -182,52 +277,7 @@ app.get('/compras', (req, res) => {
   });
 });
 
-
-// colaborador
-
-
-app.post('/buscar_usuario', (req, res) => {
-  const correo = req.body.correo;
-
-  const query = 'SELECT usuario_id FROM Usuarios WHERE correo = ?';
-  db.query(query, [correo], (err, results) => {
-    if (err) throw err;
-
-    if (results.length > 0) {
-      res.json({ usuario_id: results[0].usuario_id });
-    } else {
-      res.json({ usuario_id: null });
-    }
-  });
-});
-
-app.post('/registrar_usuario', (req, res) => {
-  const { nombre, correo } = req.body;
-
-  const query = 'INSERT INTO Usuarios (nombre, correo) VALUES (?, ?)';
-  db.query(query, [nombre, correo], (err, result) => {
-    if (err) throw err;
-
-    res.json({ usuario_id: result.insertId });
-  });
-});
-
-
-app.post('/crear_compra', (req, res) => {
-  const { producto_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad } = req.body;
-
-  const query = 'INSERT INTO Compras (producto_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad) VALUES (?, ?, ?, ?, ?, ?)';
-  db.query(query, [producto_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad], (err, result) => {
-    if (err) throw err;
-
-    res.send('Compra creada exitosamente');
-  });
-});
-
-
-
-
-
+//########################################## Catálogo
 
 app.get('/producto', (req, res) => {
   const productoId = req.query.id;
@@ -299,42 +349,6 @@ app.get('/producto', (req, res) => {
   });
 });
 
-app.get('/get_compra_info', (req, res) => {
-  const compraId = req.query.id;
-  db.query('SELECT * FROM Compras WHERE compra_id = ?', [compraId], (error, compraResults) => {
-    if (error) throw error;
-    if (compraResults.length > 0) {
-      const compra = compraResults[0];
-      db.query('SELECT * FROM Productos WHERE producto_id = ?', [compra.producto_id], (error, productoResults) => {
-        if (error) throw error;
-        const producto = productoResults[0];
-        db.query('SELECT * FROM Usuarios WHERE usuario_id = ?', [compra.usuario_id], (error, usuarioResults) => {
-          if (error) throw error;
-          const usuario = usuarioResults[0];
-          res.json({
-            success: true,
-            compra,
-            producto,
-            usuario
-          });
-        });
-      });
-    } else {
-      res.json({ success: false });
-    }
-  });
-});
-
-// Route to update the purchase status
-app.post('/actualizar_valor', (req, res) => {
-  const { valor, compra_id } = req.body;
-  db.query('UPDATE Compras SET estado = ? WHERE compra_id = ?', [valor, compra_id], (error, results) => {
-    if (error) throw error;
-    res.send('Estado actualizado correctamente');
-  });
-});
-
-// --------------------------------------- catalogo ---------------------------------------
 app.get('/catalogo', (req, res) => {
   const productosPorPagina = 12;
   const paginaActual = parseInt(req.query.page) || 1;
@@ -442,7 +456,6 @@ app.get('/catalogo', (req, res) => {
     });
   });
 });
-
 
 
 app.get('/buscar', (req, res) => {
