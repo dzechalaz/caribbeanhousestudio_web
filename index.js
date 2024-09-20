@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const bodyParser = require('body-parser');
 const { PORT, DB_HOST, DB_NAME, DB_PASSWORD, DB_USER, DB_PORT } = require('./config');
+const multer = require('multer'); // Asegúrate de tener esto aquí
 
 
 const db = mysql.createConnection({
@@ -86,14 +87,7 @@ app.get('/colaborador/productos/modificar', authMiddleware, (req, res) => {
 
 
 
-
-
-
-
-
-
-
-//############### stock
+//########################################################### STOCK  ##################################################
 
 
 
@@ -115,23 +109,187 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
   });
 });
 
+// Ruta para eliminar un producto y su carpeta asociada
 app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, (req, res) => {
-  const productoId = req.params.codigo;
-  db.query('DELETE FROM Productos WHERE codigo = ?', [productoId], (err, result) => {
+  const productoCodigo = req.params.codigo;
+
+  // Primero, buscar el productId correspondiente al código
+  db.query('SELECT producto_id FROM Productos WHERE codigo = ?', [productoCodigo], (err, result) => {
+    if (err) {
+      console.error('Error al buscar producto:', err);
+      return res.status(500).json({ success: false, error: 'Error al buscar producto' });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+    }
+
+    const productId = result[0].producto_id;
+
+    // Eliminar el producto de la base de datos
+    db.query('DELETE FROM Productos WHERE codigo = ?', [productoCodigo], (err, result) => {
       if (err) {
-          console.error('Error al eliminar producto:', err);
-          return res.status(500).json({ success: false, error: 'Error al eliminar producto' });
+        console.error('Error al eliminar producto de la base de datos:', err);
+        return res.status(500).json({ success: false, error: 'Error al eliminar producto' });
       }
-      res.json({ success: true });
+
+      // Eliminar la carpeta con el productId
+      const productFolder = path.join(__dirname, 'src', 'public', 'Products', `${productId}`);
+      
+      if (fs.existsSync(productFolder)) {
+        fs.rmdirSync(productFolder, { recursive: true });
+        console.log(`Carpeta del producto ${productId} eliminada.`);
+      } else {
+        console.log(`La carpeta del producto ${productId} no existe.`);
+      }
+
+      // Responder que el producto fue eliminado
+      res.json({ success: true, redirectUrl: '/colaborador/productos/stock' })
+    });
   });
 });
 
 
 
 
+//################################# CREAR PRODUCTOS ##################################################
+// Configuración de multer para subir imágenes
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    // Guardar temporalmente en una carpeta para procesar luego
+    const tempDir = path.join(__dirname, 'src', 'public', 'temp');
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    cb(null, tempDir); // Guardar en el directorio temporal
+  },
+  filename: (req, file, cb) => {
+    // Asignamos los nombres de las imágenes de acuerdo a su posición en el array (a, b, c, d)
+    const ext = path.extname(file.originalname);
+    const index = req.fileIndex;  // Usar el índice establecido en el middleware
+    const imageNames = ['a', 'b', 'c', 'd']; // Los nombres que quieres para las imágenes
+    const filename = `${imageNames[index]}${ext}`; // Asignamos el nombre basado en el índice
+    cb(null, filename);
+  }
+});
+
+// Middleware de multer
+const upload = multer({ storage });
+
+// Middleware para asignar índices a las imágenes
+app.use((req, res, next) => {
+  if (req.files && req.files.length > 0) {
+    req.files.forEach((file, index) => {
+      file.fileIndex = index; // Asignar un índice a cada archivo
+    });
+  }
+  next();
+});
+
+// Middleware
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+// RUTAS PARA CREAR PRODUCTOS 
+
+app.get('/colaborador/productos/crear', (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'colaborador', 'productos', 'crear_producto.html'));
+});
+
+// GET para generar el código del producto basado en la categoría seleccionada
+app.get('/colaborador/productos/generar-codigo', (req, res) => {
+  const categoria = req.query.categoria;
+
+  // Prefijos para las categorías
+  const prefixMapping = {
+    'Decoración': 'DEC',
+    'Salas': 'SAL',
+    'Mesas': 'MES',
+    'Sillas y bancos': 'SYB',
+    'Recámara': 'REC',
+    'Exterior': 'EXT',
+    'Almacenaje': 'ALM',
+    'Varios': 'VAR'
+  };
+
+  const prefix = prefixMapping[categoria];
+
+  if (!prefix) {
+    return res.status(400).json({ success: false, error: 'Categoría no válida' });
+  }
+
+  const query = 'SELECT COUNT(*) AS total FROM Productos WHERE codigo LIKE ?';
+  const likePrefix = `${prefix}%`;
+
+  db.query(query, [likePrefix], (err, results) => {
+    if (err) {
+      console.error('Error al generar el código:', err);
+      return res.status(500).json({ success: false, error: 'Error al generar el código' });
+    }
+
+    const totalProductos = results[0].total + 1;
+    const codigo = `${prefix}${String(totalProductos).padStart(5, '0')}`;
+
+    res.json({ codigo });
+  });
+});
+
+// POST para crear el producto en la base de datos
+app.post('/colaborador/productos/crear', upload.array('imagenes', 4), (req, res) => {
+  const { nombre, precio, categoria, codigo, stock, material, dimensiones, acabado, color, descripcion1, descripcion2 } = req.body;
+
+  // Validar que todos los campos estén completos
+  if (!nombre || !precio || !categoria || !codigo || !stock || !material || !dimensiones || !acabado || !color || !descripcion1 || !descripcion2) {
+    return res.status(400).json({ success: false, error: 'Todos los campos son obligatorios' });
+  }
+
+  // Insertar el producto en la base de datos
+  const query = 'INSERT INTO Productos (nombre, precio, categoria, codigo, stock) VALUES (?, ?, ?, ?, ?)';
+  const values = [nombre, precio, categoria, codigo, stock];
+
+  db.query(query, values, (err, results) => {
+    if (err) {
+      console.error('Error al crear producto:', err);
+      return res.status(500).json({ success: false, error: 'Error al crear producto' });
+    }
+
+    const productId = results.insertId;  // Obtener el ID del producto recién insertado
+    const productFolder = path.join(__dirname, 'src', 'public', 'Products', `${productId}`);
+
+    // Crear la carpeta con el product_id
+    fs.mkdirSync(productFolder, { recursive: true });
+
+    // Mover las imágenes subidas a la carpeta del producto
+    const imageFiles = req.files;
+    const imageNames = ['a.webp', 'b.webp', 'c.webp', 'd.webp'];
+
+    imageFiles.forEach((file, index) => {
+      const tempPath = file.path;  // Usamos la ruta temporal donde multer guardó las imágenes
+      const imagePath = path.join(productFolder, imageNames[index]);
+      fs.renameSync(tempPath, imagePath);  // Renombrar y mover el archivo a la carpeta final
+    });
+
+    // Completar las imágenes faltantes con el placeholder
+    const placeholderPath = path.join(__dirname, 'src', 'Templates', 'placeholder.webp');
+    for (let i = imageFiles.length; i < 4; i++) {
+      const imagePath = path.join(productFolder, imageNames[i]);
+      fs.copyFileSync(placeholderPath, imagePath);  // Copiar el placeholder a las posiciones faltantes
+    }
+
+    // Crear el archivo info.txt con la información del producto
+    const infoContent = `Información Básica\nNombre: ${nombre}\nMaterial: ${material}\nDimensiones: ${dimensiones}\nAcabado: ${acabado}\nColor: ${color}\n\n` +
+                        `Información de Catálogo\nPrecio: ${precio}\nCategoría: ${categoria}\nDescripción 1: ${descripcion1}\nDescripción 2: ${descripcion2}`;
+
+    fs.writeFileSync(path.join(productFolder, 'info.txt'), infoContent);
+
+    // Responder al cliente
+    res.json({ success: true, redirectUrl: '/colaborador/productos/stock' });
+  });
+});
 
 
-//########################################## SEGUIMIENTO
+
+//########################################## SEGUIMIENTO ##################################################
 app.get('/seguimiento', (req, res) => {
   const idCompra = req.query.id;
   db.query('SELECT * FROM Compras WHERE compra_id = ?', [idCompra], (error, compraResults) => {
@@ -194,7 +352,7 @@ app.get('/seguimiento', (req, res) => {
   });
 });
 
-//########################################## AÑADIR ID
+//########################################## AÑADIR ID ##################################################
 
 app.get('/añadirID', (req, res) => {
   res.sendFile(path.join(__dirname, 'src/añadirID.html'));
@@ -277,7 +435,7 @@ app.get('/compras', (req, res) => {
   });
 });
 
-//########################################## Catálogo
+//########################################## Catálogo ##################################################
 
 app.get('/producto', (req, res) => {
   const productoId = req.query.id;

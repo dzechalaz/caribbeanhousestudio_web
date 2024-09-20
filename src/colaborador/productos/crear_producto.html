@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear Producto</title>
+  <link rel="stylesheet" href="/colaborador/productos/crear_producto.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Crear Producto</h1>
+
+    <form id="crear-producto-form" enctype="multipart/form-data" method="POST">
+      <!-- Información básica del producto -->
+      <div class="form-group">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" placeholder="Nombre del producto" required>
+      </div>
+
+      <div class="form-group">
+        <label for="precio">Precio:</label>
+        <input type="number" id="precio" name="precio" step="0.01" placeholder="Precio del producto" required>
+      </div>
+
+      <div class="form-group">
+        <label for="categoria">Categoría:</label>
+        <select id="categoria" name="categoria" required>
+            <option value="Decoración">Decoración</option>
+            <option value="Salas">Salas</option>
+            <option value="Mesas">Mesas</option>
+            <option value="Sillas y bancos">Sillas y bancos</option>
+            <option value="Recámara">Recámara</option>
+            <option value="Exterior">Exterior</option>
+            <option value="Almacenaje">Almacenaje</option>
+            <option value="Varios">Varios</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="codigo">Código:</label>
+        <input type="text" id="codigo" name="codigo" placeholder="Código del producto" readonly>
+        <button type="button" id="generar-codigo" class="btn-secondary">Generar Código</button>
+      </div>
+
+      <div class="form-group">
+        <label for="stock">Stock:</label>
+        <input type="number" id="stock" name="stock" placeholder="Cantidad en stock" required>
+      </div>
+
+      <!-- Información adicional -->
+      <div class="form-group">
+        <label for="material">Material:</label>
+        <input type="text" id="material" name="material" placeholder="Material del producto" required>
+      </div>
+
+      <div class="form-group">
+        <label for="dimensiones">Dimensiones:</label>
+        <input type="text" id="dimensiones" name="dimensiones" placeholder="Ejemplo: 100 x 100 x 70 cm" required>
+      </div>
+
+      <div class="form-group">
+        <label for="acabado">Acabado:</label>
+        <input type="text" id="acabado" name="acabado" placeholder="Acabado del producto" required>
+      </div>
+
+      <div class="form-group">
+        <label for="color">Color:</label>
+        <input type="text" id="color" name="color" placeholder="Color del producto" required>
+      </div>
+
+      <!-- Descripciones -->
+      <div class="form-group">
+        <label for="descripcion1">Descripción 1:</label>
+        <textarea id="descripcion1" name="descripcion1" rows="4" placeholder="Primera descripción" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="descripcion2">Descripción 2:</label>
+        <textarea id="descripcion2" name="descripcion2" rows="4" placeholder="Segunda descripción" required></textarea>
+      </div>
+
+      <!-- Subir imágenes -->
+      <div class="form-group">
+        <label for="imagenes">Subir Imágenes (4 en total):</label>
+        <input type="file" id="imagenes" name="imagenes" accept=".webp" multiple required>
+      </div>
+
+      <button type="submit" class="btn-primary">Crear Producto</button>
+    </form>
+  </div>
+
+  <form id="crear-producto-form" enctype="multipart/form-data" method="POST">
+
+  <script>
+    document.getElementById('generar-codigo').addEventListener('click', function () {
+      const categoria = document.getElementById('categoria').value;
+      const codigoInput = document.getElementById('codigo');
+      
+      if (categoria) {
+        fetch(`/colaborador/productos/generar-codigo?categoria=${categoria}`)
+          .then(response => response.json())
+          .then(data => {
+            codigoInput.value = data.codigo;
+          })
+          .catch(error => console.error('Error al generar código:', error));
+      } else {
+        alert('Selecciona una categoría primero');
+      }
+    });
+  </script>
+
+<script>
+    document.getElementById('crear-producto-form').addEventListener('submit', function (event) {
+      event.preventDefault(); // Detener el envío predeterminado del formulario
+      
+      // Mostrar el mensaje de confirmación
+      const confirmacion = confirm('¿Estás seguro de que quieres crear este producto?');
+      
+      // Si el usuario confirma, se procede con el envío del formulario
+      if (confirmacion) {
+        const formData = new FormData(this);
+        
+        // Hacer la solicitud fetch solo después de la confirmación
+        fetch('/colaborador/productos/crear', {
+          method: 'POST',
+          body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Redirigir automáticamente a la página de stock después de la creación exitosa
+            window.location.href = data.redirectUrl;
+          } else {
+            alert(`Error: ${data.error}`);
+          }
+        })
+        .catch(error => console.error('Error al crear producto:', error));
+      } else {
+        // Si el usuario cancela, no se hace nada y el formulario no se envía
+        alert('La creación del producto fue cancelada.');
+      }
+    });
+</script>
+
+ 
+  
+
+</body>
+</html>
