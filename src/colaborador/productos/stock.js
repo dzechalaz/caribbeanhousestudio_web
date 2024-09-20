@@ -32,7 +32,14 @@ $(document).ready(function () {
     // Llamar a la función cargarProductos para obtener los datos al cargar la página
     cargarProductos();
 
+      // Evento del botón "Crear Producto"
+      $('#crear-producto').click(function () {
+        window.location.href = '/colaborador/productos/crear'; // Redirigir a la página de creación de productos
+    });
+
+
     // Evento del botón "Eliminar Producto"
+// Evento del botón "Eliminar Producto"
     $('#eliminar-producto').click(function () {
         const productoSeleccionado = tablaProductos.row('.selected').data();
 
@@ -47,8 +54,9 @@ $(document).ready(function () {
                 .then(response => response.json())
                 .then(result => {
                     if (result.success) {
+                        // Remover la fila de la tabla sin recargar la página
+                        tablaProductos.row('.selected').remove().draw(false); // Eliminar fila seleccionada
                         alert('Producto eliminado correctamente');
-                        cargarProductos(); // Recargar la tabla
                     } else {
                         alert('Error al eliminar el producto');
                     }
@@ -56,6 +64,7 @@ $(document).ready(function () {
                 .catch(error => console.error('Error al eliminar producto:', error));
         }
     });
+
 
     // Seleccionar fila en la tabla (marcarla como seleccionada)
     $('#productos-table tbody').on('click', 'tr', function () {

@@ -1,0 +1,87 @@
+/* General body styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container */
+.container {
+    max-width: 400px;
+    width: 100%;
+    background-color: #ffffff;
+    padding: 40px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    text-align: center;
+}
+
+/* Title styles */
+h1 {
+    color: #4A403A; /* Chukum-inspired brown */
+    font-size: 1.8em;
+    margin-bottom: 20px;
+}
+
+/* Form group styles */
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}   
+
+label {
+    color: #4A403A; /* Chukum brown */
+    font-weight: bold;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #C19A6B;
+    border-radius: 5px;
+    box-sizing: border-box;
+    color: #4A403A;
+}
+
+input::placeholder {
+    color: #C19A6B; /* Placeholder color */
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 15px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+/* Primary button */
+.btn-primary {
+    background-color: #4e8985; /* Greenish color for main button */
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background-color: #63ded0; /* Chukum-inspired hover color */
+}
+
+/* Secondary button */
+.btn-secondary {
+    background-color: #C19A6B; /* Chukum-style brown */
+    color: #ffffff;
+    margin-top: 10px;
+}
+
+.btn-secondary:hover {
+    background-color: #b58359; /* Darker brown for hover */
+}
