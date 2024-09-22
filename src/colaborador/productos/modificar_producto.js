@@ -14,12 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('categoria').value = producto.categoria || '';
         document.getElementById('codigo').value = producto.codigo || '';
         document.getElementById('stock').value = producto.stock || '';
-        document.getElementById('material').value = producto.material || '';
-        document.getElementById('dimensiones').value = producto.dimensiones || '';
-        document.getElementById('acabado').value = producto.acabado || '';
-        document.getElementById('color').value = producto.color || '';
-        document.getElementById('descripcion1').value = producto.descripcion1 || '';
-        document.getElementById('descripcion2').value = producto.descripcion2 || '';
+     
       } else {
         alert('Error al cargar los datos del producto');
       }

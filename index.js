@@ -336,34 +336,70 @@ app.post('/colaborador/productos/modificar/:codigo', upload.array('imagenes', 4)
   const { nombre, precio, categoria, stock, material, dimensiones, acabado, color, descripcion1, descripcion2 } = req.body;
   const codigoProducto = req.params.codigo;
 
-  // Validar que todos los campos estén completos
-  if (!nombre || !precio || !categoria || !stock || !material || !dimensiones || !acabado || !color || !descripcion1 || !descripcion2) {
-    return res.status(400).json({ success: false, error: 'Todos los campos son obligatorios' });
+  // Validar que todos los campos básicos estén completos
+  if (!nombre || !precio || !categoria || !stock) {
+    return res.status(400).json({ success: false, error: 'Los campos nombre, precio, categoría y stock son obligatorios' });
   }
 
-  // Actualizar el producto en la base de datos
-  const query = 'UPDATE Productos SET nombre = ?, precio = ?, categoria = ?, stock = ?, material = ?, dimensiones = ?, acabado = ?, color = ?, descripcion1 = ?, descripcion2 = ? WHERE codigo = ?';
-  const values = [nombre, precio, categoria, stock, material, dimensiones, acabado, color, descripcion1, descripcion2, codigoProducto];
-
-  db.query(query, values, (err, result) => {
+  // Consultar el producto para obtener el producto_id basado en el codigo
+  db.query('SELECT producto_id FROM Productos WHERE codigo = ?', [codigoProducto], (err, result) => {
     if (err) {
-      console.error('Error al actualizar el producto:', err);
-      return res.status(500).json({ success: false, error: 'Error al actualizar el producto' });
+      console.error('Error fetching product_id:', err);
+      return res.status(500).json({ success: false, error: 'Error al obtener el producto' });
     }
 
-    // Si se subieron nuevas imágenes, actualizarlas
-    if (req.files.length > 0) {
-      const productFolder = path.join(__dirname, 'src', 'public', 'Products', `${codigoProducto}`);
-      req.files.forEach((file, index) => {
-        const tempPath = file.path;
-        const imagePath = path.join(productFolder, `imagen${index + 1}.webp`);
-        fs.renameSync(tempPath, imagePath);
+    if (result.length === 0) {
+      return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+    }
+
+    const productoId = result[0].producto_id;  // Obtener el producto_id correctamente.
+
+    // Actualizar solo los campos básicos en la base de datos
+    const query = 'UPDATE Productos SET nombre = ?, precio = ?, categoria = ?, stock = ? WHERE codigo = ?';
+    const values = [nombre, precio, categoria, stock, codigoProducto];
+
+    db.query(query, values, (err, result) => {
+      if (err) {
+        console.error('Error al actualizar el producto:', err);
+        return res.status(500).json({ success: false, error: 'Error al actualizar el producto' });
+      }
+
+      // Ruta de la carpeta del producto (usando el producto_id en lugar del código)
+      const productFolder = path.join(__dirname, 'src', 'public', 'Products', `${productoId}`);  // Uso de productoId correctamente.
+
+      // Verificar si la carpeta del producto existe, si no, crearla
+      if (!fs.existsSync(productFolder)) {
+        fs.mkdirSync(productFolder, { recursive: true });  // Crear el directorio si no existe.
+      }
+
+      // Guardar el resto de la información en info.txt
+      const infoContent = `Información Básica\nNombre: ${nombre}\nMaterial: ${material}\nDimensiones: ${dimensiones}\nAcabado: ${acabado}\nColor: ${color}\n\n` +
+                          `Información de Catálogo\nPrecio: ${precio}\nCategoría: ${categoria}\nDescripción 1: ${descripcion1}\nDescripción 2: ${descripcion2}`;
+
+      fs.writeFileSync(path.join(productFolder, 'info.txt'), infoContent);
+
+      // Mover las imágenes subidas a la carpeta del producto
+      const imageFiles = req.files;
+      const imageNames = ['a.webp', 'b.webp', 'c.webp', 'd.webp'];
+
+      imageFiles.forEach((file, index) => {
+        const tempPath = file.path;  // Usamos la ruta temporal donde multer guardó las imágenes
+        const imagePath = path.join(productFolder, imageNames[index]);
+        fs.renameSync(tempPath, imagePath);  // Renombrar y mover el archivo a la carpeta final
       });
-    }
 
-    res.json({ success: true });
+      // Completar las imágenes faltantes con el placeholder
+      const placeholderPath = path.join(__dirname, 'src', 'Templates', 'placeholder.webp');
+      for (let i = imageFiles.length; i < 4; i++) {
+        const imagePath = path.join(productFolder, imageNames[i]);
+        fs.copyFileSync(placeholderPath, imagePath);  // Copiar el placeholder a las posiciones faltantes
+      }
+
+      res.json({ success: true });
+    });
   });
 });
+
 
 
 //########################################## SEGUIMIENTO ##################################################
