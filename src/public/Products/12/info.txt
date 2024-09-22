@@ -1,15 +1,12 @@
-
-Aquí tienes un ejemplo de cómo podría verse el archivo info.txt para el nuevo producto basado en el formato original:
-
 Información Básica
-Nombre: Buró gaffa parota 
+Nombre: Mueble TV parota / negro
 Material: Madera Parota
 Dimensiones: 40 x 60 x 40 cm
 Acabado: Suave
 Color: Café
 
 Información de Catálogo
-Precio: 2300.00
-Categoría: Recámara 
-Descripción 1: Buró moderno de madera parota con un diseño minimalista y tonos cálidos, ideal para recámaras elegantes y funcionales.
-Descripción 2: Este buró de diseño compacto, hecho de madera de parota, es perfecto para cualquier recámara. Su estructura sólida y acabado suave proporcionan una sensación de calidad premium. Con un diseño minimalista, es ideal para quienes buscan funcionalidad sin sacrificar la estética. Sus líneas limpias y color natural permiten integrarlo fácilmente en diferentes estilos decorativos.
+Precio: 6800.00
+Categoría: Almacenaje
+Descripción 1: Este mueble de TV de madera parota combina un diseño moderno con un acabado suave que resalta los tonos naturales de la madera. Perfecto para salas contemporáneas que buscan funcionalidad con un toque cálido y elegante.
+Descripción 2: Con su amplia superficie y compartimentos de almacenaje, este mueble de TV es ideal para organizar dispositivos electrónicos y elementos decorativos. Su color negro se integra perfectamente con la estructura de madera parota, creando un contraste elegante que añade sofisticación a cualquier sala. Es resistente, fácil de mantener y adaptable a múltiples estilos decorativos.
