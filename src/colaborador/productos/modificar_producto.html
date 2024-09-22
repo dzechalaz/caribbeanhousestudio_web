@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modificar Producto</title>
+  <link rel="stylesheet" href="/colaborador/productos/crear_producto.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Modificar Producto</h1>
+
+    <form id="modificar-producto-form" enctype="multipart/form-data" method="POST">
+      <!-- Información básica del producto -->
+      <div class="form-group">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" placeholder="Nombre del producto" required>
+      </div>
+
+      <div class="form-group">
+        <label for="precio">Precio:</label>
+        <input type="number" id="precio" name="precio" step="0.01" placeholder="Precio del producto" required>
+      </div>
+
+      <div class="form-group">
+        <label for="categoria">Categoría:</label>
+        <select id="categoria" name="categoria" required>
+          <option value="Decoración">Decoración</option>
+          <option value="Salas">Salas</option>
+          <option value="Mesas">Mesas</option>
+          <option value="Sillas y bancos">Sillas y bancos</option>
+          <option value="Recámara">Recámara</option>
+          <option value="Exterior">Exterior</option>
+          <option value="Almacenaje">Almacenaje</option>
+          <option value="Varios">Varios</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="codigo">Código:</label>
+        <input type="text" id="codigo" name="codigo" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="stock">Stock:</label>
+        <input type="number" id="stock" name="stock" required>
+      </div>
+
+      <!-- Información adicional -->
+      <div class="form-group">
+        <label for="material">Material:</label>
+        <input type="text" id="material" name="material">
+      </div>
+
+      <div class="form-group">
+        <label for="dimensiones">Dimensiones:</label>
+        <input type="text" id="dimensiones" name="dimensiones">
+      </div>
+
+      <div class="form-group">
+        <label for="acabado">Acabado:</label>
+        <input type="text" id="acabado" name="acabado">
+      </div>
+
+      <div class="form-group">
+        <label for="color">Color:</label>
+        <input type="text" id="color" name="color">
+      </div>
+
+      <!-- Descripciones -->
+      <div class="form-group">
+        <label for="descripcion1">Descripción 1:</label>
+        <textarea id="descripcion1" name="descripcion1" rows="4"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="descripcion2">Descripción 2:</label>
+        <textarea id="descripcion2" name="descripcion2" rows="4"></textarea>
+      </div>
+
+      <!-- Subir nuevas imágenes -->
+      <div class="form-group">
+        <label for="imagenes">Subir Nuevas Imágenes (opcional):</label>
+        <input type="file" id="imagenes" name="imagenes" accept=".webp" multiple>
+      </div>
+
+      <!-- Botones de Guardar Cambios y Cancelar -->
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Guardar Cambios</button>
+        <button type="button" class="btn-secondary" id="cancelar-btn">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="modificar_producto.js"></script>
+</body>
+</html>

@@ -149,6 +149,31 @@ app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, (req, res)
   });
 });
 
+// Ruta para actualizar el stock de los productos
+app.post('/colaborador/productos/actualizar-stock', authMiddleware, (req, res) => {
+  const productos = req.body.productos;
+
+  // Validar que haya productos
+  if (!productos || productos.length === 0) {
+    return res.status(400).json({ success: false, error: 'No se enviaron productos para actualizar' });
+  }
+
+  // Actualizar el stock de cada producto en la base de datos
+  let query = 'UPDATE Productos SET stock = ? WHERE codigo = ?';
+  productos.forEach(producto => {
+    const { codigo, stock } = producto;
+    db.query(query, [stock, codigo], (err, result) => {
+      if (err) {
+        console.error('Error al actualizar el stock:', err);
+        return res.status(500).json({ success: false, error: 'Error al actualizar el stock' });
+      }
+    });
+  });
+
+  res.json({ success: true });
+});
+
+
 
 
 
@@ -287,6 +312,58 @@ app.post('/colaborador/productos/crear', upload.array('imagenes', 4), (req, res)
   });
 });
 
+//################################# MODIFICAR PRODUCTOS ##################################################
+// Ruta para obtener los detalles de un producto específico
+app.get('/colaborador/productos/data/:codigo', authMiddleware, (req, res) => {
+  const codigoProducto = req.params.codigo;
+
+  db.query('SELECT * FROM Productos WHERE codigo = ?', [codigoProducto], (err, result) => {
+    if (err) {
+      console.error('Error fetching product:', err);
+      return res.status(500).json({ success: false, error: 'Error al obtener el producto' });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+    }
+
+    res.json({ success: true, producto: result[0] });
+  });
+});
+
+// Ruta para modificar el producto
+app.post('/colaborador/productos/modificar/:codigo', upload.array('imagenes', 4), (req, res) => {
+  const { nombre, precio, categoria, stock, material, dimensiones, acabado, color, descripcion1, descripcion2 } = req.body;
+  const codigoProducto = req.params.codigo;
+
+  // Validar que todos los campos estén completos
+  if (!nombre || !precio || !categoria || !stock || !material || !dimensiones || !acabado || !color || !descripcion1 || !descripcion2) {
+    return res.status(400).json({ success: false, error: 'Todos los campos son obligatorios' });
+  }
+
+  // Actualizar el producto en la base de datos
+  const query = 'UPDATE Productos SET nombre = ?, precio = ?, categoria = ?, stock = ?, material = ?, dimensiones = ?, acabado = ?, color = ?, descripcion1 = ?, descripcion2 = ? WHERE codigo = ?';
+  const values = [nombre, precio, categoria, stock, material, dimensiones, acabado, color, descripcion1, descripcion2, codigoProducto];
+
+  db.query(query, values, (err, result) => {
+    if (err) {
+      console.error('Error al actualizar el producto:', err);
+      return res.status(500).json({ success: false, error: 'Error al actualizar el producto' });
+    }
+
+    // Si se subieron nuevas imágenes, actualizarlas
+    if (req.files.length > 0) {
+      const productFolder = path.join(__dirname, 'src', 'public', 'Products', `${codigoProducto}`);
+      req.files.forEach((file, index) => {
+        const tempPath = file.path;
+        const imagePath = path.join(productFolder, `imagen${index + 1}.webp`);
+        fs.renameSync(tempPath, imagePath);
+      });
+    }
+
+    res.json({ success: true });
+  });
+});
 
 
 //########################################## SEGUIMIENTO ##################################################
@@ -514,8 +591,8 @@ app.get('/catalogo', (req, res) => {
   const categoriaSeleccionada = req.query.categoria || 'Todos'; // Por defecto "Todos"
   const searchQuery = req.query.query || ''; // Verificar si hay término de búsqueda
 
-  // Consulta base de productos
-  let queryProductos = 'SELECT producto_id, nombre, precio, codigo FROM Productos WHERE 1=1';
+  // Consulta base de productos, ahora incluye el campo stock
+  let queryProductos = 'SELECT producto_id, nombre, precio, codigo, stock FROM Productos WHERE 1=1';
   let values = [];
 
   // Si la categoría no es "Todos", aplicar el filtro
@@ -614,7 +691,6 @@ app.get('/catalogo', (req, res) => {
     });
   });
 });
-
 
 app.get('/buscar', (req, res) => {
   const searchQuery = req.query.query; // Obtener la consulta de búsqueda

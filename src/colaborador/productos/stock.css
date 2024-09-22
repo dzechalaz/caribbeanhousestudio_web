@@ -1,144 +1,87 @@
 /* General body styles */
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f9f9f9;
-    padding: 20px;
-    color: #4A403A; /* Use brown color for general text */
-    display: flex;
-    justify-content: center;
-  }
-  
-  /* Container */
-  .container {
-   
-    max-width: 1800px; /* Aumentar el ancho máximo */
-    min-width: 1000px;
-    margin: 0 auto;
-    background-color: #ffffff;
-    padding: 30px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+  font-family: 'Arial', sans-serif;
+  background-color: #f9f9f9;
+  padding: 20px;
+  color: #4A403A;
+  display: flex;
+  justify-content: center;
+}
 
-    
-  }
-  
-  /* Title styles */
-  h1 {
-    color: #4A403A; /* Color marrón para el título */
-    text-align: center;
-    margin-bottom: 30px;
-    
-  }
-  
-  /* Table styles */
-  table {
-    margin: 20px;
-    border-collapse: collapse;
-    background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 20px;
+/* Container */
+.container {
+  max-width: 1800px;
+  min-width: 1000px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  padding: 30px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
 
- 
-  }
-  
-  table th,
-  table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #dddddd;
-    color: #4A403A; /* Texto en la tabla */
-    
-  }
-  
-  /* Header (th) styles */
-  table th {
-    background-color: #C19A6B; /* Marrón estilo Chukum */
-    color: #fff;
-    
-  }
-  
-  /* Row hover effect */
-  table tr:hover {
-    background-color: #f1f1f1;
-    
-  }
-  
-  /* Button styles */
-  button, a.button {
-    background-color: #4e8985; /* Color verde para los botones */
-    color: #ffffff;
-    padding: 10px 20px;
-    margin: 30px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-  }
-  
-  button:hover, a.button:hover {
-    background-color: #63ded0; /* Color verde al hacer hover */
-  }
-  
-  button:focus, a.button:focus {
-    outline: none;
-  }
-  
-  /* Pagination styles */
-  .dataTables_wrapper .dataTables_paginate .paginate_button {
-    background-color: #e96969;
-    color: #fff !important;
-    border-radius: 5px;
-    margin: 0 3px;
-    padding: 5px 10px;
-    border: none;
-    
-  }
-  
-  .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background-color: #63ded0 !important;
-  }
-  
-  .dataTables_wrapper .dataTables_filter input {
-    margin-top: 10px;
-    color: #4a3e3a;
-    padding: 5px;
-    border: 1px solid #C19A6B;
-    border-radius: 5px;
-    margin-left: 5px;
-  }
-  
-  /* Styling search bar */
-  .dataTables_wrapper .dataTables_filter {
-    color: #4A403A; /* Texto en marrón */
-    margin-bottom: 10px;
-    
-  }
-  
-  .dataTables_wrapper .dataTables_filter label {
-    font-weight: bold;
-  }
-  
-  .dataTables_wrapper .dataTables_filter input {
-    color: #4A403A; /* Marrón para el texto del input */
-    padding: 5px;
-    border-radius: 5px;
-    border: 1px solid #C19A6B; /* Borde marrón estilo Chukum */
-  }
+/* Title styles */
+h1 {
+  color: #4A403A;
+  text-align: center;
+  margin-bottom: 30px;
+}
 
-  /* Ajustes para mantener la tabla centrada */
-  .dataTables_wrapper {
-    margin: 0 auto;
-    
-  }
+/* Table styles */
+table {
+  margin: 20px;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
 
-  /* Ajuste adicional a los botones */
-  .buttons {
-    text-align: center;
-  }
+table th,
+table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #dddddd;
+  color: #4A403A;
+}
 
-  .buttons button {
-    margin: 15px 10px; /* Margen más pequeño para los botones */
-  }
+/* Header (th) styles */
+table th {
+  background-color: #C19A6B;
+  color: #fff;
+}
+
+/* Row hover effect */
+table tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Button styles */
+button, a.button {
+  background-color: #4e8985;
+  color: #ffffff;
+  padding: 10px 20px;
+  margin: 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+button:hover, a.button:hover {
+  background-color: #63ded0;
+}
+
+button:focus, a.button:focus {
+  outline: none;
+}
+
+.buttons {
+  text-align: center;
+}
+
+/* Ajustes adicionales para mantener la tabla centrada */
+.dataTables_wrapper {
+  margin: 0 auto;
+}
