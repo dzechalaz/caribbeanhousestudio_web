@@ -654,21 +654,14 @@
   text-transform: uppercase;
   font-family: var(--font-literata);
 }
-.footer,
-.footter-final {
+.footer2 {
   position: absolute;
   width: 100%;
   right: 0;
   left: 0;
 }
-.footter-final {
-  bottom: -5.45px;
-  height: 426.2px;
-  font-size: var(--font-size-xs);
-  color: var(--color-white);
-  font-family: var(--font-montserrat);
-}
-.footer {
+
+.footer2 {
   top: calc(50% - 1153px);
   background-color: var(--color-powderblue);
   height: 75px;

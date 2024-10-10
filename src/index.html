@@ -20,6 +20,7 @@
     />
   </head>
   <body>
+    <div id="barra"></div>
     <div class="home1">
       <div class="portada"></div>
       <div class="fondocat"></div>
@@ -231,105 +232,47 @@
           <div class="mesas">Mesas</div>
         </div>
       </div>
-      <div class="footter-final">
-        <div class="facebook1">
-          <div class="facebook-child">
-            <div class="rectangle-div"></div>
-          </div>
-        </div>
-        <div class="instagram1">
-          <img
-            class="vector-smart-object1"
-            alt=""
-            src="./public/vector-smart-object@2x.png"
-          />
-        </div>
-        <div class="linkedin1">
-          <div class="rectangle-81311-copy-4-container">
-            <div class="rectangle-81311-copy-41"></div>
-          </div>
-          <div class="imagemask1"></div>
-        </div>
-        <div class="twitter1">
-          <div class="rectangle-813111-copy-6-container">
-            <div class="rectangle-813111-copy-61"></div>
-          </div>
-        </div>
-        <img class="path-253-icon1" alt="" src="./public/path-253.svg" />
-
-        <div class="company1">COMPANY</div>
-        <div class="profile-about-us-contact-addre1">
-          <p class="por-qu">Profile</p>
-          <p class="por-qu">About us</p>
-          <p class="por-qu">Contact</p>
-          <p class="por-qu">Address</p>
-        </div>
-        <div class="returns1">RETURNS</div>
-        <div class="faqs-size-guide-contact-us-container1">
-          <p class="por-qu">FAQs</p>
-          <p class="por-qu">Size Guide</p>
-          <p class="por-qu">Contact us</p>
-        </div>
-        <div class="lorem-ipsum-dolor-container1">
-          <p class="por-qu">Lorem ipsum dolor sit amet,</p>
-          <p class="por-qu">consetetur sadipscing elitr,</p>
-          <p class="por-qu">sed diam nonumy</p>
-        </div>
-        <div class="caribbean-house-studio2">Caribbean House Studio</div>
-      </div>
-      <div class="footer"></div>
+      
+       
+      <div class="footer2"></div>
+      
       <div class="fabrica-herreria">
         FABRICA - HERRERIA - MADERA - DECORACION - INTERIORISMO
       </div>
-      <header class="barra-pestaas1">
-        <div class="component-1-9">
-          <div class="component-1-9-child"></div>
-          <div class="logo1">
-            <div class="caribbean-house-studio3">Caribbean House Studio</div>
-          </div>
-        </div>
-        <b class="inicio1">INICIO</b>
-        <div class="catlogo1" id = "CatalogoText">CATÁLOGO</div>
-        <div class="blog1">BLOG</div>
-        <div class="nuestra-historia1" id="nUESTRAHISTORIAText">
-          NUESTRA HISTORIA
-        </div>
-        <div class="seguimiento1" id="sEGUIMIENTOText">SEGUIMIENTO</div>
-        <img class="serach-icon1" alt="" src="./public/serach.svg" />
-
-        <img class="cart-icon1" alt="" src="./public/cart.svg" />
-
-        <div class="login-container">
-          <div class="login1">Login</div>
-        </div>
-        <img class="path-74-icon1" alt="" src="./public/path-74.svg" />
-
-        <div class="div13">1</div>
-        <img class="logo-icon1" alt="" src="./public/logo.svg" />
-      </header>
+      
     </div>
+    <div id="footer" style="position: relative; z-index: 3;"></div>
 
     <script>
-      var nUESTRAHISTORIAText = document.getElementById("nUESTRAHISTORIAText");
-      if (nUESTRAHISTORIAText) {
-        nUESTRAHISTORIAText.addEventListener("click", function (e) {
-          window.location.href = "./about-us.html";
-        });
-      }
-      
-      var sEGUIMIENTOText = document.getElementById("sEGUIMIENTOText");
-      if (sEGUIMIENTOText) {
-        sEGUIMIENTOText.addEventListener("click", function (e) {
-          window.location.href = "./añadirID.html";
-        });
-      }
+      // Carga el archivo barra.html dinámicamente
+      window.onload = function () {
+        // El nombre de la clase que quieres resaltar (lo puedes cambiar dinámicamente)
+        let claseAResaltar = "inicio5"; // Cambia esta variable por la clase que quieres resaltar
+    
+        fetch("/Templates/barra.html")
+            .then((response) => response.text())
+            .then((data) => {
+                document.getElementById("barra").innerHTML = data;
+    
+                // Una vez que la barra está cargada, buscamos el elemento con la clase a resaltar
+                let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
+                if (elementoAResaltar) {
+                    // Aplicamos los estilos dinámicamente
+                    elementoAResaltar.style.fontWeight = 'bold';
+                    elementoAResaltar.style.color = 'var(--color-lightseagreen)';
+                }
+            })
+            .catch(error => console.error('Error al cargar la barra:', error));
+           // Cargar el footer dinámicamente
+     
+        // Cargar el footer dinámicamente
+        fetch("/Templates/footer.html")
+          .then((response) => response.text())
+          .then((data) => {
+            document.getElementById("footer").innerHTML = data;
+          });
+      };
 
-      var CatalogoText = document.getElementById("CatalogoText");
-      if (CatalogoText) {
-        CatalogoText.addEventListener("click", function (e) {
-          window.location.href = "./catalogo";
-        });
-      }
       </script>
   </body>
 </html>

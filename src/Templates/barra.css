@@ -89,9 +89,7 @@
 .catlogo5 {
     top: calc(50% - 5px);
     left: calc(50% + 102.95px);
-    font-weight: bold;
-    color: var(--color-lightseagreen);
-    
+   
   }
 
 
