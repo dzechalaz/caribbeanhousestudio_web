@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
+<head>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1, width=device-width" />
 
     <link rel="stylesheet" href="./global.css" />
     <link rel="stylesheet" href="./catalogo.css" />
+
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap"
@@ -18,70 +19,15 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
     />
-  </head>
-  <body>
+</head>
+<body>
     <div class="canvas">
-      <!-- Barra de navegación fija -->
-      <header class="barra-pestaas5">
-        
-        <div class="component-1-13">
-          
-          <div class="component-1-13-child">
-            <div class="menu-button" onclick="toggleMenu()">
-              <svg xmlns="http://www.w3.org/2000/svg" height="26" viewBox="0 96 960 960" width="26">
-                <path d="M120 816v-60h720v60H120Zm0-210v-60h720v60H120Zm0-210v-60h720v60H120Z"/>
-              </svg>
-            </div>
-          </div>
-          
-          <div class="logo5" id="logo">
-            <div class="caribbean-house-studio11">Caribbean House Studio</div>
-          </div>
-          <img class="logo-icon5" alt="" src="./public/logo.svg" />
-          
-        </div>
-        
-        <div class="menu-items">
-          <div class="inicio5" id="in">INICIO</div>
-          <div class="catlogo5">CATÁLOGO</div>
-          <div class="blog5">BLOG</div>
-          <div class="nuestra-historia6" id="nh">NUESTRA HISTORIA</div>
-          <div class="seguimiento7" id="seg">SEGUIMIENTO</div>
-          <img class="serach-icon5" alt="" src="./public/serach.svg" />
-          <img class="cart-icon5" alt="" src="./public/cart.svg" />
-          <div class="login-wrapper3">
-            <div class="login5">Login</div>
-          </div>
-          <img class="path-74-icon5" alt="" src="./public/path-74.svg" />
-          <div class="div26">1</div>
-          
-        </div>
 
-        <div class="menu-container">
-          <ul class="sidebar-burger">
-            <li onclick="hideSidebar()">
-              <a href="#">
-                <svg xmlns="http://www.w3.org/2000/svg" height="26" viewBox="0 96 960 960" width="26">
-                  <path d="m249 849-42-42 231-231-231-231 42-42 231 231 231-231 42 42-231 231 231 231-42 42-231-231-231 231Z"/>
-                </svg>
-              </a>
-            </li>
-            <li><a href="./"  id="in">INICIO</a></li>
-            <li><a href="#">CATÁLOGO</a></li>
-            <li><a href="#">BLOG</a></li>
-            <li><a href="./about-us.html">NUESTRA HISTORIA</a></li>
-            <li><a href="#">SEGUIMIENTO</a></li>
-            <li><a href="#">Login</a></li>
-          </ul>
-        </div>
-
-        
-        
-      </header>
+      <!-- Contenedor para la barra de navegación -->
+      <div id="barra"></div>
 
       <!-- Contenedor para el catálogo -->
       <div class="catalog-container">
-
         
         <!-- Barra lateral de filtros -->
         <aside class="sidebar">
@@ -117,8 +63,6 @@
           </ul>
         </aside>
         
-        
-  
         <section class="product-grid">
           <!-- Lista dinámica de productos -->
           <div class="product-list">
@@ -155,8 +99,7 @@
             <% }); %>
           </div>
           
-        
-          <!-- Paginación 4-->
+          <!-- Paginación -->
           <div class="pagination">
             <% if (paginaActual > 1) { %>
               <a href="/catalogo?page=<%= paginaActual - 1 %>" class="page-button">Anterior</a>
@@ -172,13 +115,7 @@
           </div>
         </section>
         
-    
-                
-
-        <img
-        class="fondo"
-        alt=""
-        />
+        <img class="fondo" alt="" />
       </div>
      
     </div>
@@ -187,8 +124,15 @@
     <div id="footer"></div>
 
     <script>
-      // Carga el archivo footer.html dinámicamente
+      // Carga el archivo barra.html dinámicamente
       window.onload = function () {
+        fetch("/Templates/barra.html")
+          .then((response) => response.text())
+          .then((data) => {
+            document.getElementById("barra").innerHTML = data;
+          });
+
+        // Cargar el footer dinámicamente
         fetch("/Templates/footer.html")
           .then((response) => response.text())
           .then((data) => {
@@ -224,16 +168,17 @@
           window.location.href = "/";
         });
       }
-        function toggleMenu() {
+
+      function toggleMenu() {
         const menu = document.querySelector('.menu-container');
-      menu.classList.toggle('active'); // Activa o desactiva el menú
+        menu.classList.toggle('active'); // Activa o desactiva el menú
       }
 
       function hideSidebar() {
-      const menu = document.querySelector('.menu-container');
-      menu.classList.remove('active'); // Oculta el menú
+        const menu = document.querySelector('.menu-container');
+        menu.classList.remove('active'); // Oculta el menú
       }
       
     </script>
-  </body>
+</body>
 </html>

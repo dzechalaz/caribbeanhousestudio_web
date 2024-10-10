@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Enlace al archivo de estilos barra.css según la ruta que mencionaste -->
+    <link rel="stylesheet" href="Templates\barra.css">
+</head>
+
+<body>
+  <header class="barra-pestaas5">
+  
+    <div class="component-1-13">
+      <div class="component-1-13-child">
+        <!-- Botón para mostrar el menú en dispositivos móviles -->
+        <div class="menu-button" onclick="toggleMenu()">
+          <svg xmlns="http://www.w3.org/2000/svg" height="26" viewBox="0 96 960 960" width="26">
+            <path d="M120 816v-60h720v60H120Zm0-210v-60h720v60H120Zm0-210v-60h720v60H120Z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Logo -->
+      <div class="logo5" id="logo">
+        <a href="/" style="text-decoration: none; color: inherit;">
+          <div class="caribbean-house-studio11">Caribbean House Studio</div>
+        </a>
+      </div>
+      <img class="logo-icon5" alt="Logo" src="./public/logo.svg" />
+    </div>
+    
+    <!-- Menú principal con enlaces -->
+    <div class="menu-items">
+      <a href="/" style="text-decoration: none; color: inherit;"><div class="inicio5" id="in">INICIO</div></a>
+      <a href="#" style="text-decoration: none; color: inherit;"><div class="catlogo5">CATÁLOGO</div></a>
+      <a href="#" style="text-decoration: none; color: inherit;"><div class="blog5">BLOG</div></a>
+      <a href="/about-us.html" style="text-decoration: none; color: inherit;"><div class="nuestra-historia6" id="nh">NUESTRA HISTORIA</div></a>
+      <a href="#" style="text-decoration: none; color: inherit;"><div class="seguimiento7" id="seg">SEGUIMIENTO</div></a>
+      <img class="serach-icon5" alt="Buscar" src="./public/serach.svg" />
+      <img class="cart-icon5" alt="Carrito" src="./public/cart.svg" />
+      <div class="login-wrapper3">
+        <a href="#" style="text-decoration: none; color: inherit;"><div class="login5">Login</div></a>
+      </div>
+      <img class="path-74-icon5" alt="" src="./public/path-74.svg" />
+      <div class="div26">1</div>
+    </div>
+
+    <!-- Menú desplegable para dispositivos móviles -->
+    <div class="menu-container">
+      <ul class="sidebar-burger">
+        <li onclick="hideSidebar()">
+          <a href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" height="26" viewBox="0 96 960 960" width="26">
+              <path d="m249 849-42-42 231-231-231-231 42-42 231 231 231-231 42 42-231 231 231 231-42 42-231-231-231 231Z"/>
+            </svg>
+          </a>
+        </li>
+        <li><a href="/">INICIO</a></li>
+        <li><a href="#">CATÁLOGO</a></li>
+        <li><a href="#">BLOG</a></li>
+        <li><a href="/about-us.html">NUESTRA HISTORIA</a></li>
+        <li><a href="#">SEGUIMIENTO</a></li>
+        <li><a href="#">Login</a></li>
+      </ul>
+    </div>
+
+  </header>
+
+  <script>
+    function toggleMenu() {
+      const menu = document.querySelector('.menu-container');
+      menu.classList.toggle('active'); // Activa o desactiva el menú
+    }
+
+    function hideSidebar() {
+      const menu = document.querySelector('.menu-container');
+      menu.classList.remove('active'); // Oculta el menú
+    }
+  </script>
+</body>
+</html>
