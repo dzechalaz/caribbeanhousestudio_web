@@ -126,12 +126,25 @@
     <script>
       // Carga el archivo barra.html dinámicamente
       window.onload = function () {
+        // El nombre de la clase que quieres resaltar (lo puedes cambiar dinámicamente)
+        let claseAResaltar = "catlogo5"; // Cambia esta variable por la clase que quieres resaltar
+    
         fetch("/Templates/barra.html")
-          .then((response) => response.text())
-          .then((data) => {
-            document.getElementById("barra").innerHTML = data;
-          });
-
+            .then((response) => response.text())
+            .then((data) => {
+                document.getElementById("barra").innerHTML = data;
+    
+                // Una vez que la barra está cargada, buscamos el elemento con la clase a resaltar
+                let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
+                if (elementoAResaltar) {
+                    // Aplicamos los estilos dinámicamente
+                    elementoAResaltar.style.fontWeight = 'bold';
+                    elementoAResaltar.style.color = 'var(--color-lightseagreen)';
+                }
+            })
+            .catch(error => console.error('Error al cargar la barra:', error));
+           // Cargar el footer dinámicamente
+     
         // Cargar el footer dinámicamente
         fetch("/Templates/footer.html")
           .then((response) => response.text())
@@ -140,27 +153,7 @@
           });
       };
 
-      // Navegación
-      var nUESTRAHISTORIAText = document.getElementById("nh");
-      if (nUESTRAHISTORIAText) {
-        nUESTRAHISTORIAText.addEventListener("click", function (e) {
-          window.location.href = "./about-us.html";
-        });
-      }
-
-      var inicio = document.getElementById("in");
-      if (inicio) {
-        inicio.addEventListener("click", function (e) {
-          window.location.href = "./";
-        });
-      }
-
-      var sEGUIMIENTOText = document.getElementById("seg");
-      if (sEGUIMIENTOText) {
-        sEGUIMIENTOText.addEventListener("click", function (e) {
-          window.location.href = "./añadirID.html";
-        });
-      }
+    
 
       var logo = document.getElementById("logo");
       if (logo) {

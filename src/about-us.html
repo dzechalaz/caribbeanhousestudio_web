@@ -20,7 +20,10 @@
     />
   </head>
   <body>
+    <div id="barra"></div>
+    
     <div class="aboutus">
+      <div class="canvas"></div>
       <img
         class="imagenportada-icon"
         alt=""
@@ -123,106 +126,44 @@
           </div>
           <i class="michelle-williams">- Maria Elisa Rendon</i>
         </div>
+        
+     
       </div>
-      <div class="footter-final1">
-        <div class="facebook2">
-          <div class="group-div">
-            <div class="group-child4"></div>
-          </div>
-        </div>
-        <div class="instagram2">
-          <img
-            class="vector-smart-object2"
-            alt=""
-            src="./public/vector-smart-object@2x.png"
-          />
-        </div>
-        <div class="linkedin2">
-          <div class="rectangle-81311-copy-4-frame">
-            <div class="rectangle-81311-copy-42"></div>
-          </div>
-          <div class="imagemask2"></div>
-        </div>
-        <div class="twitter2">
-          <div class="rectangle-813111-copy-6-frame">
-            <div class="rectangle-813111-copy-62"></div>
-          </div>
-        </div>
-        <img class="path-253-icon2" alt="" src="./public/path-2531.svg" />
+      <div id="footer" style="position: relative; z-index: 3; top: 3100px;"></div>
 
-        <div class="company2">COMPANY</div>
-        <div class="profile-about-us-contact-addre2">
-          <p class="la-familia-de">Profile</p>
-          <p class="la-familia-de">About us</p>
-          <p class="la-familia-de">Contact</p>
-          <p class="la-familia-de">Address</p>
-        </div>
-        <div class="returns2">RETURNS</div>
-        <div class="faqs-size-guide-contact-us-container2">
-          <p class="la-familia-de">FAQs</p>
-          <p class="la-familia-de">Size Guide</p>
-          <p class="la-familia-de">Contact us</p>
-        </div>
-        <div class="lorem-ipsum-dolor-container2">
-          <p class="la-familia-de">Lorem ipsum dolor sit amet,</p>
-          <p class="la-familia-de">consetetur sadipscing elitr,</p>
-          <p class="la-familia-de">sed diam nonumy</p>
-        </div>
-        <div class="caribbean-house-studio4">Caribbean House Studio</div>
-      </div>
-      <header class="barra-pestaas2">
-        <div class="component-1-8">
-          <div class="component-1-8-child"></div>
-          <div class="logo2" id="logo">
-            <div class="caribbean-house-studio5">Caribbean House Studio</div>
-          </div>
-        </div>
-        <div class="inicio2" id="iNICIOText">INICIO</div>
-        <div class="catlogo2" id="catlogo6">CATÁLOGO</div>
-        <div class="blog2">BLOG</div>
-        <b class="nuestra-historia3">NUESTRA HISTORIA</b>
-        <div class="seguimiento2" id="sEGUIMIENTOText">SEGUIMIENTO</div>
-        <img class="serach-icon2" alt="" src="./public/serach.svg" />
 
-        <img class="cart-icon2" alt="" src="./public/cart.svg" />
+      
 
-        <div class="login-frame">
-          <div class="login2">Login</div>
-        </div>
-        <img class="path-74-icon2" alt="" src="./public/path-74.svg" />
-
-        <div class="div17">1</div>
-        <img class="logo-icon2" alt="" src="./public/logo.svg" />
-      </header>
-    </div>
+      
 
     <script>
-      var logo = document.getElementById("logo");
-      if (logo) {
-        logo.addEventListener("click", function (e) {
-          window.location.href = "./index.html";
-        });
-      }
-      var CatalogoText = document.getElementById("catlogo6");
-      if (CatalogoText) {
-        CatalogoText.addEventListener("click", function (e) {
-          window.location.href = "./catalogo";
-        });
-      }
-      
-      var iNICIOText = document.getElementById("iNICIOText");
-      if (iNICIOText) {
-        iNICIOText.addEventListener("click", function (e) {
-          window.location.href = "./index.html";
-        });
-      }
-      
-      var sEGUIMIENTOText = document.getElementById("sEGUIMIENTOText");
-      if (sEGUIMIENTOText) {
-        sEGUIMIENTOText.addEventListener("click", function (e) {
-          window.location.href = "./añadirID.html";
-        });
-      }
+      window.onload = function () {
+        // El nombre de la clase que quieres resaltar (lo puedes cambiar dinámicamente)
+        let claseAResaltar = "nuestra-historia6"; // Cambia esta variable por la clase que quieres resaltar
+    
+        fetch("/Templates/barra.html")
+            .then((response) => response.text())
+            .then((data) => {
+                document.getElementById("barra").innerHTML = data;
+    
+                // Una vez que la barra está cargada, buscamos el elemento con la clase a resaltar
+                let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
+                if (elementoAResaltar) {
+                    // Aplicamos los estilos dinámicamente
+                    elementoAResaltar.style.fontWeight = 'bold';
+                    elementoAResaltar.style.color = 'var(--color-lightseagreen)';
+                }
+            })
+            .catch(error => console.error('Error al cargar la barra:', error));
+           // Cargar el footer dinámicamente
+     
+        // Cargar el footer dinámicamente
+        fetch("/Templates/footer.html")
+          .then((response) => response.text())
+          .then((data) => {
+            document.getElementById("footer").innerHTML = data;
+          });
+      };
       </script>
   </body>
 </html>
