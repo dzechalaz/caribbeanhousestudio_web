@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <!-- Enlace al archivo de estilos barra.css según la ruta que mencionaste -->
-    <link rel="stylesheet" href="Templates\barra.css">
+    <link rel="stylesheet" href="Templates/barra.css">
 </head>
 
 <body>
@@ -17,7 +17,7 @@
           </svg>
         </div>
       </div>
-
+  
       <!-- Logo -->
       <div class="logo5" id="logo">
         <a href="/" style="text-decoration: none; color: inherit;">
@@ -29,20 +29,32 @@
     
     <!-- Menú principal con enlaces -->
     <div class="menu-items">
-      <a href="/" style="text-decoration: none; color: inherit;"><div class="inicio5" >INICIO</div></a>
-      <a href="/catalogo" style="text-decoration: none; color: inherit;"><div class="catlogo5">CATÁLOGO</div></a>
+      <a href="/" style="text-decoration: none; color: inherit;"><div class="inicio5">INICIO</div></a>
+      <a href="http://localhost:3000/catalogo" style="text-decoration: none; color: inherit;">
+        <div class="catlogo5">CATÁLOGO</div>
+      </a>
       <a href="#" style="text-decoration: none; color: inherit;"><div class="blog5">BLOG</div></a>
       <a href="/about-us.html" style="text-decoration: none; color: inherit;"><div class="nuestra-historia6" id="nh">NUESTRA HISTORIA</div></a>
       <a href="#" style="text-decoration: none; color: inherit;"><div class="seguimiento7" id="seg">SEGUIMIENTO</div></a>
-      <img class="serach-icon5" alt="Buscar" src="./public/serach.svg" />
-      <img class="cart-icon5" alt="Carrito" src="./public/cart.svg" />
-      <div class="login-wrapper3">
-        <a href="#" style="text-decoration: none; color: inherit;"><div class="login5">Login</div></a>
-      </div>
-      <img class="path-74-icon5" alt="" src="./public/path-74.svg" />
-      <div class="div26">1</div>
-    </div>
+     
+      
 
+    <div class="session-container">
+  <!-- Sección de Bienvenida y Login/Logout -->
+        <div class="bienvenido-wrapper" id="bienvenido-wrapper">
+          <!-- Texto de bienvenida por defecto -->
+          <div class="bienvenido-text" id="bienvenido-text"></div>
+        </div>
+
+        
+        <!-- Sección de Login o nombre de usuario -->
+        <div class="login-wrapper3" id="login-wrapper3" style="text-decoration: none; color: inherit; cursor: pointer;">
+          <div class="login5">Iniciar Sesión</div> <!-- El texto del botón -->
+        </div>
+      
+    </div>
+  </div>
+  
     <!-- Menú desplegable para dispositivos móviles -->
     <div class="menu-container">
       <ul class="sidebar-burger">
@@ -54,26 +66,30 @@
           </a>
         </li>
         <li><a href="/">INICIO</a></li>
-        <li><a href="/catalogo">CATÁLOGO</a></li>
+        <li><a href="http://localhost:3000/catalogo">CATÁLOGO</a></li>
         <li><a href="#">BLOG</a></li>
         <li><a href="/about-us.html">NUESTRA HISTORIA</a></li>
         <li><a href="#">SEGUIMIENTO</a></li>
-        <li><a href="#">Login</a></li>
+        <li><a href="/login">Login</a></li>
       </ul>
     </div>
-
+  
   </header>
-
+  
+  <!-- Script para cargar dinámicamente el estado de la sesión -->
   <script>
+ 
     function toggleMenu() {
       const menu = document.querySelector('.menu-container');
       menu.classList.toggle('active'); // Activa o desactiva el menú
     }
-
+  
     function hideSidebar() {
       const menu = document.querySelector('.menu-container');
       menu.classList.remove('active'); // Oculta el menú
     }
   </script>
+  
 </body>
 </html>
+

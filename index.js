@@ -6,6 +6,11 @@ const fs = require('fs');
 const bodyParser = require('body-parser');
 const { PORT, DB_HOST, DB_NAME, DB_PASSWORD, DB_USER, DB_PORT } = require('./config');
 const multer = require('multer'); // Asegúrate de tener esto aquí
+const bcrypt = require('bcrypt'); // Asegúrate de tener esta línea
+const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
+
+
 
 
 const db = mysql.createConnection({
@@ -15,6 +20,27 @@ const db = mysql.createConnection({
   port: DB_PORT,
   database: DB_NAME
 });
+
+
+// Configuración de la sesión
+const sessionStore = new MySQLStore({
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASSWORD,
+  database: DB_NAME,
+  port: DB_PORT
+});
+
+app.use(session({
+  key: 'caribbeanhouse_session', // Cambia el nombre de la cookie si lo deseas
+  secret: 'tusuperclaveultrasecreta12345', // Cambia esta clave secreta por algo más seguro
+  store: sessionStore,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+      maxAge: 1000 * 60 * 60 * 24 // 1 día de duración de la sesión
+  }
+}));
 
 db.connect((err) => {
   if (err) {
@@ -765,7 +791,128 @@ app.get('/buscar', (req, res) => {
 });
 
 
+//################################################## INICIO DE SEIOSN ##################################################
 
+
+// Middleware global para que el correo del usuario esté disponible en todas las vistas
+app.use((req, res, next) => {
+  res.locals.correo = req.session.correo || null; // Si hay una sesión activa, pasa el correo del usuario, si no, es null
+  next();
+});
+
+
+// Ruta para mostrar la página de inicio de sesión
+app.get('/login', (req, res) => {
+  res.render('login'); // Renderiza la vista login.ejs
+});
+
+// Ruta para mostrar la página de creación de cuenta
+app.get('/crear-cuenta', (req, res) => {
+  res.render('crear-cuenta'); // Renderiza la vista crear-cuenta.ejs
+});
+
+
+// Ruta para verificar el estado de la sesión
+// Ruta para verificar el estado de la sesión
+app.get('/api/session', (req, res) => {
+  if (req.session.userId) {
+    // Si hay una sesión activa, devolver el correo del usuario
+    res.json({ isAuthenticated: true, correo: req.session.correo });
+  } else {
+    // Si no hay una sesión activa
+    res.json({ isAuthenticated: false });
+  }
+});
+// Ruta para manejar el inicio de sesión
+app.post('/login', (req, res) => {
+  const { correo, password } = req.body;
+
+  // Buscamos al usuario en la base de datos por su correo
+  db.query('SELECT * FROM Usuarios WHERE correo = ?', [correo], (err, results) => {
+    if (err) {
+      console.error('Error fetching user:', err);
+      return res.status(500).send('Error interno del servidor');
+    }
+
+    if (results.length === 0) {
+      return res.status(401).send('Correo o contraseña incorrectos');
+    }
+
+    const user = results[0];
+
+    // Comparamos la contraseña
+    bcrypt.compare(password, user.password, (err, isMatch) => {
+      if (err) {
+        console.error('Error comparing passwords:', err);
+        return res.status(500).send('Error interno del servidor');
+      }
+
+      if (!isMatch) {
+        return res.status(401).send('Correo o contraseña incorrectos');
+      }
+
+      // Guardamos la información del usuario en la sesión
+      req.session.userId = user.usuario_id;
+      req.session.nombre = user.nombre;
+      req.session.correo = user.correo;
+
+      // Redirigimos al usuario a una página después de iniciar sesión
+      res.redirect('/');  // O redirige a la página que prefieras
+    });
+  });
+});
+
+
+// Ruta para manejar la creación de cuentas
+app.post('/crear-cuenta', (req, res) => {
+  const { nombre, correo, telefono, password } = req.body;
+
+  // Verifica si el correo ya está en uso
+  db.query('SELECT * FROM Usuarios WHERE correo = ?', [correo], (err, results) => {
+    if (err) {
+      console.error('Error checking email:', err);
+      return res.status(500).send('Error interno del servidor');
+    }
+
+    if (results.length > 0) {
+      // Si el correo ya está en uso, devuelve un error
+      return res.status(400).send('El correo ya está en uso');
+    }
+
+    // Encripta la contraseña antes de guardarla
+    bcrypt.hash(password, 10, (err, hashedPassword) => {
+      if (err) {
+        console.error('Error hashing password:', err);
+        return res.status(500).send('Error interno del servidor');
+      }
+
+      // Inserta el nuevo usuario en la base de datos
+      db.query(
+        'INSERT INTO Usuarios (nombre, correo, telefono, password) VALUES (?, ?, ?, ?)',
+        [nombre, correo, telefono, hashedPassword],
+        (err, result) => {
+          if (err) {
+            console.error('Error creating user:', err);
+            return res.status(500).send('Error al crear la cuenta');
+          }
+
+          // Redirige al usuario a la página de inicio de sesión después de crear la cuenta
+          res.redirect('/login');
+        }
+      );
+    });
+  });
+});
+
+app.get('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).send('Error al cerrar la sesión');
+    }
+    // Redirige al usuario al login después de cerrar sesión
+    res.redirect('/');
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);
