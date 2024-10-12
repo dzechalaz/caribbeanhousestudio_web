@@ -150,22 +150,51 @@
   }
 .login5 {
     position: absolute;
-    top: calc(50% - 7.5px);
-    left: calc(50% - 23px);
+    top: calc(50% - 6.5px);
+    left: calc(50% - 56px);
     text-transform: uppercase;
     font-weight: 600;
-  }
+    color: var(--color-white); /* Agregué color blanco */
+}
+
 .login-wrapper3 {
     position: absolute;
-    top: calc(50% - 18px);
-    right: 50px; /* Ajustamos la distancia mínima al borde derecho */
+    top: calc(50% - 9px);
+    right: 50px;
     background-color: var(--color-darkslategray-100);
-    width: 130px;
+    width: 180px; /* Aumenté el ancho para que el texto largo no se corte */
     height: 35px;
-    text-align: left;
+    text-align: center; /* Cambié a "center" para alinear el texto */
     font-size: var(--font-size-sm);
-    color: var(--color-white);
-  }
+    color: var(--color-white); /* Verifica que el color del texto sea visible */
+}
+
+
+/* Estilo para bienvenido-wrapper */
+.bienvenido-wrapper {
+  display: inline-block;
+  margin-right: 250px; /* Separación entre el texto de Bienvenido y el botón */
+  font-size: var(--font-size-lg);
+  color: #3A6EA5;
+  max-width: 150px; /* Ajusta esto según el espacio disponible */
+  white-space: nowrap; /* Evita el salto de línea */
+  overflow: hidden; /* Oculta el desbordamiento */
+  text-overflow: ellipsis; /* Muestra "..." si el texto es demasiado largo */
+  vertical-align: right; /* Alinea verticalmente con el botón */
+
+  z-index: 3; /* Asegura que esté sobre otros elementos */
+}
+
+.session-container {
+  display: flex;
+  align-items: center; /* Alinea los elementos verticalmente */
+  justify-content: flex-end; /* Los coloca a la derecha */
+  gap: 10px; /* Espacio entre el correo y el botón */
+  position: absolute;
+  right: 0px;
+  top: calc(50% - 9px); /* Ajusta la alineación vertical */
+}
+
 .path-74-icon5 {
     position: absolute;
     top: calc(50% - 13.82px);
