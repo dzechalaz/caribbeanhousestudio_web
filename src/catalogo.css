@@ -47,15 +47,6 @@
 }
 
 
-/* Estilo para la sección de productos */
-.product-grid {
-  flex-grow: 1;
-  background-color: #ffffff7c;
-  border-radius: 8px;
-  padding: 20px;
-  min-height: 500px; /* Altura mínima */
-  z-index: 1;
-}
 
 /* Estilo de la CANVAS */
 
@@ -152,10 +143,28 @@
 
 
 .product-list {
+  flex-grow: 2;
+  background-color: #ffffff7c;
+  border-radius: 8px;
+  padding: 60px;
+  max-width:  79vw;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Cambiar el tamaño mínimo de las tarjetas */
-  gap: 20px 10px; /* 20px de espacio vertical, 10px de espacio horizontal */
-  padding: 0px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 250px));
+  grid-template-columns: repeat(minmax(auto-fit, 4), minmax(250px, 300px)); /* Cambiar el tamaño mínimo de las tarjetas */
+  gap: 30px;
+ 
+  justify-content: center; /* Centra horizontalmente el grid dentro del contenedor */
+  align-items: center; /* Centra verticalmente el contenido del grid (si el contenedor tiene más altura) */
+}
+/* Estilo para la sección de productos */
+.product-grid {
+  flex-grow: 1;
+  
+ 
+  padding: 20px;
+  min-height: 500px; /* Altura mínima */
+  z-index: 1;
+  
 }
 
 
