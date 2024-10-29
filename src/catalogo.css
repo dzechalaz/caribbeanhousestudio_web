@@ -4,7 +4,7 @@
   flex-grow: 1;
   justify-content: center;
   align-content: center;
-  max-width: 1900px;
+
   margin: 87px auto 0; /* Espacio debajo del header */
   padding: 20px;
   gap: 0px; /* Espacio entre la barra lateral y el área de productos */
@@ -131,7 +131,7 @@ body {
   background-color: #ffffff7c;
   border-radius: 8px;
   padding: 20px;
-  max-width:  75vw;
+  max-width:  70vw;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Máximo de 5 columnas */ /* Cambiar el tamaño mínimo de las tarjetas */
   gap: 20px;
@@ -140,15 +140,11 @@ body {
 
    /* Centra verticalmente el contenido del grid (si el contenedor tiene más altura) */
 }
-
-
-
-@media (max-width: 1700px) {
-  .product-list {
-    
-    grid-template-columns: repeat(auto-fill, minmax(950px, 1fr)); /* Ajusta el tamaño mínimo de las tarjetas */
-  }
+.product-grid{
+  max-width: 1500px;
 }
+
+
 
 
 /* Estilo del contenedor de la tarjeta de producto */
