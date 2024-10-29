@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+<title>CARIBBEAN HOUSE STURIO</title>
 <head>
     <!-- Enlace al archivo de estilos barra.css según la ruta que mencionaste -->
     <link rel="stylesheet" href="Templates/barra.css">
@@ -24,15 +25,16 @@
           <div class="caribbean-house-studio11">Caribbean House Studio</div>
         </a>
       </div>
-      <img class="logo-icon5" alt="Logo" src="./public/logo.svg" />
+      <a href="/">
+        <img class="logo-icon5" alt="Logo" src="./public/logo.svg" />
+      </a>
+    
     </div>
     
     <!-- Menú principal con enlaces -->
     <div class="menu-items">
       <a href="/" style="text-decoration: none; color: inherit;"><div class="inicio5">INICIO</div></a>
-      <a href="/catalogo" style="text-decoration: none; color: inherit;">
-        <div class="catlogo5">CATÁLOGO</div>
-      </a>
+      <a href="/catalogo" style="text-decoration: none; color: inherit;"><div class="catlogo5">CATÁLOGO</div></a>
       <a href="#" style="text-decoration: none; color: inherit;"><div class="blog5">BLOG</div></a>
       <a href="/about-us.html" style="text-decoration: none; color: inherit;"><div class="nuestra-historia6" id="nh">NUESTRA HISTORIA</div></a>
       <a href="#" style="text-decoration: none; color: inherit;"><div class="seguimiento7" id="seg">SEGUIMIENTO</div></a>
@@ -76,19 +78,28 @@
   
   </header>
   
-  <!-- Script para cargar dinámicamente el estado de la sesión -->
   <script>
- 
     function toggleMenu() {
-      const menu = document.querySelector('.menu-container');
-      menu.classList.toggle('active'); // Activa o desactiva el menú
+        const menu = document.querySelector('.menu-container');
+        menu.classList.toggle('active'); // Muestra/oculta el menú
     }
   
     function hideSidebar() {
-      const menu = document.querySelector('.menu-container');
-      menu.classList.remove('active'); // Oculta el menú
+        const menu = document.querySelector('.menu-container');
+        menu.classList.remove('active'); // Oculta el menú
     }
+  
+    // Cerrar el menú cuando se hace clic fuera del menú o del botón
+    document.addEventListener('click', function(event) {
+        const menu = document.querySelector('.menu-container');
+        const button = document.querySelector('.menu-button');
+        if (menu && button && !menu.contains(event.target) && !button.contains(event.target)) {
+            menu.classList.remove('active');
+        }
+    });
   </script>
+
+  
   
 </body>
 </html>

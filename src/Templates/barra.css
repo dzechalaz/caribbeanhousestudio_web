@@ -79,20 +79,6 @@
   }
 
 
-.catlogo5,
-.inicio5 {
-    position: absolute;
-    top: calc(50% - 5px);
-    left: calc(50% - 201.05px);
-    cursor: pointer;
-  }
-.catlogo5 {
-    top: calc(50% - 5px);
-    left: calc(50% + 102.95px);
-   
-  }
-
-
 .caribbean-house-studio11 {
     position: absolute;
     width: calc(100% + 1px);
@@ -113,41 +99,45 @@
     width: 113.1px;
   }
   
-.menu-items {
+
+
+  /* Contenedor de menú */
+  .menu-items {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 50px;
+    margin-top: 38px; /* Ajusta la altura */
+    width: 60%; /* Define el ancho del contenedor como el 60% de la página */
+    transform: translateX(60%); /* Mueve el menú hacia el 60% del ancho */
+    justify-content: flex-start; /* Mantén los elementos alineados desde el principio del contenedor */
+}
+/* Ajuste para pantallas menores a 1920px */
+@media (max-width: 1600px) {
+    .menu-items {
+        width: 80%; /* Define el ancho del contenedor para alinearse mejor con el 30% del grosor */
+        transform: translateX(20%); /* Mueve el menú hacia el 30% del ancho */
+    }
+    .logo5 {
+      display: none;
   }
-  
+}
 
-.blog5,
-.nuestra-historia6,
-.seguimiento7 {
-    position: absolute;
-    top: calc(50% - 5px);
-    left: calc(50% + 239.95px);
-    cursor: pointer;
+
+  /* Estilo de los elementos del menú */
+  .inicio5,
+  .catlogo5,
+  .blog5,
+  .nuestra-historia6,
+  .seguimiento7 {
+      position: relative; /* No necesita posición absoluta, ya que se usa flexbox */
+      cursor: pointer;
+      font-size: 1rem; /* Ajusta el tamaño según tu preferencia */
+      color: var(--color-darkslategray-100);
+      font-weight: 500; /* Para mantener la consistencia en el peso de la fuente */
   }
-.nuestra-historia6,
-.seguimiento7 {
-    left: calc(50% - 101.05px);
-    cursor: pointer;
-  }
-.seguimiento7 {
-    left: calc(50% + 335.95px);
-  }
-.cart-icon5,
-.serach-icon5 {
-    position: absolute;
-    top: calc(50% - 10px);
-    left: calc(50% + 474.95px);
-    width: 23px;
-    height: 23px;
-  }
-.cart-icon5 {
-    left: calc(50% + 515.95px);
-    width: 24px;
-  }
+
+
+
 .login5 {
     position: absolute;
     top: calc(50% - 6.5px);
@@ -160,7 +150,7 @@
 .login-wrapper3 {
     position: absolute;
     top: calc(50% - 9px);
-    right: 50px;
+    right: 0px;
     background-color: var(--color-darkslategray-100);
     width: 180px; /* Aumenté el ancho para que el texto largo no se corte */
     height: 35px;
@@ -216,132 +206,68 @@
 
 
 
+  /* Estilos para dispositivos móviles (menor a 440px) */
+  @media (max-width: 1100px) {
+      .menu-button {
+          display: block; /* Mostrar botón del menú en móviles */
+          position: absolute;
+          top: 10px;
+          right: 0px;
+          cursor: pointer;
+          width: 50px;
+          z-index:4;
+      }
+  
+      .menu-items {
+          display: none; /* Ocultar el menú principal en móviles */
+          width:0px;
+      }
+  
+      .menu-container {
+          display: none; /* Oculto por defecto */
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background-color: rgba(0, 0, 0, 0.8);
+          z-index: 5;
+          justify-content: flex-end; /* Justificar contenido a la derecha */
+          align-items: flex-start;
+      }
+  
+      .menu-container.active {
+          display: flex; /* Mostrar cuando está activo */
+      }
+  
+      .sidebar-burger {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end; /* Alinear elementos a la derecha */
+        gap: 20px;
+        background: #fff;
+        width: 30%;
+        padding: 30px;
+        height: 100%;
+        
+    }
+  
+    .sidebar-burger li {
+      width: 100%; /* Ocupar todo el ancho disponible para evitar el centrado automático */
+      text-align: right; /* Alinear el contenido del li a la derecha */
+  }
 
-  /* Estilo de la barra lateral */
-  .sidebar-burger {
-    position: fixed;
-    top: 0; 
-    right: 0;
-    height: 100vh;
-    width: calc(30% + 1px);
-    background-color: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(12px);
-    box-shadow: -10px 0 10px rgba(0, 0, 0, 0.1);
-    list-style: none;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 20px; /* Añade espacio entre cada ítem */
-    padding: 20px; /* Añade un espacio interno */
+  .sidebar-burger li a {
+      text-decoration: none;
+      color: #333;
+      font-size: 1.5rem;
+      display: block; /* Para asegurarnos de que el enlace ocupe todo el ancho del li */
+      text-align: right; /* Alinear el texto del enlace a la derecha */
   }
-  
-  .sidebar-burger li {
-    width: 100%; /* Cada ítem ocupa todo el ancho disponible */
-  }
-  
-  .sidebar-burger a {
-    display: block;
-    width: 100%;
-    padding: 15px 20px;
-    text-decoration: none;
-    color: #333; /* Color del texto */
-    background-color: #fff; /* Color de fondo del ítem */
-    border-radius: 5px;
-    text-align: left;
-  }
-  
-  .sidebar-burger a:hover {
-    background-color: #555; /* Color al pasar el ratón por encima */
-  }
-  
-  .sidebar-burger svg {
-    width: 26px;
-    height: 26px;
-    fill: #333;
+      .sidebar-burger li a:hover {
+          color: var(--color-lightseagreen);
+      }
   }
 
-
-
-
-  /* Estilos responsivos */
-  @media(max-width: 1540px) {
-    .menu-button {
-      display: block;
-    }
-    .menu-items {
-      display: none;
-    }
-  
-    .menu-items.active {
-      display: flex;
-    }
-    .menu-container.active {
-      display: flex; /* Mostrar cuando esté activo */
-    }
-    .component-1-13-child{
-      display: flex;
-    }
-  
-  
-  }
-  
-  @media(max-width: 440px) {
-    
-    .logo5 {
-      position: absolute;
-      top: calc(50% - 16px);
-      left: 150px;
-      width: 120px;
-      height: 37px;
-      cursor: pointer;
-    }
-  
-    .logo-icon5 {
-      position: absolute;
-      height: calc(100% - 21.3px);
-      top: 6.15px;
-      bottom: 10.15px;
-      left: 13px;
-      max-height: 100%;
-      width: calc(12%);
-    }
-  
-    .caribbean-house-studio11 {
-      position: absolute;
-      width: calc(100% + 100px);
-      top: calc(50% - 12.5px);
-      left: -50px;
-      font-weight: 600;
-      display: inline-block;
-      font-size: calc(50%)
-    }
-  
-    .component-1-13-child{
-      position: absolute;
-      height: 85%;
-      width: 100%;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.13);
-      background-color: #edebeb;
-    }
-  
-    .menu-items {
-      gap: 10px;
-    }
-    .menu-button {
-      position: absolute;
-      top: calc(32% - 5px);
-      left: calc(52%);
-      cursor: pointer;
-      width: 45px;  /* Ajusta el ancho del botón */
-      height: 40px; /* Ajusta la altura del botón */
-    }
-  
-    
-  }
-  
