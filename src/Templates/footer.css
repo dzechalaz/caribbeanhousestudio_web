@@ -1,15 +1,12 @@
 /* Footer styling */
 footer {
-    background-color: #373737; /* Color de fondo */
-    background-image: url('path-2531.svg'); /* Usamos el SVG como fondo */
-    background-size: cover;
-    background-position: center;
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* Distribuye los elementos a izquierda y derecha */
-    font-family: 'Montserrat', sans-serif;
-    padding: 0 60px; /* Espaciado desde los bordes izquierdo y derecho */
-  }
+  background-color: #373737;
+  display: flex;
+  align-items: center; /* Puedes cambiar esto según tus necesidades */
+  justify-content: center; /* Cambia a center si quieres centrar todo */
+  font-family: 'Montserrat', sans-serif;
+  padding: 20px 60px; /* Reduce el padding si es necesario */
+}
   
   .footer-content {
     display: flex;
@@ -53,10 +50,11 @@ footer {
     color: #b2b2b2;
   }
   
-  @media screen and (max-width: 768px) {
+  @media screen and (max-width: 1000px) {
     footer {
       flex-direction: column;
-      padding: 20px;
+      width:100%;
+      background-color: #373737;
     }
   
     .footer-content {

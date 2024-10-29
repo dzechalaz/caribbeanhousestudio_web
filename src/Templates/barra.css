@@ -2,7 +2,6 @@
 .barra-pestaas5 {
     position: fixed;
     z-index: 3;
-    
     width: calc(100% + 2.1px);
     top: -0.5px;
     right: -2.1px;
@@ -56,7 +55,7 @@
   }
 .menu-button {
     display: none;
-    position: absolute;
+    position: relative;
     top: calc(20% - 5px);
     left: calc(90% - 50px);
     cursor: pointer;
