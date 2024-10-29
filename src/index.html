@@ -311,6 +311,23 @@
           })
           .catch(error => console.error('Error al cargar el footer:', error));
       };
+
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.addEventListener("click", function (e) {
+          window.location.href = "/";
+        });
+      }
+
+      function toggleMenu() {
+        const menu = document.querySelector('.menu-container');
+        menu.classList.toggle('active'); // Activa o desactiva el menú
+      }
+
+      function hideSidebar() {
+        const menu = document.querySelector('.menu-container');
+        menu.classList.remove('active'); // Oculta el menú
+      }
     </script>
     
     
