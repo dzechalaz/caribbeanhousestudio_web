@@ -906,14 +906,21 @@ app.post('/crear-cuenta', (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
+  // Renderiza una página que pide confirmación
+  res.render('confirm_logout'); // Enviamos la vista confirm_logout.ejs
+});
+
+app.post('/logout', (req, res) => {
+  // Solo se ejecuta si el usuario confirma
   req.session.destroy((err) => {
     if (err) {
       return res.status(500).send('Error al cerrar la sesión');
     }
-    // Redirige al usuario al login después de cerrar sesión
+    // Redirige al usuario al inicio después de cerrar sesión
     res.redirect('/');
   });
 });
+
 
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);

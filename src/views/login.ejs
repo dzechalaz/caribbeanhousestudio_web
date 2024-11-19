@@ -5,20 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión</title>
     <link rel="stylesheet" href="./login.css">
+    <link rel="stylesheet" href="./global.css">
 </head>
 <body>
-    <div class="login-container">
-        <h2>Iniciar Sesión</h2>
-        <form action="/login" method="POST">
-            <label for="correo">Correo electrónico:</label>
-            <input type="email" id="correo" name="correo" required>
-            
-            <label for="password">Contraseña:</label>
-            <input type="password" id="password" name="password" required>
-            
-            <button type="submit">Iniciar Sesión</button>
-        </form>
-        <p>¿No tienes una cuenta? <a href="/crear-cuenta">Crea una aquí</a></p>
+    <div class="background-container">
+        <div class="login-container">
+            <h2>Iniciar Sesión</h2>
+            <form action="/login" method="POST">
+                <label for="correo">Correo electrónico:</label>
+                <input type="email" id="correo" name="correo" required>
+                
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" required>
+                
+                <button type="submit">Iniciar Sesión</button>
+            </form>
+            <p>¿No tienes una cuenta? <a href="/crear-cuenta">Crea una aquí</a></p>
+        </div>
     </div>
 </body>
 </html>
