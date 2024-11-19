@@ -491,31 +491,7 @@ app.get('/seguimiento', (req, res) => {
   });
 });
 
-//########################################## AÑADIR ID ##################################################
-
-app.get('/añadirID', (req, res) => {
-  res.sendFile(path.join(__dirname, 'src/añadirID.html'));
-});
-
-
-
-app.post('/verificar-id-compra', (req, res) => {
-  const { idCompra } = req.body;
-  db.query('SELECT * FROM Compras WHERE compra_id = ?', [idCompra], (err, results) => {
-    if (err) {
-      console.error('Error querying database:', err);
-      res.status(500).json({ error: 'Database query error' });
-      return;
-    }
-    if (results.length > 0) {
-      res.json({ exists: true });
-    } else {
-      res.json({ exists: false });
-    }
-  });
-});
-
-
+//########################################## COMPRAS ##################################################
 
 app.get('/compras', (req, res) => {
   const idCompra = req.query.id;
@@ -573,6 +549,31 @@ app.get('/compras', (req, res) => {
     }
   });
 });
+
+
+app.get('/historial-compras', (req, res) => {
+  const userId = req.session.userId; // Obtiene el ID del usuario en sesión
+
+  if (!userId) {
+    return res.redirect('/login'); // Redirige si el usuario no está autenticado
+  }
+
+  // Consulta todas las compras del usuario en sesión
+  db.query(
+    'SELECT * FROM Compras WHERE usuario_id = ?', 
+    [userId], 
+    (error, comprasResults) => {
+      if (error) {
+        console.error('Error fetching purchase history:', error);
+        return res.status(500).send('Error interno del servidor');
+      }
+
+      // Renderiza la vista 'compras.ejs' con los datos de las compras
+      res.render('compras', { compras: comprasResults });
+    }
+  );
+});
+
 
 //########################################## Catálogo ##################################################
 

@@ -28,6 +28,7 @@ body {
   --font-size-31xl: 50px;
 
   /* Colors */
+  --color-antiquewhiteDark: #b89645;
   --color-antiquewhite: #d9cfb8;
   --color-white: #fff;
   --color-darkslategray-200: #454545;
