@@ -5,26 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Cuenta</title>
     <link rel="stylesheet" href="./login.css">
+    <link rel="stylesheet" href="./global.css">
 </head>
-<body>
-    <div class="signup-container">
-        <h2>Crear Cuenta</h2>
-        <form action="/crear-cuenta" method="POST">
-            <label for="nombre">Nombre:</label>
-            <input type="text" id="nombre" name="nombre" required>
-            
-            <label for="correo">Correo electrónico:</label>
-            <input type="email" id="correo" name="correo" required>
+<body>`
+    <div class="background-container"></div>
+        <div class="signup-container">
+            <h2>Crear Cuenta</h2>
+            <form action="/crear-cuenta" method="POST">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required>
+                
+                <label for="correo">Correo electrónico:</label>
+                <input type="email" id="correo" name="correo" required>
 
-            <label for="telefono">Teléfono:</label>
-            <input type="tel" id="telefono" name="telefono" required>
+                <label for="telefono">Teléfono:</label>
+                <input type="tel" id="telefono" name="telefono" required>
 
-            <label for="password">Contraseña:</label>
-            <input type="password" id="password" name="password" required>
-            
-            <button type="submit">Crear Cuenta</button>
-        </form>
-        <p>¿Ya tienes una cuenta? <a href="/login">Inicia sesión aquí</a></p>
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" required>
+                
+                <button type="submit">Crear Cuenta</button>
+            </form>
+            <p>¿Ya tienes una cuenta? <a href="/login">Inicia sesión aquí</a></p>
+        </div>
     </div>
 </body>
 </html>

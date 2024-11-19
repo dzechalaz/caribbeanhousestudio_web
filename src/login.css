@@ -1,37 +1,102 @@
+/* Estilos generales */
+body {
+    font-family: 'Montserrat', sans-serif; /* Fuente Montserrat */
+    background-color: #F8E8D3; /* Fondo cálido estilo Shukum */
+    margin: 0;
+    padding: 0;
+   
+
+
+}
+
+.background-container {
+    position: fixed; /* Fijo para cubrir siempre toda la pantalla */
+    top: 0;
+    left: 0;
+    width: 100%; /* Cubre todo el ancho */
+    height: 100%; /* Cubre todo el alto */
+    background-image: url('/public/080bef28e2d2463cae04d69b5960f9f82@2x.png'); /* Imagen de fondo */
+    background-size: cover; /* Ajusta la imagen para cubrir todo el contenedor */
+    background-blend-mode: multiply;
+    background-position: center; /* Centra la imagen */
+    z-index: -1; /* Envía el fondo detrás del contenido */
+}
+
+/* Contenedor principal */
 .login-container, .signup-container {
     max-width: 400px;
-    margin: 0 auto;
+    margin: 100px auto; /* Centra el formulario y agrega espacio superior */
     padding: 20px;
+    background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco con transparencia */
     border: 1px solid #ccc;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 3;
+    text-align: center; /* Centra el contenido dentro del contenedor */
 }
 
+
+
+/* Formulario */
 form {
     display: flex;
     flex-direction: column;
 }
 
+/* Etiquetas */
 label {
     margin-bottom: 5px;
+    font-weight: bold;
+    color: #5D4037; /* Texto marrón oscuro */
 }
 
+/* Campos de entrada */
 input {
     margin-bottom: 15px;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid #D7CCC8; /* Bordes suaves */
     border-radius: 5px;
+    background-color: #FFF8F0; /* Fondo acorde al diseño */
+    color: #5D4037; /* Texto marrón oscuro */
+    font-family: 'Montserrat', sans-serif; /* Fuente Montserrat */
 }
 
+input:focus {
+    border-color: #8D6E63; /* Marrón más oscuro al enfocar */
+    box-shadow: 0 0 5px rgba(141, 110, 99, 0.5); /* Sombra al enfocar */
+}
+
+/* Botón */
 button {
     padding: 10px;
-    background-color: #4CAF50;
+    background-color: var(--color-lightseagreen); /* Marrón medio */
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    font-family: 'Montserrat', sans-serif; /* Fuente Montserrat */
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    z-index: 3;
+    margin-bottom: 10px; /* Reduce el espacio entre los botones */
+
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #80e6d5; /* Marrón oscuro al pasar el mouse */
+}
+
+/* Enlaces */
+a {
+    color: #C75D5D; /* Marrón oscuro para enlaces */
+    text-decoration: none;
+}
+
+.login-container h2 {
+    font-size: 1.2rem; /* Reduce el tamaño del título */
+    margin-bottom: 10px; /* Menor espacio debajo del título */
+}
+.login-container p {
+    font-size: 0.9rem; /* Reduce el tamaño del texto */
+    margin-bottom: 15px; /* Menor espacio debajo del texto */
 }

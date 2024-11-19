@@ -144,6 +144,7 @@
     text-transform: uppercase;
     font-weight: 600;
     color: var(--color-white); /* Agregué color blanco */
+    cursor: pointer; /* Cambia el cursor a manita */
 }
 
 .login-wrapper3 {
@@ -156,6 +157,7 @@
     text-align: center; /* Cambié a "center" para alinear el texto */
     font-size: var(--font-size-sm);
     color: var(--color-white); /* Verifica que el color del texto sea visible */
+    cursor: pointer; /* Cambia el cursor a manita */
 }
 
 

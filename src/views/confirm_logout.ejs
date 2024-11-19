@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar Cierre de Sesión</title>
+    <link rel="stylesheet" href="/login.css"> <!-- Asegúrate de que login.css esté disponible -->
+    <link rel="stylesheet" href="/global.css"> 
+</head>
+<body>
+    <div class="background-container"></div>
+    <div class="login-container">
+        <h2>Confirmar Cierre de Sesión</h2>
+        <p>¿Estás seguro de que deseas cerrar sesión?</p>
+        <form action="/logout" method="POST">
+            <button type="submit">Sí, cerrar sesión</button>
+        </form>
+        <form action="/">
+            <button type="submit">Cancelar</button>
+        </form>
+    </div>
+</body>
+</html>
