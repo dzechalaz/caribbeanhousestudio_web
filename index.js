@@ -551,28 +551,6 @@ app.get('/compras', (req, res) => {
 });
 
 
-app.get('/historial-compras', (req, res) => {
-  const userId = req.session.userId; // Obtiene el ID del usuario en sesión
-
-  if (!userId) {
-    return res.redirect('/login'); // Redirige si el usuario no está autenticado
-  }
-
-  // Consulta todas las compras del usuario en sesión
-  db.query(
-    'SELECT * FROM Compras WHERE usuario_id = ?', 
-    [userId], 
-    (error, comprasResults) => {
-      if (error) {
-        console.error('Error fetching purchase history:', error);
-        return res.status(500).send('Error interno del servidor');
-      }
-
-      // Renderiza la vista 'compras.ejs' con los datos de las compras
-      res.render('compras', { compras: comprasResults });
-    }
-  );
-});
 
 
 //########################################## Catálogo ##################################################
