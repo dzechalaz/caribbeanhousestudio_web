@@ -134,7 +134,7 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
             <div class="informacion">
                 <div class="divisor"></div>
                 <div class="imagespace"></div>
-                <img id="mainImage" class="main-image-icon" alt="" src="/public/Products/<%= producto.producto_id  %>/a.webp" data-animate-on-scroll />
+                <img id="mainImage" class="main-image-icon" alt="" src="<%= CFI %>/Products/<%= producto.producto_id %>/a.webp"  data-animate-on-scroll />
 
                 <div class="description">
                     <b class="informacin-del-pedido">Información del pedido</b>
@@ -153,25 +153,25 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
                     <div class="div19">
                         <div class="grid-fondo"></div>
                         <button class="credenza4" onclick="changeMainImage('a.webp')">
-                            <img src="/public/Products/<%= producto.producto_id  %>/a.webp" alt="Imagen A" 
+                            <img src="<%= CFI %>/Products/<%= producto.producto_id %>/a.webp" alt="Imagen A" >
                         </button>
                     </div>
                     <div class="div20">
                         <div class="grid-fondo"></div>
                         <button class="credenza41" onclick="changeMainImage('b.webp')">
-                          <img src="/public/Products/<%= producto.producto_id  %>/b.webp" alt="Imagen B">
+                          <img src="<%= CFI %>/Products/<%= producto.producto_id %>/b.webp" alt="Imagen B">
                         </button>
                     </div>
                     <div class="div21">
                         <div class="grid-fondo"></div>
                         <button class="credenza42" onclick="changeMainImage('c.webp')">
-                          <img src="/public/Products/<%= producto.producto_id  %>/c.webp" alt="Imagen C">
+                          <img src="<%= CFI %>/Products/<%= producto.producto_id %>/c.webp"alt="Imagen C">
                         </button>
                     </div>
                     <div class="div22">
                         <div class="grid-fondo"></div>
                         <button class="credenza43" onclick="changeMainImage('d.webp')">
-                          <img src="/public/Products/<%= producto.producto_id  %>/d.webp" alt="Imagen D">
+                          <img src="<%= CFI %>/Products/<%= producto.producto_id %>/d.webp" alt="Imagen D">
                         </button>
                     </div>
                 </div>
@@ -223,7 +223,8 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
         }
 
         function changeMainImage(imageName) {
-            document.getElementById('mainImage').src = `/public/Products/<%= producto.producto_id  %>/${imageName}`;
+            document.getElementById('mainImage').src = `<%= CFI %>/Products/<%= producto.producto_id %>/${imageName}`;
+
         }
 
         var scrollAnimElements = document.querySelectorAll("[data-animate-on-scroll]");
