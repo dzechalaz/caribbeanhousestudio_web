@@ -85,9 +85,9 @@
 }
 .seguimiento-de-compras {
   position: absolute;
-  top: calc(50% - 24.5px);
+  top: calc(50% - 15px);
   left: 39px;
-  
+  font-size: 32px;
   
 }
 
@@ -295,7 +295,7 @@
   height: 143px;
 }
 .compra {
-  position: absolute;
+  position: relative;
   top: calc(50% - 510.5px);
   left: calc(50% - 564px);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
@@ -306,13 +306,14 @@
   opacity: 0;
   font-size: var(--font-size-6xl);
   color: var(--color-darkslategray-100);
+  margin: 20px 0;
+
 }
 .compra.animate {
   animation: 1s ease 0s 1 normal forwards slide-in-bottom;
 }
 .seguimientopre {
   position: relative;
-  
   width: 100%;
   height: 1503px;
   text-align: left;
@@ -320,4 +321,143 @@
   color: var(--color-white);
   font-family: var(--font-montserrat);
   
+}
+
+
+
+.orden-container {
+  
+  padding: 20px;
+  border-radius: var(--br-xs);
+  background-color: var(--color-antiquewhite); /* Fondo blanco con tono cálido */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 1200px; /* Ancho máximo */
+  margin: 50px auto; /* Centrando el contenedor con márgenes superiores e inferiores */
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+  
+}
+
+/* Encabezado general de la orden */
+.orden-header {
+  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: var(--color-lightseagreen); /* Color Chukum */
+  border-radius: var(--br-sm);
+  color: white;
+  font-family: var(--font-josefin-sans);
+  font-weight: 700;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.orden-header h2, 
+.orden-header h3, 
+.orden-header h4 {
+  margin: 0;
+  padding: 0 10px; /* Espaciado entre los elementos */
+  font-size: 22px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.orden-header .orden-id {
+  flex: 1;
+  text-align: left;
+  
+}
+
+.orden-header .orden-referencia {
+  flex: 1;
+  text-align: center;
+}
+
+.orden-header .orden-fecha {
+  flex: 1;
+  text-align: right;
+}
+
+/* Separadores visuales */
+.orden-header .orden-id,
+.orden-header .orden-referencia,
+.orden-header .orden-fecha {
+  border-radius: var(--br-sm);
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 8px;
+}
+
+/* Detalles de la compra dentro de la orden */
+.compra-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 15px;
+  border: 1px solid var(--color-lightseagreen);
+  border-radius: var(--br-xs);
+  background-color: rgba(240, 240, 240, 0.9);
+}
+
+.compra-container h3 {
+  font-size: 18px;
+  font-family: var(--font-josefin-sans);
+  font-weight: 700;
+  color: var(--color-darkslategray-100);
+}
+
+.compra-container p {
+  font-size: 14px;
+  font-family: var(--font-josefin-sans);
+  font-weight: 400;
+  color: var(--color-darkslategray-100);
+  margin: 5px 0;
+}
+
+/* Botones de acción */
+.compra-container .botones-accion {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  justify-content: flex-end;
+}
+
+.compra-container .boton {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.compra-container .boton.seguimiento {
+  background-color: var(--color-lightseagreen);
+  
+}
+
+.compra-container .boton.ver-articulo {
+  background-color: var(--color-darkseagreen);
+  
+  
+}
+
+.compra-container .boton.opinion {
+  background-color: var(--color-lightcoral);
+}
+
+.compra-container .boton:hover {
+  opacity: 0.9;
+}
+
+.space{
+  margin-top: 200px;
+}
+
+.orden-header{
+  border-radius: var(--br-xs);
 }
