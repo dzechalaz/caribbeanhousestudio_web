@@ -10,7 +10,7 @@ const bcrypt = require('bcrypt'); // Asegúrate de tener esta línea
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 
-const GITHUB_TOKEN = "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";
+
 
 
 
