@@ -13,6 +13,8 @@ const MySQLStore = require('express-mysql-session')(session);
 
 
 
+
+
 const db = mysql.createConnection({
   host: DB_HOST,
   user: DB_USER,
@@ -490,63 +492,265 @@ app.get('/seguimiento', (req, res) => {
     }
   });
 });
-
-//########################################## COMPRAS ##################################################
-
+//########################################## COMPRAS 987 ##################################################
+// Ruta `/compras`
 app.get('/compras', (req, res) => {
-  const idCompra = req.query.id;
-  db.query('SELECT * FROM Compras WHERE compra_id = ?', [idCompra], (error, compraResults) => {
-    if (error) throw error;
-    if (compraResults.length > 0) {
-      const compra = compraResults[0];
-      db.query('SELECT * FROM Productos WHERE producto_id = ?', [compra.producto_id], (error, productoResults) => {
-        if (error) throw error;
-        if (productoResults.length > 0) {
-          const producto = productoResults[0];
+  const userId = req.session.userId;
 
-          const productInfoPath = path.join(__dirname, 'src', 'public', 'Products', String(producto.producto_id), 'info.txt');
-          fs.readFile(productInfoPath, 'utf8', (err, data) => {
-            if (err) throw err;
+  // Verificar que el usuario esté autenticado
+  if (!userId) {
+    return res.redirect('/login');
+  }
 
-            const infoLines = data.split('\n');
-            const info = {};
-            let currentSection = null;
-
-            infoLines.forEach(line => {
-              if (line.trim() === "Información Básica") {
-                currentSection = "basic";
-                info[currentSection] = {};
-              } else if (line.trim() === "Información de Catálogo") {
-                currentSection = "catalog";
-                info[currentSection] = {};
-              } else if (line.trim() !== "") {
-                const [key, value] = line.split(': ');
-                if (currentSection && key && value) {
-                  info[currentSection][key.trim()] = value.trim();
-                }
-              }
-            });
-
-            const direccionParts = compra.direccion_envio.split(', ');
-
-            res.render('compras', {
-              idCompra,
-              compra,
-              producto,
-              info: info.basic,
-              direccion: {
-                calle: direccionParts[0],
-                ciudad: direccionParts[1],
-                estado: direccionParts[2],
-                codigoPostal: direccionParts[3]
-              }
-            });
-          });
-        }
-      });
-    } else {
-      res.send('Compra no encontrada');
+  // Paso 1: Consultar las órdenes del usuario
+  db.query('SELECT * FROM ordenes WHERE usuario_id = ?', [userId], (error, ordenes) => {
+    if (error) {
+      console.error('Error al consultar órdenes:', error);
+      return res.status(500).send('Error interno del servidor');
     }
+
+    if (ordenes.length === 0) {
+      return res.render('compras', {
+        ordenes: [],
+        compras: [],
+        mensaje: 'No se encontraron órdenes para este usuario.',
+        searchQuery: '' // Asegurar `searchQuery` para evitar errores en el EJS
+      });
+    }
+
+    // Paso 2: Obtener las compras relacionadas con las órdenes
+    const ordenIds = ordenes.map(orden => orden.orden_id);
+
+    const query = `
+      SELECT 
+        Compras.*, 
+        Productos.nombre AS producto_nombre, 
+        Productos.precio AS producto_precio, 
+        Productos.categoria AS producto_categoria, 
+        Productos.codigo AS producto_codigo,
+        Productos.producto_id AS producto_id 
+      FROM 
+        Compras 
+      LEFT JOIN 
+        Productos 
+      ON 
+        Compras.producto_id = Productos.producto_id 
+      WHERE 
+        Compras.orden_id IN (?);
+    `;
+
+    db.query(query, [ordenIds], (error, compras) => {
+      if (error) {
+        console.error('Error al consultar compras:', error);
+        return res.status(500).send('Error interno del servidor');
+      }
+
+      if (compras.length === 0) {
+        return res.render('compras', {
+          ordenes,
+          compras: [],
+          mensaje: 'No se encontraron compras asociadas a las órdenes.',
+          searchQuery: ''
+        });
+      }
+
+      // Paso 3: Leer `info.txt` para cada compra y procesar los datos
+      const comprasConInfo = [];
+      let pendientes = compras.length;
+
+      compras.forEach(compra => {
+        const productInfoPath = path.join(__dirname, 'src', 'public', 'Products', String(compra.producto_id), 'info.txt');
+
+        // Leer el archivo `info.txt`
+        fs.readFile(productInfoPath, 'utf8', (err, data) => {
+          let info = {};
+          if (!err && data) {
+            // Procesar el contenido del archivo si existe
+            const infoLines = data.split('\n');
+            infoLines.forEach(line => {
+              const [key, value] = line.split(': ');
+              if (key && value) {
+                info[key.trim()] = value.trim();
+              }
+            });
+          }
+
+          // Verifica que `producto_id` exista y no sea nulo
+          const productoId = compra.producto_id || 'default';
+
+          // Agregar la compra con la información procesada
+          const direccionParts = compra.direccion_envio.split(', ');
+          comprasConInfo.push({
+            ...compra,
+            producto: {
+              nombre: compra.producto_nombre,
+              precio: compra.producto_precio,
+              categoria: compra.producto_categoria,
+              codigo: compra.producto_codigo,
+              path_imagen: `/public/Products/${productoId}/a.webp`
+            },
+            info,
+            direccion: {
+              calle: direccionParts[0] || 'N/A',
+              ciudad: direccionParts[1] || 'N/A',
+              estado: direccionParts[2] || 'N/A',
+              codigoPostal: direccionParts[3] || 'N/A'
+            }
+          });
+
+          // Verificar si se procesaron todas las compras
+          pendientes--;
+          if (pendientes === 0) {
+            res.render('compras', {
+              ordenes,
+              compras: comprasConInfo,
+              mensaje: null,
+              searchQuery: ''
+            });
+          }
+        });
+      });
+    });
+  });
+});
+
+//########################################## BUSQUEDA COMPRAS ##################################################
+app.get('/comprasbuscar', (req, res) => {
+  const userId = req.session.userId;
+
+  // Redireccionar ?=pablo a ?q=pablo
+  if (req.query[''] && !req.query.q) {
+    return res.redirect(`/comprasbuscar?q=${req.query['']}`);
+  }
+
+  const searchQuery = req.query.q || ''; // Captura 'q'
+
+  if (!userId) {
+    return res.redirect('/login');
+  }
+
+  // Consulta para buscar órdenes basadas en la referencia o productos
+  const queryordenes = `
+    SELECT 
+      ordenes.orden_id,
+      ordenes.numero_orden,
+      ordenes.referencia,
+      ordenes.fecha_orden
+    FROM 
+      ordenes
+    LEFT JOIN 
+      Compras
+      ON ordenes.orden_id = Compras.orden_id
+    LEFT JOIN 
+      Productos
+      ON Compras.producto_id = Productos.producto_id
+    WHERE 
+      ordenes.usuario_id = ? AND
+      (ordenes.referencia LIKE ? OR Productos.nombre LIKE ?)
+  `;
+
+  const valuesordenes = [userId, `%${searchQuery}%`, `%${searchQuery}%`];
+
+  db.query(queryordenes, valuesordenes, (error, ordenes) => {
+    if (error) {
+      console.error('Error al consultar órdenes:', error);
+      return res.status(500).send('Error interno del servidor');
+    }
+
+    if (ordenes.length === 0) {
+      return res.render('compras', { ordenes: [], compras: [], mensaje: 'No se encontraron resultados.', searchQuery });
+    }
+
+    const ordenIds = Array.from(new Set(ordenes.map(orden => orden.orden_id))); // Eliminar duplicados
+
+    // Consulta solo las compras que coinciden con el término buscado
+    const queryCompras = `
+      SELECT 
+        Compras.*, 
+        Productos.nombre AS producto_nombre, 
+        Productos.precio AS producto_precio, 
+        Productos.categoria AS producto_categoria, 
+        Productos.codigo AS producto_codigo,
+        Productos.producto_id AS producto_id 
+      FROM 
+        Compras 
+      LEFT JOIN 
+        Productos 
+      ON 
+        Compras.producto_id = Productos.producto_id 
+      WHERE 
+        Compras.orden_id IN (?) AND
+        (Productos.nombre LIKE ?)
+    `;
+
+    const valuesCompras = [ordenIds, `%${searchQuery}%`];
+
+    db.query(queryCompras, valuesCompras, (error, compras) => {
+      if (error) {
+        console.error('Error al consultar compras:', error);
+        return res.status(500).send('Error interno del servidor');
+      }
+
+      const comprasConInfo = [];
+      let pendientes = compras.length;
+
+      if (compras.length === 0) {
+        return res.render('compras', {
+          ordenes: ordenes, // Ordenes sin duplicados
+          compras: [],
+          mensaje: 'No se encontraron compras asociadas a las órdenes.',
+          searchQuery
+        });
+      }
+
+      compras.forEach((compra) => {
+        const productInfoPath = path.join(__dirname, 'src', 'public', 'Products', String(compra.producto_id), 'info.txt');
+
+        fs.readFile(productInfoPath, 'utf8', (err, data) => {
+          let info = {};
+          if (!err && data) {
+            const infoLines = data.split('\n');
+            infoLines.forEach((line) => {
+              const [key, value] = line.split(': ');
+              if (key && value) {
+                info[key.trim()] = value.trim();
+              }
+            });
+          }
+
+          const productoId = compra.producto_id || 'default';
+
+          const direccionParts = compra.direccion_envio.split(', ');
+          comprasConInfo.push({
+            ...compra,
+            producto: {
+              nombre: compra.producto_nombre,
+              precio: compra.producto_precio,
+              categoria: compra.producto_categoria,
+              codigo: compra.producto_codigo,
+              path_imagen: `/public/Products/${productoId}/a.webp`,
+            },
+            info,
+            direccion: {
+              calle: direccionParts[0] || 'N/A',
+              ciudad: direccionParts[1] || 'N/A',
+              estado: direccionParts[2] || 'N/A',
+              codigoPostal: direccionParts[3] || 'N/A',
+            },
+          });
+
+          pendientes--;
+          if (pendientes === 0) {
+            res.render('compras', {
+              ordenes: ordenes, // Sin duplicados
+              compras: comprasConInfo,
+              mensaje: null,
+              searchQuery,
+            });
+          }
+        });
+      });
+    });
   });
 });
 
@@ -624,6 +828,9 @@ app.get('/producto', (req, res) => {
     }
   });
 });
+
+
+
 
 app.get('/catalogo', (req, res) => {
   const productosPorPagina = 12;
@@ -770,7 +977,7 @@ app.get('/buscar', (req, res) => {
 });
 
 
-//################################################## INICIO DE SEIOSN ##################################################
+//################################################## INICIO DE SESION ##################################################
 
 
 // Middleware global para que el correo del usuario esté disponible en todas las vistas

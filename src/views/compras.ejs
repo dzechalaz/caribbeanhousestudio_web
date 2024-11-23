@@ -1,194 +1,219 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="initial-scale=1, width=device-width" /> 
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1, width=device-width" />
 
-    <link rel="stylesheet" href="./global.css" />
-    <link rel="stylesheet" href="./compras.css" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap" />
-  </head>
-  <body>
+  <link rel="stylesheet" href="./global.css" />
+  <link rel="stylesheet" href="./compras.css" />
 
-    <!-- Contenedor para la barra de navegación -->
-    <div id="barra"></div>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap"
+  />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600&display=swap"
+  />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
+  />
 
+  <title>Compras</title>
+</head>
+<body>
+  <div id="barra"></div>
 
-    <div class="seguimientopre">
-      <img class="fondo-icon" alt="" src="./public/080bef28e2d2463cae04d69b5960f9f82@2x.png" />      
-      <div class="seguimientoheader">
-        <div class="inputbuscar"></div>
-        <input class="buscar-todas-las" placeholder="Buscar todas las compras" type="text" maxlength="100" />
-        <img class="lupa-icon" alt="" src="./public/lupa.svg" />
-        <button class="btnbusqueda">
-          <div class="buscar">Buscar</div>
-        </button>
-        <b class="seguimiento-de-compras">Seguimiento de compras</b>
-      </div>
-      <div class="compra" data-animate-on-scroll>
-        <div class="cabezeracompra">
-          <img class="compra-icon" alt="" src="./public/compra.svg" />
-          <b class="compra-realizada">Compra Realizada: <%= compra.fecha_compra.toLocaleDateString('es-ES') %></b>
-          <b class="id">Id:</b>
-          <div class="IDCom"><%= idCompra %></div>
-        </div>
-        <img class="imagen-icon" alt="" src="/public/Products/<%= producto.producto_id %>/a.webp" />
-        <b class="compra-realizada1">Compra Realizada:</b>
-        <div class="detalles">
-          <b class="NombreProducto"><%= info['Nombre'] %></b>
-          <div class="informacionBasica">
-            <p class="profile">Material: <%= info['Material'] %></p>
-            <p class="profile">Dimensiones: <%= info['Dimensiones'] %></p>
-            <p class="profile">Acabado: <%= info['Acabado'] %></p>
-            <p class="profile">Color: <%= info['Color'] %></p>
-          </div>
-        </div>
-        <div class="direccionenvio">
-          <div class="calle-av-siempre-container">
-            <p class="profile">Calle: <%= direccion.calle %></p>
-            <p class="profile">Ciudad: <%= direccion.ciudad %></p>
-            <p class="profile">Estado: <%= direccion.estado %></p>
-            <p class="profile">Código Postal: <%= direccion.codigoPostal %></p>
-          </div>
-          <b class="enviar-a">Enviar a:</b>
-        </div>
-        <div class="separador2"></div>
-        <button class="reseg" id="reSegContainer">
-          <div class="realizar-seguimiento">Realizar Seguimiento</div>
-        </button>
-        <button class="verart" id="verataContainer">
-          <div class="ver-artculo">Ver Artículo</div>
-        </button>
-        <button class="opinion">
-          <div class="escribir-una-opinin">Escribir una opinión</div>
-        </button>
-        <div class="separador1"></div>
-      </div>
-    </div>
+  <div class="seguimientopre">
+        <img class="fondo-icon" alt="" src="./public/080bef28e2d2463cae04d69b5960f9f82@2x.png" />
+        <div class="seguimientoheader">
+          <div class="inputbuscar"></div>
 
-    <!-- Footer -->
-    <div id="footer"></div>
-
-    <script>
-
-
-      // barra y footer
-      
-      window.onload = function () {
-        let claseAResaltar = "catlogo5"; 
-    
-        // Cargar barra.html dinámicamente
-        fetch("/Templates/barra.html")
-          .then((response) => response.text())
-          .then((data) => {
-            document.getElementById("barra").innerHTML = data;
-    
-            // Aplicar el estilo para el elemento resaltado
-            let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
-            if (elementoAResaltar) {
-              elementoAResaltar.style.fontWeight = 'bold';
-              elementoAResaltar.style.color = 'var(--color-lightseagreen)';
-            }
-    
-            // Por defecto, el login-wrapper3 redirige a /login
-            const loginWrapper = document.querySelector('#login-wrapper3'); 
-            const loginText = document.querySelector('.login5'); // El texto dentro del botón
-            const bienvenidoText = document.querySelector('#bienvenido-text'); // El texto de bienvenida
-  
+            <!-- Barra de búsqueda actualizada -->
+            <form method="GET" action="/comprasbuscar">
+              <input class="buscar-todas-las" name="q" placeholder="Buscar todas las ordenes" type="text" maxlength="100" value="<%= searchQuery || '' %>" />
+              <button type="submit" class="btnbusqueda">
+                <div class="buscar">Buscar</div>
+              </button>
+            </form>
             
-            if (loginWrapper) {
-              loginWrapper.onclick = function() {
-                window.location.href = '/login';
-              }; // Redirige a /login por defecto
-            }
+            <img class="lupa-icon" alt="" src="./public/lupa.svg" />
+        
+          
+          <b class="seguimiento-de-compras">Seguimiento de compras</b>
+        </div>
+    <div class="space"></div>
+
+    <% if (mensaje) { %>
+      <p style="display: flex; justify-content: center; align-items: center; font-size: 40px; height: 70vh; text-align: center; color: #D9381E;">
+        <%= mensaje %>
+      </p>
+      
+    <% } else { %>
+      <% const comprasRenderizadas = new Set(); %> <!-- Variable para rastrear compras ya mostradas -->
+      <% ordenes.forEach(orden => { %>
+        <div class="orden-container">
+          <div class="orden-header">
+            <h2>Orden: <%= orden.numero_orden %> </h2>
+            <h3>Referencia: <%= orden.referencia %> </h3>
+            <h4>Fecha: <%= orden.fecha_orden.toLocaleDateString('es-ES') %></h4>
+          </div>
+          <% compras
+            .filter(compra => compra.orden_id === orden.orden_id)
+            .forEach(compra => {
+              if (!comprasRenderizadas.has(compra.compra_id)) { 
+                comprasRenderizadas.add(compra.compra_id); // Agrega la compra a las ya renderizadas
+          %>
+              <div class="compra" data-animate-on-scroll>
+                <div class="cabezeracompra">
+                  <img class="compra-icon" alt="" src="./public/compra.svg" />
+                  <b class="compra-realizada">Compra Realizada: <%= compra.fecha_compra.toLocaleDateString('es-ES') %></b>
+                  <b class="id">Id:</b>
+                  <div class="IDCom"><%= compra.compra_id %></div>
+                </div>
+                <img class="imagen-icon" alt="Producto" src="<%= compra.producto?.path_imagen %>" />
+                <b class="compra-realizada1">Compra Realizada:</b>
+                <div class="detalles">
+                  <b class="NombreProducto"><%= compra.producto?.nombre || 'Producto no disponible' %></b>
+                  <div class="informacionBasica">
+                    <p class="profile">Material: <%= compra.info?.Material || 'N/A' %></p>
+                    <p class="profile">Dimensiones: <%= compra.info?.Dimensiones || 'N/A' %></p>
+                    <p class="profile">Acabado: <%= compra.info?.Acabado || 'N/A' %></p>
+                    <p class="profile">Color: <%= compra.info?.Color || 'N/A' %></p>
+                  </div>
+                </div>
+                <div class="direccionenvio">
+                  <div class="calle-av-siempre-container">
+                    <p class="profile">Calle: <%= compra.direccion?.calle || 'N/A' %></p>
+                    <p class="profile">Ciudad: <%= compra.direccion?.ciudad || 'N/A' %></p>
+                    <p class="profile">Estado: <%= compra.direccion?.estado || 'N/A' %></p>
+                    <p class="profile">Código Postal: <%= compra.direccion?.codigoPostal || 'N/A' %></p>
+                  </div>
+                  <b class="enviar-a">Enviar a:</b>
+                </div>
+                <div class="separador2"></div>
+                <button class="reseg" data-compra-id="<%= compra.compra_id %>">
+                  <div class="realizar-seguimiento">Realizar Seguimiento</div>
+                </button>
+                <button class="verart" data-product-id="<%= compra.producto_id %>">
+                  <div class="ver-artculo">Ver Artículo</div>
+                </button>
+                <button class="opinion">
+                  <div class="escribir-una-opinin">Escribir una opinión</div>
+                </button>
+                <div class="separador1"></div>
+              </div>
+          <% } // Cierra el if de compras no repetidas %>
+          <% }) %>
+        </div>
+      <% }) %>
+    <% } %>
     
-            // Verificar la sesión para modificar el botón de login/logout si es necesario
-            fetch('/api/session')
-              .then(response => response.json())
-              .then(data => {
-                console.log('Sesión obtenida:', data);
-    
-                if (data.isAuthenticated) {
-                  // Cambiamos el color del contenedor (wrapper) a rojo chukum
-                  loginWrapper.setAttribute('style', 'background-color: #C19A6B; top: calc(50% - 18px);');
-    
-                  // Cambiamos el texto a "Cerrar sesión"
-                  loginText.textContent = 'Cerrar sesión';
-    
-                  // Cambiamos la acción a cerrar sesión
-                  loginWrapper.onclick = function() {
-                    window.location.href = '/logout';
-                  };
+  </div>
   
-                  bienvenidoText.textContent = ` ${data.correo}`; // Mostrar el nombre del usuario
-                  
-                  console.log('Sesión iniciada. Usuario:', data.correo);
-                } else {
-                  console.log('No hay sesión iniciada.');
-                  bienvenidoText.style.display = 'none';
-                }
-              })
-              .catch(error => console.error('Error al cargar la sesión:', error));
-          })
-          .catch(error => console.error('Error al cargar la barra:', error));
+
+  
+  <script>
+    // barra y footer
     
-        // Cargar el footer.html dinámicamente
-        fetch("/Templates/footer.html")
-          .then((response) => response.text())
-          .then((data) => {
-            document.getElementById("footer").innerHTML = data;
-          })
-          .catch(error => console.error('Error al cargar el footer:', error));
-      };
-
-
-    // scrips
-
-      var reSegContainer = document.getElementById("reSegContainer");
-        if (reSegContainer) {
-          reSegContainer.addEventListener("click", function (e) {
-          const idCompra = "<%= idCompra %>";
-        window.location.href = `/seguimiento?id=${idCompra}`; // Ruta de Express con ID de compra
-        });
-      }
-
-      document.addEventListener('DOMContentLoaded', function () {
-    var verataContainer = document.getElementById("verataContainer");
-    if (verataContainer) {
-        verataContainer.addEventListener("click", function (e) {
-            const productoId = "<%= producto.producto_id %>";
-            window.location.href = `/producto?id=${productoId}`; // Redirige a la página del producto con su ID
-        });
-    }
-});
-      var logo = document.getElementById("logo");
-      if (logo) {
-        logo.addEventListener("click", function (e) {
-          window.location.href = "./index.html";
-        });
-      }
-      
-      var scrollAnimElements = document.querySelectorAll("[data-animate-on-scroll]");
-      var observer = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            if (entry.isIntersecting || entry.intersectionRatio > 0) {
-              const targetElement = entry.target;
-              targetElement.classList.add("animate");
-              observer.unobserve(targetElement);
-            }
+    window.onload = function () {
+      let claseAResaltar = "seguimiento7"; 
+  
+      // Cargar barra.html dinámicamente
+      fetch("/Templates/barra.html")
+        .then((response) => response.text())
+        .then((data) => {
+          document.getElementById("barra").innerHTML = data;
+  
+          // Aplicar el estilo para el elemento resaltado
+          let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
+          if (elementoAResaltar) {
+            elementoAResaltar.style.fontWeight = 'bold';
+            elementoAResaltar.style.color = 'var(--color-lightseagreen)';
           }
-        },
-        {
-          threshold: 0.15,
-        }
-      );
+  
+          const loginWrapper = document.querySelector('#login-wrapper3'); 
+          const loginText = document.querySelector('.login5'); 
+          const bienvenidoText = document.querySelector('#bienvenido-text'); 
+  
+          if (loginWrapper) {
+            loginWrapper.onclick = function() {
+              window.location.href = '/login';
+            };
+          }
+  
+          fetch('/api/session')
+            .then(response => response.json())
+            .then(data => {
+              if (data.isAuthenticated) {
+                loginWrapper.setAttribute('style', 'background-color: #C19A6B; top: calc(50% - 18px);');
+                loginText.textContent = 'Cerrar sesión';
+                loginWrapper.onclick = function() {
+                  window.location.href = '/logout';
+                };
+                bienvenidoText.textContent = ` ${data.correo}`;
+              } else {
+                bienvenidoText.style.display = 'none';
+              }
+            })
+            .catch(error => console.error('Error al cargar la sesión:', error));
+        })
+        .catch(error => console.error('Error al cargar la barra:', error));
+  
+      fetch("/Templates/footer.html")
+        .then((response) => response.text())
+        .then((data) => {
+          document.getElementById("footer").innerHTML = data;
+        })
+        .catch(error => console.error('Error al cargar el footer:', error));
+    };
+
+    // Configuración de botones para seguimiento
+    document.addEventListener('DOMContentLoaded', function () {
+      const reSegContainers = document.querySelectorAll(".reseg");
+      reSegContainers.forEach(container => {
+        container.addEventListener("click", function () {
+          const idCompra = this.dataset.compraId;
+          window.location.href = `/seguimiento?id=${idCompra}`;
+        });
+      });
       
-      for (let i = 0; i < scrollAnimElements.length; i++) {
-        observer.observe(scrollAnimElements[i]);
+    });
+    
+    document.addEventListener('DOMContentLoaded', function () {
+      // Configuración de botones para "Ver Artículo"
+      const verArtContainers = document.querySelectorAll(".verart");
+      verArtContainers.forEach(container => {
+        container.addEventListener("click", function () {
+          // Obtén el producto_id del atributo data-product-id
+          const idProducto = this.getAttribute('data-product-id');
+          // Redirige a la URL del producto
+          window.location.href = `/producto?id=${idProducto}`;
+        });
+      });
+    });
+    
+  
+
+    // Scroll animations
+    var scrollAnimElements = document.querySelectorAll("[data-animate-on-scroll]");
+    var observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting || entry.intersectionRatio > 0) {
+            const targetElement = entry.target;
+            targetElement.classList.add("animate");
+            observer.unobserve(targetElement);
+          }
+        }
+      },
+      {
+        threshold: 0.15,
       }
-    </script>
-  </body>
+    );
+    
+    scrollAnimElements.forEach(element => observer.observe(element));
+  </script>
+</body>
 </html>
