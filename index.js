@@ -9,9 +9,21 @@ const multer = require('multer'); // Asegúrate de tener esto aquí
 const bcrypt = require('bcrypt'); // Asegúrate de tener esta línea
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
+const fetch = require('node-fetch'); 
 
+// Archivo: index.js (o tu archivo principal del servidor)
 
+// Cargar variables de entorno
+require('dotenv').config(); // Si usas un archivo .env
 
+// Constante para el bucket de imágenes de Cloudflare
+const CFI = process.env.CFI || "https://pub-9eb3385798dc4bcba46fb69f616dc1a0.r2.dev";
+
+// Hacer que la constante esté disponible para todas las vistas
+app.use((req, res, next) => {
+  res.locals.CFI = CFI; // Esto hace que `CFI` esté disponible en EJS
+  next();
+});
 
 
 
@@ -307,9 +319,7 @@ app.post('/colaborador/productos/crear', upload.array('imagenes', 4), (req, res)
     }
 
     const productId = results.insertId;  // Obtener el ID del producto recién insertado
-    const productFolder = path.join(__dirname, 'src', 'public', 'Products', `${productId}`);
-
-    // Crear la carpeta con el product_id
+    const productFolder = `${CFI}/Products/${productId}`; 
     fs.mkdirSync(productFolder, { recursive: true });
 
     // Mover las imágenes subidas a la carpeta del producto
@@ -393,7 +403,7 @@ app.post('/colaborador/productos/modificar/:codigo', upload.array('imagenes', 4)
       }
 
       // Ruta de la carpeta del producto (usando el producto_id en lugar del código)
-      const productFolder = path.join(__dirname, 'src', 'public', 'Products', `${productoId}`);  // Uso de productoId correctamente.
+      const productFolder = `${CFI}/Products/${productId}`;  // Uso de productoId correctamente.
 
       // Verificar si la carpeta del producto existe, si no, crearla
       if (!fs.existsSync(productFolder)) {
@@ -431,67 +441,89 @@ app.post('/colaborador/productos/modificar/:codigo', upload.array('imagenes', 4)
 
 
 //########################################## SEGUIMIENTO ##################################################
-app.get('/seguimiento', (req, res) => {
+
+
+app.get('/seguimiento', async (req, res) => { // Declarar la función como async
   const idCompra = req.query.id;
-  db.query('SELECT * FROM Compras WHERE compra_id = ?', [idCompra], (error, compraResults) => {
-    if (error) throw error;
-    if (compraResults.length > 0) {
-      const compra = compraResults[0];
-      db.query('SELECT * FROM Productos WHERE producto_id = ?', [compra.producto_id], (error, productoResults) => {
-        if (error) throw error;
-        if (productoResults.length > 0) {
-          const producto = productoResults[0];
 
-          // Read product info from file
-          const productInfoPath = path.join(__dirname, 'src', 'public', 'Products', String(producto.producto_id), 'info.txt');
-          fs.readFile(productInfoPath, 'utf8', (err, data) => {
-            if (err) throw err;
-            
-            // Parse the info.txt file content
-            const infoLines = data.split('\n');
-            const info = {};
-            let currentSection = null;
+  try {
+    // Obtener la compra
+    const [compraResults] = await db.promise().query('SELECT * FROM Compras WHERE compra_id = ?', [idCompra]);
+    if (compraResults.length === 0) {
+      return res.send('Compra no encontrada');
+    }
 
-            infoLines.forEach(line => {
-              if (line.trim() === "Información Básica") {
-                currentSection = "basic";
-                info[currentSection] = {};
-              } else if (line.trim() === "Información de Catálogo") {
-                currentSection = "catalog";
-                info[currentSection] = {};
-              } else if (line.trim() !== "") {
-                const [key, value] = line.split(': ');
-                if (currentSection && key && value) {
-                  info[currentSection][key.trim()] = value.trim();
-                }
-              }
-            });
+    const compra = compraResults[0];
 
-            const direccionParts = compra.direccion_envio.split(', ');
+    // Obtener el producto
+    const [productoResults] = await db.promise().query('SELECT * FROM Productos WHERE producto_id = ?', [compra.producto_id]);
+    if (productoResults.length === 0) {
+      return res.send('Producto no encontrado');
+    }
 
-            res.render('seguimiento', {
-              idCompra,
-              estado: compra.estado,
-              producto: {
-                ...producto,
-                path_imagen: `/public/Products/${compra.producto_id}`
-              },
-              info: info.basic,
-              direccion: {
-                calle: direccionParts[0],
-                ciudad: direccionParts[1],
-                estado: direccionParts[2],
-                codigoPostal: direccionParts[3]
-              }
-            });
-          });
+    const producto = productoResults[0];
+
+    // Leer el archivo info.txt desde Cloudflare R2
+    const productInfoPath = `${CFI}/Products/${compra.producto_id}/info.txt`;
+    let info = {};
+
+    try {
+      const response = await fetch(productInfoPath); // Ahora está dentro de una función async
+      if (!response.ok) {
+        throw new Error(`Error al obtener el archivo info.txt: ${response.statusText}`);
+      }
+      const data = await response.text();
+
+      // Procesar el contenido del archivo info.txt
+      const infoLines = data.split('\n');
+      let currentSection = null;
+
+      infoLines.forEach(line => {
+        if (line.trim() === "Información Básica") {
+          currentSection = "basic";
+          info[currentSection] = {};
+        } else if (line.trim() === "Información de Catálogo") {
+          currentSection = "catalog";
+          info[currentSection] = {};
+        } else if (line.trim() !== "") {
+          const [key, value] = line.split(': ');
+          if (currentSection && key && value) {
+            info[currentSection][key.trim()] = value.trim();
+          }
         }
       });
-    } else {
-      res.send('Compra no encontrada');
+    } catch (error) {
+      console.error(`Error al leer el archivo info.txt: ${error.message}`);
+      info = { basic: {}, catalog: {} }; // Devolver valores vacíos si ocurre un error
     }
-  });
+
+    // Dividir la dirección de envío
+    const direccionParts = compra.direccion_envio.split(', ');
+
+    // Renderizar la página
+    res.render('seguimiento', {
+      idCompra,
+      estado: compra.estado,
+      producto: {
+        ...producto,
+        path_imagen: `${CFI}/Products/${compra.producto_id}/a.webp`
+      },
+      info: info.basic,
+      direccion: {
+        calle: direccionParts[0],
+        ciudad: direccionParts[1],
+        estado: direccionParts[2],
+        codigoPostal: direccionParts[3]
+      }
+    });
+  } catch (error) {
+    console.error(`Error en la ruta /seguimiento: ${error.message}`);
+    res.status(500).send('Error interno del servidor');
+  }
 });
+
+
+
 //########################################## COMPRAS 987 ##################################################
 // Ruta `/compras`
 app.get('/compras', (req, res) => {
@@ -868,14 +900,9 @@ app.get('/catalogo', (req, res) => {
 
     // Añadir la lógica para obtener la imagen principal de cada producto
     productos.forEach(producto => {
-      const productImagePath = path.join(__dirname, 'src', 'public', 'Products', String(producto.producto_id), 'a.webp');
-
-      // Verificar si la imagen existe
-      if (fs.existsSync(productImagePath)) {
-        producto.imagePath = `/public/Products/${producto.producto_id}/a.webp`;
-      } else {
-        producto.imagePath = '/public/placeholder.png'; // Imagen placeholder si no existe la imagen
-      }
+      
+      producto.imagePath = `${CFI}/Products/${producto.producto_id}/a.webp`;
+      
     });
 
     // Consulta para contar el número total de productos
