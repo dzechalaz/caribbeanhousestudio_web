@@ -1,0 +1,102 @@
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: #F4EDE0; /* Fondo cálido */
+  margin: 0;
+  padding: 20px;
+  color: #5B4536;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: #FFF8F0; /* Fondo suave */
+  padding: 30px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
+
+h1 {
+  color: #5B4536;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+  background-color: #FFF8F0;
+}
+
+table th, table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #E5D4C5;
+  color: #5B4536;
+}
+
+table th {
+  background-color: #D99058; /* Cabecera */
+  color: #FFF8F0;
+}
+
+table tr:hover {
+  background-color: #F4E1CF;
+}
+
+button {
+  background-color: #8EAA6D; /* Verde chukum */
+  color: #FFF8F0;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #6E8E51; /* Hover más oscuro */
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+#crear-orden {
+  background-color: #8EAA6D; /* Verde chukum */
+  color: #FFF8F0;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+#crear-orden:hover {
+  background-color: #6E8E51;
+}
+
+.btn-rojo-chukum {
+  background: #D65C4F; /* Rojo chukum */
+  color: #FFF8F0;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease;
+  margin-left: auto;
+}
+
+.btn-rojo-chukum:hover {
+  background: #B5483E; /* Más oscuro en hover */
+}

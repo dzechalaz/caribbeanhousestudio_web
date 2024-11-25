@@ -1,9 +1,9 @@
 /* General body styles */
 body {
   font-family: 'Arial', sans-serif;
-  background-color: #f9f9f9;
+  background-color: #F4EDE0; /* Fondo cálido estilo Chukum */
   padding: 20px;
-  color: #4A403A;
+  color: #5B4536;
   display: flex;
   justify-content: center;
 }
@@ -13,15 +13,15 @@ body {
   max-width: 1800px;
   min-width: 1000px;
   margin: 0 auto;
-  background-color: #ffffff;
+  background-color: #FFF8F0; /* Fondo suave */
   padding: 30px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
 }
 
 /* Title styles */
 h1 {
-  color: #4A403A;
+  color: #5B4536; /* Texto principal */
   text-align: center;
   margin-bottom: 30px;
 }
@@ -30,36 +30,35 @@ h1 {
 table {
   margin: 20px;
   border-collapse: collapse;
-  background-color: #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  background-color: #FFF8F0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
   overflow: hidden;
-  margin-bottom: 20px;
 }
 
 table th,
 table td {
   padding: 12px 15px;
   text-align: left;
-  border-bottom: 1px solid #dddddd;
-  color: #4A403A;
+  border-bottom: 1px solid #E5D4C5;
+  color: #5B4536;
 }
 
 /* Header (th) styles */
 table th {
-  background-color: #C19A6B;
-  color: #fff;
+  background-color: #D99058; /* Naranja estilo Chukum */
+  color: #FFF8F0;
 }
 
 /* Row hover effect */
 table tr:hover {
-  background-color: #f1f1f1;
+  background-color: #F4E0CF; /* Suave resaltado */
 }
 
 /* Button styles */
 button, a.button {
-  background-color: #4e8985;
-  color: #ffffff;
+  background-color: #8EAA6D; /* Verde Chukum */
+  color: #FFF8F0;
   padding: 10px 20px;
   margin: 15px;
   border: none;
@@ -70,7 +69,7 @@ button, a.button {
 }
 
 button:hover, a.button:hover {
-  background-color: #63ded0;
+  background-color: #6E8E51; /* Hover verde oscuro */
 }
 
 button:focus, a.button:focus {
@@ -84,4 +83,20 @@ button:focus, a.button:focus {
 /* Ajustes adicionales para mantener la tabla centrada */
 .dataTables_wrapper {
   margin: 0 auto;
+}
+
+.btn-rojo-chukum {
+  background: #D65C4F; /* Rojo chukum */
+  color: #FFF8F0;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  font-weight: bold;
+}
+
+.btn-rojo-chukum:hover {
+  background: #B5483E; /* Más oscuro en hover */
 }

@@ -81,17 +81,17 @@
 
       <!-- Subir imágenes -->
       <div class="form-group">
-        <label for="imagenes">Subir Imágenes (4 en total):</label>
+        <label for="imagenes">Subir Imágenes (entre 1 y 4):</label>
         <input type="file" id="imagenes" name="imagenes" accept=".webp" multiple required>
+        <small>Sube entre 1 y 4 imágenes en formato .webp.</small>
       </div>
 
       <button type="submit" class="btn-primary">Crear Producto</button>
     </form>
   </div>
 
-  <form id="crear-producto-form" enctype="multipart/form-data" method="POST">
-
   <script>
+    // Generar el código basado en la categoría
     document.getElementById('generar-codigo').addEventListener('click', function () {
       const categoria = document.getElementById('categoria').value;
       const codigoInput = document.getElementById('codigo');
@@ -107,43 +107,48 @@
         alert('Selecciona una categoría primero');
       }
     });
-  </script>
 
-<script>
+    // Validar el formulario y enviar los datos
     document.getElementById('crear-producto-form').addEventListener('submit', function (event) {
       event.preventDefault(); // Detener el envío predeterminado del formulario
-      
-      // Mostrar el mensaje de confirmación
+
       const confirmacion = confirm('¿Estás seguro de que quieres crear este producto?');
-      
-      // Si el usuario confirma, se procede con el envío del formulario
+
       if (confirmacion) {
         const formData = new FormData(this);
-        
-        // Hacer la solicitud fetch solo después de la confirmación
+
+        // Validar que se suban entre 1 y 4 imágenes
+        const imagenesInput = document.getElementById('imagenes');
+        if (imagenesInput.files.length === 0) {
+          alert('Debes subir al menos 1 imagen.');
+          return;
+        }
+        if (imagenesInput.files.length > 4) {
+          alert('No puedes subir más de 4 imágenes.');
+          return;
+        }
+
         fetch('/colaborador/productos/crear', {
           method: 'POST',
           body: formData,
         })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // Redirigir automáticamente a la página de stock después de la creación exitosa
-            window.location.href = data.redirectUrl;
-          } else {
-            alert(`Error: ${data.error}`);
-          }
-        })
-        .catch(error => console.error('Error al crear producto:', error));
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert('Producto creado con éxito.');
+              window.location.href = data.redirectUrl;
+            } else {
+              alert(`Error: ${data.error}`);
+            }
+          })
+          .catch(error => {
+            console.error('Error al crear producto:', error);
+            alert('Ocurrió un error al crear el producto. Intenta de nuevo.');
+          });
       } else {
-        // Si el usuario cancela, no se hace nada y el formulario no se envía
         alert('La creación del producto fue cancelada.');
       }
     });
-</script>
-
- 
-  
-
+  </script>
 </body>
 </html>

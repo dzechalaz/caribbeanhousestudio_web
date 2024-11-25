@@ -23,55 +23,15 @@ if (producto) {
       href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
     />
   </head>
+  <header>
+    <div id="barra"></div>
+  </header>
   <body>
     <div class="producto">
       <img class="background-icon" alt="" src="/public/background@2x.png" />
 
       <div class="fondobajo"></div>
-      <div class="footter-final2">
-        <img class="path-253-icon6" alt="" src="/public/path-253.svg" />
-
-        <div class="facebook6">
-          <div class="facebook-inner4">
-            <div class="group-child8"></div>
-          </div>
-        </div>
-        <div class="instagram6">
-          <img
-            class="vector-smart-object6"
-            alt=""
-            src="/public/vector-smart-object1@2x.png"
-          />
-        </div>
-        <div class="linkedin6">
-          <div class="rectangle-81311-copy-4-wrapper4">
-            <div class="rectangle-81311-copy-46"></div>
-          </div>
-          <div class="imagemask6"></div>
-        </div>
-        <div class="twitter6">
-          <div class="rectangle-813111-copy-6-wrapper4">
-            <div class="rectangle-813111-copy-66"></div>
-          </div>
-        </div>
-        <div class="company6">COMPANY</div>
-        <div class="profile-about-us-contact-addre6">
-          <p class="material-tela">Profile</p>
-          <p class="material-tela">About us</p>
-          <p class="material-tela">Contact</p>
-          <p class="material-tela">Address</p>
-        </div>
-        <div class="returns6">RETURNS</div>
-        <div class="faqs-size-guide-contact-us-container6">
-          <p class="material-tela">FAQs</p>
-          <p class="material-tela">Size Guide</p>
-          <p class="material-tela">Contact us</p>
-        </div>
-        <div class="lorem-ipsum-dolor-container6">
-          
-        </div>
-        <div class="caribbean-house-studio12">Caribbean House Studio</div>
-      </div>
+    
       <div class="divisor3"></div>
       <div class="historial">
         <div class="historial-de-precios">Historial de precios</div>
@@ -87,30 +47,28 @@ if (producto) {
         <div class="review">Opiniones</div>
     </div>
 
-    <div class="related-products">
-        <% productosRelacionados.forEach((relatedProduct, index) => { %>
-            <div class="sqr-related-product-<%= index + 1 %>">
-                <a href="/producto?id=<%= relatedProduct.producto_id %>" class="related-product-link">
-                    <img src="/public/Products/<%= relatedProduct.producto_id %>/a.webp" alt="Producto <%= index + 1 %>" class="related-product-img">
-                </a>
-                <div class="related-product-name"><%= relatedProduct.nombre %></div>
-                <div class="related-product-price">$ <%= relatedProduct.precio %></div>
-            </div>
-        <% }) %>
-        <div class="related-products-tittle">Productos Relacionados</div>
-    </div>
+      <div class="related-products">
+          <% productosRelacionados.forEach((relatedProduct, index) => { %>
+              <div class="sqr-related-product-<%= index + 1 %>">
+                  <a href="/producto?id=<%= relatedProduct.producto_id %>" class="related-product-link">
+                    <img src="<%= CFI %>/Products/<%= relatedProduct.producto_id %>/a.webp" alt="Producto <%= index + 1 %>" class="related-product-img">
+
+                  </a>
+                  <div class="related-product-name"><%= relatedProduct.nombre %></div>
+                  <div class="related-product-price">$ <%= relatedProduct.precio %></div>
+              </div>
+          <% }) %>
+          <div class="related-products-tittle">Productos Relacionados</div>
+      </div>
     
-    
-    
-    
-    
+  
       <div class="divisor0"></div>
       <div class="info">
         <img
           id="mainImage"
           class="imagenprincipal-icon"
           alt=""
-          src="/public/Products/<%= producto.producto_id %>/a.webp"
+          src="<%= CFI %>/Products/<%= producto.producto_id %>/a.webp"
           data-animate-on-scroll
         />
 
@@ -127,19 +85,20 @@ if (producto) {
         <img class="share-icon" alt="" src="/public/share.svg" />
 
         <div class="imagenes">
-            <div class="a">
-              <img src="/public/Products/<%= producto.producto_id %>/a.webp" alt="Imagen A" onclick="changeMainImage('a.webp')">
-            </div>
-            <div class="b">
-              <img src="/public/Products/<%= producto.producto_id %>/b.webp" alt="Imagen B" onclick="changeMainImage('b.webp')">
-            </div>
-            <div class="c">
-              <img src="/public/Products/<%= producto.producto_id %>/c.webp" alt="Imagen C" onclick="changeMainImage('c.webp')">
-            </div>
-            <div class="d">
-              <img src="/public/Products/<%= producto.producto_id %>/d.webp" alt="Imagen D" onclick="changeMainImage('d.webp')">
-            </div>
+          <div class="a">
+            <img src="<%= CFI %>/Products/<%= producto.producto_id %>/a.webp" alt="Imagen A" onclick="changeMainImage('a.webp')">
           </div>
+          <div class="b">
+            <img src="<%= CFI %>/Products/<%= producto.producto_id %>/b.webp" alt="Imagen B" onclick="changeMainImage('b.webp')">
+          </div>
+          <div class="c">
+            <img src="<%= CFI %>/Products/<%= producto.producto_id %>/c.webp" alt="Imagen C" onclick="changeMainImage('c.webp')">
+          </div>
+          <div class="d">
+            <img src="<%= CFI %>/Products/<%= producto.producto_id %>/d.webp" alt="Imagen D" onclick="changeMainImage('d.webp')">
+          </div>
+        </div>
+        
         <img
           class="proximamente-icon"
           alt=""
@@ -170,33 +129,11 @@ if (producto) {
         </div>
         <b class="nombreproducto"><%= producto.nombre.toUpperCase() %></b>
       </div>
-      <div class="header">
-        <div class="component-1-12">
-          <div class="component-1-12-child"></div>
-          <div class="logo6" id="logo">
-            <div class="caribbean-house-studio13">Caribbean House Studio</div>
-          </div>
-        </div>
-        <div class="inicio6" id="iNICIOText">INICIO</div>
-        <b class="catlogo6" id="catlogo6" >CATÁLOGO</b>
-        <div class="blog6">BLOG</div>
-        <div class="nuestra-historia7" id="nUESTRAHISTORIAText">
-          NUESTRA HISTORIA
-        </div>
-        <div class="seguimiento8" id="sEGUIMIENTOText">SEGUIMIENTO</div>
-        <img class="serach-icon6" alt="" src="/public/serach1.svg" />
-
-        <img class="cart-icon6" alt="" src="/public/cart1.svg" />
-
-        <div class="login-wrapper4">
-          <div class="login6">Login</div>
-        </div>
-        <img class="path-74-icon6" alt="" src="/public/path-74.svg" />
-
-        <div class="div28">1</div>
-        <img class="logo-icon6" alt="" src="/public/logo1.svg" />
-      </div>
+      
     </div>
+
+    <!-- Footer -->
+    <div id="footer"></div>
 
 
 
@@ -253,14 +190,16 @@ if (producto) {
                 to: (new Date('2023-12-07T00:00:00Z').getTime() / 1000),
             });
         });
+        
     </script>
     
     
 
     <script>
       function changeMainImage(imageName) {
-          document.getElementById('mainImage').src = `/public/Products/<%= producto.producto_id %>/${imageName}`;
-      }
+        document.getElementById('mainImage').src = "<%= CFI %>/Products/<%= producto.producto_id %>/" + imageName;
+    }
+    
 
       var logo = document.getElementById("logo");
       if (logo) {
@@ -318,6 +257,73 @@ if (producto) {
       for (let i = 0; i < scrollAnimElements.length; i++) {
         observer.observe(scrollAnimElements[i]);
       }
+
+      window.onload = function () {
+        let claseAResaltar = "catlogo5"; 
+    
+        // Cargar barra.html dinámicamente
+        fetch("/Templates/barra.html")
+          .then((response) => response.text())
+          .then((data) => {
+            document.getElementById("barra").innerHTML = data;
+    
+            // Aplicar el estilo para el elemento resaltado
+            let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
+            if (elementoAResaltar) {
+              elementoAResaltar.style.fontWeight = 'bold';
+              elementoAResaltar.style.color = 'var(--color-lightseagreen)';
+            }
+    
+            // Por defecto, el login-wrapper3 redirige a /login
+            const loginWrapper = document.querySelector('#login-wrapper3'); 
+            const loginText = document.querySelector('.login5'); // El texto dentro del botón
+            const bienvenidoText = document.querySelector('#bienvenido-text'); // El texto de bienvenida
+  
+            
+            if (loginWrapper) {
+              loginWrapper.onclick = function() {
+                window.location.href = '/login';
+              }; // Redirige a /login por defecto
+            }
+    
+            // Verificar la sesión para modificar el botón de login/logout si es necesario
+            fetch('/api/session')
+              .then(response => response.json())
+              .then(data => {
+                console.log('Sesión obtenida:', data);
+    
+                if (data.isAuthenticated) {
+                  // Cambiamos el color del contenedor (wrapper) a rojo chukum
+                  loginWrapper.setAttribute('style', 'background-color: #C19A6B; top: calc(50% - 18px);');
+    
+                  // Cambiamos el texto a "Cerrar sesión"
+                  loginText.textContent = 'Cerrar sesión';
+    
+                  // Cambiamos la acción a cerrar sesión
+                  loginWrapper.onclick = function() {
+                    window.location.href = '/logout';
+                  };
+  
+                  bienvenidoText.textContent = ` ${data.correo}`; // Mostrar el nombre del usuario
+                  
+                  console.log('Sesión iniciada. Usuario:', data.correo);
+                } else {
+                  console.log('No hay sesión iniciada.');
+                  bienvenidoText.style.display = 'none';
+                }
+              })
+              .catch(error => console.error('Error al cargar la sesión:', error));
+          })
+          .catch(error => console.error('Error al cargar la barra:', error));
+    
+        // Cargar el footer.html dinámicamente
+        fetch("/Templates/footer.html")
+          .then((response) => response.text())
+          .then((data) => {
+            document.getElementById("footer").innerHTML = data;
+          })
+          .catch(error => console.error('Error al cargar el footer:', error));
+      };
       </script>
   </body>
 </html>

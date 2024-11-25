@@ -24,7 +24,7 @@
 
       <div class="form-group">
         <label for="categoria">Categoría:</label>
-        <select id="categoria" name="categoria" required>
+        <select id="categoria" name="categoria" required style="pointer-events: none; background-color: #e9ecef;">
           <option value="Decoración">Decoración</option>
           <option value="Salas">Salas</option>
           <option value="Mesas">Mesas</option>
@@ -35,6 +35,7 @@
           <option value="Varios">Varios</option>
         </select>
       </div>
+      
 
       <div class="form-group">
         <label for="codigo">Código:</label>
@@ -82,6 +83,7 @@
       <div class="form-group">
         <label for="imagenes">Subir Nuevas Imágenes (opcional):</label>
         <input type="file" id="imagenes" name="imagenes" accept=".webp" multiple>
+        <small>Puedes subir hasta 4 imágenes nuevas. Las imágenes que no subas conservarán las existentes.</small>
       </div>
 
       <!-- Botones de Guardar Cambios y Cancelar -->
