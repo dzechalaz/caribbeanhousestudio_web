@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear Orden</title>
+  <link rel="stylesheet" href="/colaborador/compras/crear_orden.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Crear Nueva Orden</h1>
+
+    <form id="crear-orden-form">
+      <div class="form-group">
+        <label for="correo">Correo del Cliente:</label>
+        <input type="email" id="correo" name="correo" placeholder="cliente@example.com" required>
+      </div>
+
+      <div class="form-group">
+        <label for="referencia">Referencia de la Orden:</label>
+        <input type="text" id="referencia" name="referencia" placeholder="Descripción corta de la orden" required>
+      </div>
+
+      <div class="form-group">
+        <label for="direccion">Dirección de Envío:</label>
+        <textarea id="direccion" name="direccion" rows="3" placeholder="Ingrese la dirección completa" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="productos">Productos:</label>
+        <div id="productos-container">
+          <!-- Los productos seleccionados aparecerán aquí -->
+        </div>
+        <button type="button" id="agregar-producto" class="btn-agregar">Agregar Producto</button>
+      </div>
+
+      <div class="buttons">
+        <button type="submit" id="guardar-orden" class="btn-verde-chukum">Guardar Orden</button>
+        <button type="button" id="cancelar-orden" class="btn-rojo-chukum">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/colaborador/compras/crear_orden.js"></script>
+</body>
+</html>
