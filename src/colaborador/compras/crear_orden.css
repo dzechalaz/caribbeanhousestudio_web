@@ -1,0 +1,125 @@
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: #F4EDE0; /* Fondo cálido */
+    margin: 0;
+    padding: 20px;
+    color: #5B4536;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  
+  .container {
+    max-width: 700px;
+    background-color: #FFF8F0; /* Fondo suave */
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #5B4536;
+  }
+  
+  form {
+    width: 100%;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #5B4536;
+  }
+  
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #D99058; /* Borde chukum */
+    border-radius: 5px;
+    background: #FFF8F0; /* Fondo */
+    font-size: 14px;
+    color: #5B4536;
+  }
+  
+  .form-group textarea {
+    resize: none;
+  }
+  
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #8EAA6D; /* Verde chukum */
+  }
+  
+  #productos-container {
+    margin-top: 10px;
+    border: 1px solid #E5D4C5;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #F9F1E8;
+    min-height: 50px;
+  }
+  
+  .btn-agregar {
+    margin-top: 10px;
+    background-color: #D99058; /* Naranja chukum */
+    color: #FFF8F0;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-agregar:hover {
+    background-color: #B86D36; /* Más oscuro */
+  }
+  
+  .buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .btn-verde-chukum {
+    background: #8EAA6D; /* Verde chukum */
+    color: #FFF8F0;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s ease;
+  }
+  
+  .btn-verde-chukum:hover {
+    background: #6E8E51; /* Hover más oscuro */
+  }
+  
+  .btn-rojo-chukum {
+    background: #D65C4F; /* Rojo chukum */
+    color: #FFF8F0;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s ease;
+  }
+  
+  .btn-rojo-chukum:hover {
+    background: #B5483E; /* Hover más oscuro */
+  }
+  
