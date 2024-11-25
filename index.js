@@ -1397,8 +1397,8 @@ app.post('/crear-cuenta', (req, res) => {
 
       // Inserta el nuevo usuario en la base de datos
       db.query(
-        'INSERT INTO Usuarios (nombre, correo, telefono, password, prerregistro) VALUES (?, ?, ?, ?, ?)',
-        [nombre, correo, telefono, hashedPassword, 0], // Agrega el prerregistro como 0 por defecto
+        'INSERT INTO Usuarios (nombre, correo, telefono, password) VALUES (?, ?, ?, ?)',
+        [nombre, correo, telefono, hashedPassword],
         (err, result) => {
           if (err) {
             console.error('Error creating user:', err);
@@ -1428,7 +1428,7 @@ app.post('/logout', (req, res) => {
     res.redirect('/');
   });
 });
-y
+
 
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);
