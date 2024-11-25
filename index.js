@@ -11,6 +11,22 @@ const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const fetch = require('node-fetch'); 
 
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+
+// Configuración del cliente S3 con las nuevas credenciales
+const s3 = new S3Client({
+  region: 'auto', // Cloudflare R2 no requiere región específica
+  endpoint: 'https://9da33335d2c28a44cc8e07d04747ed4c.r2.cloudflarestorage.com', // Endpoint de tu bucket
+  credentials: {
+    accessKeyId: 'a8a5ce4145688c3d1ed0212da9e362d1', // Access Key ID actualizado
+    secretAccessKey: '2cd1ebbf7b8812d92f85904620328dcb474ea864f14c294ec88a9952faa663a0', // Secret Access Key actualizado
+  },
+});
+
+// Configuración de multer para manejar archivos
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 // Archivo: index.js (o tu archivo principal del servidor)
 
 // Cargar variables de entorno
@@ -24,6 +40,7 @@ app.use((req, res, next) => {
   res.locals.CFI = CFI; // Esto hace que `CFI` esté disponible en EJS
   next();
 });
+
 
 
 
@@ -108,22 +125,9 @@ app.get('/colaborador/menu', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/menu.html'));
 });
 
-app.get('/colaborador/compras/ver', authMiddleware, (req, res) => {
-  res.sendFile(path.join(__dirname, 'src/colaborador/compras/ver_compras.html'));
-});
-
-app.get('/colaborador/compras/modificar', authMiddleware, (req, res) => {
-  res.sendFile(path.join(__dirname, 'src/colaborador/compras/modificar_estado_compra.html'));
-});
-
 app.get('/colaborador/productos/crear', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/productos/crear_producto.html'));
 });
-
-app.get('/colaborador/productos/modificar', authMiddleware, (req, res) => {
-  res.sendFile(path.join(__dirname, 'src/colaborador/productos/modificar_producto.html'));
-});
-
 
 
 
@@ -149,17 +153,16 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
   });
 });
 
-// Ruta para eliminar un producto y su carpeta asociada
-app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, (req, res) => {
+//########################################################### eliminar productos  ##################################################
+
+const { DeleteObjectCommand, ListObjectsCommand } = require('@aws-sdk/client-s3');
+
+app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, async (req, res) => {
   const productoCodigo = req.params.codigo;
 
-  // Primero, buscar el productId correspondiente al código
-  db.query('SELECT producto_id FROM Productos WHERE codigo = ?', [productoCodigo], (err, result) => {
-    if (err) {
-      console.error('Error al buscar producto:', err);
-      return res.status(500).json({ success: false, error: 'Error al buscar producto' });
-    }
-
+  try {
+    // Buscar el producto por código para obtener su ID
+    const [result] = await db.promise().query('SELECT producto_id FROM Productos WHERE codigo = ?', [productoCodigo]);
     if (result.length === 0) {
       return res.status(404).json({ success: false, error: 'Producto no encontrado' });
     }
@@ -167,27 +170,37 @@ app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, (req, res)
     const productId = result[0].producto_id;
 
     // Eliminar el producto de la base de datos
-    db.query('DELETE FROM Productos WHERE codigo = ?', [productoCodigo], (err, result) => {
-      if (err) {
-        console.error('Error al eliminar producto de la base de datos:', err);
-        return res.status(500).json({ success: false, error: 'Error al eliminar producto' });
-      }
+    await db.promise().query('DELETE FROM Productos WHERE codigo = ?', [productoCodigo]);
 
-      // Eliminar la carpeta con el productId
-      const productFolder = path.join(__dirname, 'src', 'public', 'Products', `${productId}`);
-      
-      if (fs.existsSync(productFolder)) {
-        fs.rmdirSync(productFolder, { recursive: true });
-        console.log(`Carpeta del producto ${productId} eliminada.`);
-      } else {
-        console.log(`La carpeta del producto ${productId} no existe.`);
-      }
+    // Eliminar los archivos relacionados del bucket en R2
+    const folderPath = `Products/${productId}/`;
 
-      // Responder que el producto fue eliminado
-      res.json({ success: true, redirectUrl: '/colaborador/productos/stock' })
-    });
-  });
+    // Listar todos los objetos dentro de la carpeta del producto
+    const listParams = {
+      Bucket: 'products',
+      Prefix: folderPath,
+    };
+
+    const listedObjects = await s3.send(new ListObjectsCommand(listParams));
+
+    if (listedObjects.Contents && listedObjects.Contents.length > 0) {
+      for (const object of listedObjects.Contents) {
+        const deleteParams = {
+          Bucket: 'products',
+          Key: object.Key,
+        };
+        await s3.send(new DeleteObjectCommand(deleteParams));
+        console.log(`Eliminado del bucket: ${object.Key}`);
+      }
+    }
+
+    res.json({ success: true, message: 'Producto eliminado correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar el producto:', error.message);
+    res.status(500).json({ success: false, error: 'Error interno al eliminar el producto' });
+  }
 });
+
 
 // Ruta para actualizar el stock de los productos
 app.post('/colaborador/productos/actualizar-stock', authMiddleware, (req, res) => {
@@ -218,50 +231,101 @@ app.post('/colaborador/productos/actualizar-stock', authMiddleware, (req, res) =
 
 
 //################################# CREAR PRODUCTOS ##################################################
-// Configuración de multer para subir imágenes
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // Guardar temporalmente en una carpeta para procesar luego
-    const tempDir = path.join(__dirname, 'src', 'public', 'temp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
-    cb(null, tempDir); // Guardar en el directorio temporal
-  },
-  filename: (req, file, cb) => {
-    // Asignamos los nombres de las imágenes de acuerdo a su posición en el array (a, b, c, d)
-    const ext = path.extname(file.originalname);
-    const index = req.fileIndex;  // Usar el índice establecido en el middleware
-    const imageNames = ['a', 'b', 'c', 'd']; // Los nombres que quieres para las imágenes
-    const filename = `${imageNames[index]}${ext}`; // Asignamos el nombre basado en el índice
-    cb(null, filename);
+
+
+
+// Ruta para crear productos y subir imágenes
+app.post('/colaborador/productos/crear', upload.array('imagenes', 4), async (req, res) => {
+  const { nombre, precio, categoria, codigo, stock, material, dimensiones, acabado, color, descripcion1, descripcion2 } = req.body;
+
+  if (!nombre || !precio || !categoria || !codigo || !stock || !material || !dimensiones || !acabado || !color || !descripcion1 || !descripcion2) {
+    return res.status(400).json({ success: false, error: 'Todos los campos son obligatorios' });
   }
-});
 
-// Middleware de multer
-const upload = multer({ storage });
+  try {
+    const query = 'INSERT INTO Productos (nombre, precio, categoria, codigo, stock) VALUES (?, ?, ?, ?, ?)';
+    const values = [nombre, precio, categoria, codigo, stock];
 
-// Middleware para asignar índices a las imágenes
-app.use((req, res, next) => {
-  if (req.files && req.files.length > 0) {
-    req.files.forEach((file, index) => {
-      file.fileIndex = index; // Asignar un índice a cada archivo
+    db.query(query, values, async (err, results) => {
+      if (err) {
+        console.error('Error al crear producto:', err.message);
+        return res.status(500).json({ success: false, error: 'Error al crear producto' });
+      }
+
+      const productId = results.insertId;
+      const productPath = `Products/${productId}/`;
+
+      // Subir imágenes al bucket
+      const imageFiles = req.files || [];
+      if (imageFiles.length === 0) {
+        return res.status(400).json({ success: false, error: 'Debes subir al menos una imagen.' });
+      }
+
+      const imageNames = ['a.webp', 'b.webp', 'c.webp', 'd.webp'];
+      const placeholderPath = path.join(__dirname, 'src', 'Templates', 'placeholder.webp');
+
+      for (let i = 0; i < 4; i++) {
+        const file = imageFiles[i];
+        const imagePath = `${productPath}${imageNames[i]}`;
+
+        let params;
+        if (file) {
+          // Usar la imagen subida por el usuario
+          params = {
+            Bucket: 'products',
+            Key: imagePath,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+          };
+        } else {
+          // Usar el placeholder si no se subió una imagen
+          const placeholderBuffer = fs.readFileSync(placeholderPath);
+          params = {
+            Bucket: 'products',
+            Key: imagePath,
+            Body: placeholderBuffer,
+            ContentType: 'image/webp',
+          };
+        }
+
+        try {
+          await s3.send(new PutObjectCommand(params));
+          console.log(`Imagen subida correctamente: ${imagePath}`);
+        } catch (uploadError) {
+          console.error(`Error subiendo imagen ${imageNames[i]}:`, uploadError.message);
+          return res.status(500).json({ success: false, error: `Error subiendo imagen ${imageNames[i]}` });
+        }
+      }
+
+      // Crear y subir el archivo info.txt
+      const infoContent = `Información Básica\nNombre: ${nombre}\nMaterial: ${material}\nDimensiones: ${dimensiones}\nAcabado: ${acabado}\nColor: ${color}\n\n` +
+                          `Información de Catálogo\nPrecio: ${precio}\nCategoría: ${categoria}\nDescripción 1: ${descripcion1}\nDescripción 2: ${descripcion2}`;
+
+      const infoParams = {
+        Bucket: 'products',
+        Key: `${productPath}info.txt`,
+        Body: infoContent,
+        ContentType: 'text/plain',
+      };
+
+      try {
+        await s3.send(new PutObjectCommand(infoParams));
+        console.log('Archivo info.txt subido correctamente.');
+      } catch (infoError) {
+        console.error('Error subiendo info.txt:', infoError.message);
+        return res.status(500).json({ success: false, error: 'Error subiendo info.txt' });
+      }
+
+      res.json({ success: true, redirectUrl: '/colaborador/productos/stock' });
     });
+  } catch (err) {
+    console.error('Error general al procesar el producto:', err.message);
+    res.status(500).json({ success: false, error: 'Error general al procesar el producto' });
   }
-  next();
 });
 
-// Middleware
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+//################################# crear codigS ##################################################
 
-// RUTAS PARA CREAR PRODUCTOS 
-
-app.get('/colaborador/productos/crear', (req, res) => {
-  res.sendFile(path.join(__dirname, 'src', 'colaborador', 'productos', 'crear_producto.html'));
-});
-
-// GET para generar el código del producto basado en la categoría seleccionada
 app.get('/colaborador/productos/generar-codigo', (req, res) => {
   const categoria = req.query.categoria;
 
@@ -299,66 +363,122 @@ app.get('/colaborador/productos/generar-codigo', (req, res) => {
   });
 });
 
-// POST para crear el producto en la base de datos
-app.post('/colaborador/productos/crear', upload.array('imagenes', 4), (req, res) => {
-  const { nombre, precio, categoria, codigo, stock, material, dimensiones, acabado, color, descripcion1, descripcion2 } = req.body;
-
-  // Validar que todos los campos estén completos
-  if (!nombre || !precio || !categoria || !codigo || !stock || !material || !dimensiones || !acabado || !color || !descripcion1 || !descripcion2) {
-    return res.status(400).json({ success: false, error: 'Todos los campos son obligatorios' });
-  }
-
-  // Insertar el producto en la base de datos
-  const query = 'INSERT INTO Productos (nombre, precio, categoria, codigo, stock) VALUES (?, ?, ?, ?, ?)';
-  const values = [nombre, precio, categoria, codigo, stock];
-
-  db.query(query, values, (err, results) => {
-    if (err) {
-      console.error('Error al crear producto:', err);
-      return res.status(500).json({ success: false, error: 'Error al crear producto' });
-    }
-
-    const productId = results.insertId;  // Obtener el ID del producto recién insertado
-    const productFolder = `${CFI}/Products/${productId}`; 
-    fs.mkdirSync(productFolder, { recursive: true });
-
-    // Mover las imágenes subidas a la carpeta del producto
-    const imageFiles = req.files;
-    const imageNames = ['a.webp', 'b.webp', 'c.webp', 'd.webp'];
-
-    imageFiles.forEach((file, index) => {
-      const tempPath = file.path;  // Usamos la ruta temporal donde multer guardó las imágenes
-      const imagePath = path.join(productFolder, imageNames[index]);
-      fs.renameSync(tempPath, imagePath);  // Renombrar y mover el archivo a la carpeta final
-    });
-
-    // Completar las imágenes faltantes con el placeholder
-    const placeholderPath = path.join(__dirname, 'src', 'Templates', 'placeholder.webp');
-    for (let i = imageFiles.length; i < 4; i++) {
-      const imagePath = path.join(productFolder, imageNames[i]);
-      fs.copyFileSync(placeholderPath, imagePath);  // Copiar el placeholder a las posiciones faltantes
-    }
-
-    // Crear el archivo info.txt con la información del producto
-    const infoContent = `Información Básica\nNombre: ${nombre}\nMaterial: ${material}\nDimensiones: ${dimensiones}\nAcabado: ${acabado}\nColor: ${color}\n\n` +
-                        `Información de Catálogo\nPrecio: ${precio}\nCategoría: ${categoria}\nDescripción 1: ${descripcion1}\nDescripción 2: ${descripcion2}`;
-
-    fs.writeFileSync(path.join(productFolder, 'info.txt'), infoContent);
-
-    // Responder al cliente
-    res.json({ success: true, redirectUrl: '/colaborador/productos/stock' });
-  });
-});
 
 //################################# MODIFICAR PRODUCTOS ##################################################
-// Ruta para obtener los detalles de un producto específico
-app.get('/colaborador/productos/data/:codigo', authMiddleware, (req, res) => {
+// Ruta para modificar un producto
+app.post('/colaborador/productos/modificar/:codigo', upload.array('imagenes', 4), async (req, res) => {
+  const { nombre, precio, categoria, stock, material, dimensiones, acabado, color, descripcion1, descripcion2 } = req.body;
+  const codigoProducto = req.params.codigo;
+
+  if (!nombre || !precio || !categoria || !stock) {
+    return res.status(400).json({ success: false, error: 'Los campos nombre, precio, categoría y stock son obligatorios' });
+  }
+
+  try {
+    // Obtener el producto_id basado en el código del producto
+    db.query('SELECT producto_id FROM Productos WHERE codigo = ?', [codigoProducto], async (err, result) => {
+      if (err) {
+        console.error('Error al obtener el producto_id:', err);
+        return res.status(500).json({ success: false, error: 'Error al obtener el producto' });
+      }
+
+      if (result.length === 0) {
+        return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+      }
+
+      const productoId = result[0].producto_id;
+      const productPath = `Products/${productoId}/`;
+
+      // Actualizar los datos básicos del producto en la base de datos
+      const updateQuery = 'UPDATE Productos SET nombre = ?, precio = ?, categoria = ?, stock = ? WHERE codigo = ?';
+      const values = [nombre, precio, categoria, stock, codigoProducto];
+
+      db.query(updateQuery, values, async (err) => {
+        if (err) {
+          console.error('Error al actualizar el producto:', err);
+          return res.status(500).json({ success: false, error: 'Error al actualizar el producto' });
+        }
+
+        // Manejo de imágenes subidas
+        const imageFiles = req.files || [];
+        const imageNames = ['a.webp', 'b.webp', 'c.webp', 'd.webp'];
+        const placeholderPath = path.join(__dirname, 'src', 'Templates', 'placeholder.webp');
+
+        for (let i = 0; i < 4; i++) {
+          const imagePath = `${productPath}${imageNames[i]}`;
+
+          if (imageFiles[i]) {
+            // Subir las nuevas imágenes proporcionadas
+            const file = imageFiles[i];
+            const params = {
+              Bucket: 'products',
+              Key: imagePath,
+              Body: file.buffer,
+              ContentType: file.mimetype,
+            };
+
+            try {
+              await s3.send(new PutObjectCommand(params));
+              console.log(`Imagen subida correctamente: ${imagePath}`);
+            } catch (uploadError) {
+              console.error(`Error subiendo la imagen ${imageNames[i]}:`, uploadError.message);
+              return res.status(500).json({ success: false, error: `Error subiendo la imagen ${imageNames[i]}` });
+            }
+          } else {
+            // Completar las imágenes faltantes con el placeholder
+            const placeholderBuffer = fs.readFileSync(placeholderPath);
+            const params = {
+              Bucket: 'products',
+              Key: imagePath,
+              Body: placeholderBuffer,
+              ContentType: 'image/webp',
+            };
+
+            try {
+              await s3.send(new PutObjectCommand(params));
+              console.log(`Placeholder subido correctamente para: ${imagePath}`);
+            } catch (placeholderError) {
+              console.error(`Error subiendo placeholder para ${imageNames[i]}:`, placeholderError.message);
+              return res.status(500).json({ success: false, error: `Error subiendo placeholder para ${imageNames[i]}` });
+            }
+          }
+        }
+
+        // Actualizar el archivo info.txt en Cloudflare R2
+        const infoContent = `Información Básica\nNombre: ${nombre}\nMaterial: ${material}\nDimensiones: ${dimensiones}\nAcabado: ${acabado}\nColor: ${color}\n\n` +
+                            `Información de Catálogo\nPrecio: ${precio}\nCategoría: ${categoria}\nDescripción 1: ${descripcion1}\nDescripción 2: ${descripcion2}`;
+
+        const infoParams = {
+          Bucket: 'products',
+          Key: `${productPath}info.txt`,
+          Body: infoContent,
+          ContentType: 'text/plain',
+        };
+
+        try {
+          await s3.send(new PutObjectCommand(infoParams));
+          console.log('Archivo info.txt actualizado correctamente.');
+        } catch (infoError) {
+          console.error('Error actualizando el archivo info.txt:', infoError.message);
+          return res.status(500).json({ success: false, error: 'Error actualizando el archivo info.txt' });
+        }
+
+        res.json({ success: true, message: 'Producto actualizado correctamente.' });
+      });
+    });
+  } catch (err) {
+    console.error('Error general al procesar la solicitud:', err.message);
+    res.status(500).json({ success: false, error: 'Error general al procesar la solicitud.' });
+  }
+});
+
+app.get('/colaborador/productos/data/:codigo', (req, res) => {
   const codigoProducto = req.params.codigo;
 
   db.query('SELECT * FROM Productos WHERE codigo = ?', [codigoProducto], (err, result) => {
     if (err) {
-      console.error('Error fetching product:', err);
-      return res.status(500).json({ success: false, error: 'Error al obtener el producto' });
+      console.error('Error al obtener los datos del producto:', err);
+      return res.status(500).json({ success: false, error: 'Error al obtener los datos del producto' });
     }
 
     if (result.length === 0) {
@@ -369,74 +489,142 @@ app.get('/colaborador/productos/data/:codigo', authMiddleware, (req, res) => {
   });
 });
 
-// Ruta para modificar el producto
-app.post('/colaborador/productos/modificar/:codigo', upload.array('imagenes', 4), (req, res) => {
-  const { nombre, precio, categoria, stock, material, dimensiones, acabado, color, descripcion1, descripcion2 } = req.body;
-  const codigoProducto = req.params.codigo;
+app.get('/colaborador/productos/modificar', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src/colaborador/productos/modificar_producto.html'));
+});
 
-  // Validar que todos los campos básicos estén completos
-  if (!nombre || !precio || !categoria || !stock) {
-    return res.status(400).json({ success: false, error: 'Los campos nombre, precio, categoría y stock son obligatorios' });
-  }
 
-  // Consultar el producto para obtener el producto_id basado en el codigo
-  db.query('SELECT producto_id FROM Productos WHERE codigo = ?', [codigoProducto], (err, result) => {
+
+//####################################### COMPRAS MONITOREO Y MODIFICACION DESDE COLABORADOT #####################################
+
+app.get('/colaborador/ordenes', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src/colaborador/compras/ordenes.html'));
+});
+
+app.get('/colaborador/ordenes/data', authMiddleware, (req, res) => {
+  const query = `
+    SELECT 
+      ordenes.orden_id,  -- Asegúrate de incluir este campo
+      ordenes.numero_orden, 
+      Usuarios.nombre AS cliente_nombre, 
+      ordenes.referencia, 
+      ordenes.fecha_orden 
+    FROM ordenes
+    INNER JOIN Usuarios ON ordenes.usuario_id = Usuarios.usuario_id
+  `;
+
+  db.query(query, (err, results) => {
     if (err) {
-      console.error('Error fetching product_id:', err);
-      return res.status(500).json({ success: false, error: 'Error al obtener el producto' });
+      console.error('Error fetching orders:', err);
+      return res.status(500).json({ error: 'Error fetching orders' });
     }
 
-    if (result.length === 0) {
-      return res.status(404).json({ success: false, error: 'Producto no encontrado' });
-    }
-
-    const productoId = result[0].producto_id;  // Obtener el producto_id correctamente.
-
-    // Actualizar solo los campos básicos en la base de datos
-    const query = 'UPDATE Productos SET nombre = ?, precio = ?, categoria = ?, stock = ? WHERE codigo = ?';
-    const values = [nombre, precio, categoria, stock, codigoProducto];
-
-    db.query(query, values, (err, result) => {
-      if (err) {
-        console.error('Error al actualizar el producto:', err);
-        return res.status(500).json({ success: false, error: 'Error al actualizar el producto' });
-      }
-
-      // Ruta de la carpeta del producto (usando el producto_id en lugar del código)
-      const productFolder = `${CFI}/Products/${productId}`;  // Uso de productoId correctamente.
-
-      // Verificar si la carpeta del producto existe, si no, crearla
-      if (!fs.existsSync(productFolder)) {
-        fs.mkdirSync(productFolder, { recursive: true });  // Crear el directorio si no existe.
-      }
-
-      // Guardar el resto de la información en info.txt
-      const infoContent = `Información Básica\nNombre: ${nombre}\nMaterial: ${material}\nDimensiones: ${dimensiones}\nAcabado: ${acabado}\nColor: ${color}\n\n` +
-                          `Información de Catálogo\nPrecio: ${precio}\nCategoría: ${categoria}\nDescripción 1: ${descripcion1}\nDescripción 2: ${descripcion2}`;
-
-      fs.writeFileSync(path.join(productFolder, 'info.txt'), infoContent);
-
-      // Mover las imágenes subidas a la carpeta del producto
-      const imageFiles = req.files;
-      const imageNames = ['a.webp', 'b.webp', 'c.webp', 'd.webp'];
-
-      imageFiles.forEach((file, index) => {
-        const tempPath = file.path;  // Usamos la ruta temporal donde multer guardó las imágenes
-        const imagePath = path.join(productFolder, imageNames[index]);
-        fs.renameSync(tempPath, imagePath);  // Renombrar y mover el archivo a la carpeta final
-      });
-
-      // Completar las imágenes faltantes con el placeholder
-      const placeholderPath = path.join(__dirname, 'src', 'Templates', 'placeholder.webp');
-      for (let i = imageFiles.length; i < 4; i++) {
-        const imagePath = path.join(productFolder, imageNames[i]);
-        fs.copyFileSync(placeholderPath, imagePath);  // Copiar el placeholder a las posiciones faltantes
-      }
-
-      res.json({ success: true });
-    });
+    res.json({ ordenes: results });
   });
 });
+
+
+app.get('/colaborador/ordenes/compras/:orden_id', authMiddleware, (req, res) => {
+  const ordenId = req.params.orden_id;
+
+  const query = `
+    SELECT c.compra_id, p.nombre AS producto_nombre, c.cantidad, c.fecha_compra, c.direccion_envio, c.estado
+    FROM Compras c
+    JOIN Productos p ON c.producto_id = p.producto_id
+    WHERE c.orden_id = ?
+  `;
+
+  db.query(query, [ordenId], (err, results) => {
+    if (err) {
+      console.error('Error fetching purchases:', err);
+      return res.status(500).json({ error: 'Error fetching purchases' });
+    }
+
+    res.json({ compras: results });
+  });
+});
+
+
+app.get('/colaborador/compras/:ordenId', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src/colaborador/compras/compras.html'));
+});
+
+
+//####################################### Modificar estado #####################################
+
+// Endpoint para obtener los datos de una compra específica
+app.get('/colaborador/compras/data/:compra_id', authMiddleware, (req, res) => {
+  const compraId = req.params.compra_id;
+
+  const query = `
+    SELECT Compras.compra_id, Productos.nombre AS producto_nombre, Compras.estado
+    FROM Compras
+    JOIN Productos ON Compras.producto_id = Productos.producto_id
+    WHERE Compras.compra_id = ?
+  `;
+
+  db.query(query, [compraId], (err, results) => {
+    if (err) {
+      console.error('Error al obtener compra:', err);
+      return res.status(500).json({ success: false, error: 'Error al obtener la compra' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ success: false, error: 'Compra no encontrada' });
+    }
+
+    res.json({ success: true, compra: results[0] });
+  });
+});
+
+
+app.get('/colaborador/compras/modificar-estado/:compra_id', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src/colaborador/compras/modificar_estado.html'));
+});
+
+
+// Endpoint para modificar el estado de la compra
+app.post('/colaborador/compras/modificar-estado/:compra_id', authMiddleware, (req, res) => {
+  const compraId = req.params.compra_id;
+  const { estado } = req.body;
+
+  if (!estado) {
+    return res.status(400).json({ success: false, error: 'El estado es obligatorio.' });
+  }
+
+  const query = 'UPDATE Compras SET estado = ? WHERE compra_id = ?';
+
+  db.query(query, [estado, compraId], (err, results) => {
+    if (err) {
+      console.error('Error al actualizar estado:', err);
+      return res.status(500).json({ success: false, error: 'Error al actualizar el estado' });
+    }
+
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ success: false, error: 'Compra no encontrada.' });
+    }
+
+    res.json({ success: true, message: 'Estado actualizado correctamente.' });
+  });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -591,7 +779,8 @@ app.get('/compras', (req, res) => {
       let pendientes = compras.length;
 
       compras.forEach(compra => {
-        const productInfoPath = path.join(__dirname, 'src', 'public', 'Products', String(compra.producto_id), 'info.txt');
+        const productInfoPath = `${CFI}/Products/${compra.producto_id}/info.txt`;
+
 
         // Leer el archivo `info.txt`
         fs.readFile(productInfoPath, 'utf8', (err, data) => {
@@ -619,7 +808,8 @@ app.get('/compras', (req, res) => {
               precio: compra.producto_precio,
               categoria: compra.producto_categoria,
               codigo: compra.producto_codigo,
-              path_imagen: `/public/Products/${productoId}/a.webp`
+              path_imagen: `${CFI}/Products/${productoId}/a.webp`
+
             },
             info,
             direccion: {
@@ -736,7 +926,8 @@ app.get('/comprasbuscar', (req, res) => {
       }
 
       compras.forEach((compra) => {
-        const productInfoPath = path.join(__dirname, 'src', 'public', 'Products', String(compra.producto_id), 'info.txt');
+        const productInfoPath = `${CFI}/Products/${compra.producto_id}/info.txt`;
+
 
         fs.readFile(productInfoPath, 'utf8', (err, data) => {
           let info = {};
@@ -760,7 +951,8 @@ app.get('/comprasbuscar', (req, res) => {
               precio: compra.producto_precio,
               categoria: compra.producto_categoria,
               codigo: compra.producto_codigo,
-              path_imagen: `/public/Products/${productoId}/a.webp`,
+              path_imagen: `${CFI}/Products/${productoId}/a.webp`,
+
             },
             info,
             direccion: {
@@ -790,75 +982,75 @@ app.get('/comprasbuscar', (req, res) => {
 
 
 //########################################## Catálogo ##################################################
-
-app.get('/producto', (req, res) => {
+app.get('/producto', async (req, res) => {
   const productoId = req.query.id;
 
-  db.query('SELECT * FROM Productos WHERE producto_id = ?', [productoId], (err, results) => {
-    if (err) {
-      console.error('Error querying database:', err);
-      return res.status(500).send('Error interno del servidor');
+  try {
+    // Paso 1: Consultar el producto en la base de datos
+    const [results] = await db.promise().query('SELECT * FROM Productos WHERE producto_id = ?', [productoId]);
+
+    if (results.length === 0) {
+      return res.status(404).send('Producto no encontrado');
     }
 
-    if (results.length > 0) {
-      const producto = results[0];
+    const producto = results[0];
 
-      // Leer el archivo info.txt correspondiente al producto
-      const productInfoPath = path.join(__dirname, 'src', 'public', 'Products', String(productoId), 'info.txt');
-      fs.readFile(productInfoPath, 'utf8', (err, data) => {
-        if (err) {
-          console.error('Error reading file:', err);
-          return res.status(500).send('Error interno del servidor');
+    // Paso 2: Leer el archivo info.txt desde Cloudflare R2
+    const productInfoPath = `${CFI}/Products/${productoId}/info.txt`;
+
+    let data;
+    try {
+      const response = await fetch(productInfoPath);
+      if (!response.ok) {
+        throw new Error(`Error fetching file: ${response.statusText}`);
+      }
+      data = await response.text();
+    } catch (err) {
+      console.error('Error fetching file:', err);
+      return res.status(500).send('Error interno al obtener la información del producto');
+    }
+
+    // Paso 3: Procesar el contenido del archivo info.txt
+    const infoLines = data.split('\n');
+    const info = {};
+    let currentSection = null;
+
+    infoLines.forEach(line => {
+      if (line.trim() === "Información Básica") {
+        currentSection = "basic";
+        info[currentSection] = {};
+      } else if (line.trim() === "Información de Catálogo") {
+        currentSection = "catalog";
+        info[currentSection] = {};
+      } else if (line.trim() !== "") {
+        const [key, value] = line.split(': ');
+        if (currentSection && key && value) {
+          info[currentSection][key.trim()] = value.trim();
         }
+      }
+    });
 
-        // Procesar el contenido del archivo info.txt
-        const infoLines = data.split('\n');
-        const info = {};
-        let currentSection = null;
+    // Paso 4: Seleccionar tres productos relacionados al azar de la misma categoría
+    const [relatedProducts] = await db.promise().query(
+      'SELECT * FROM Productos WHERE categoria = ? AND producto_id != ? ORDER BY RAND() LIMIT 3',
+      [producto.categoria, productoId]
+    );
 
-        infoLines.forEach(line => {
-          if (line.trim() === "Información Básica") {
-            currentSection = "basic";
-            info[currentSection] = {};
-          } else if (line.trim() === "Información de Catálogo") {
-            currentSection = "catalog";
-            info[currentSection] = {};
-          } else if (line.trim() !== "") {
-            const [key, value] = line.split(': ');
-            if (currentSection && key && value) {
-              info[currentSection][key.trim()] = value.trim();
-            }
-          }
-        });
-
-        // Seleccionar tres productos relacionados al azar de la misma categoría
-        db.query(
-          'SELECT * FROM Productos WHERE categoria = ? AND producto_id != ? ORDER BY RAND() LIMIT 3',
-          [producto.categoria, productoId],
-          (err, relatedProducts) => {
-            if (err) {
-              console.error('Error al buscar productos relacionados:', err);
-              return res.status(500).send('Error en el servidor');
-            }
-
-            // Renderizar la plantilla EJS con la información del producto, el archivo, y los productos relacionados
-            res.render('producto', {
-              producto,
-              descripcion1: info.catalog['Descripción 1'],
-              descripcion2: info.catalog['Descripción 2'], // Aquí pasamos la Descripción 2
-              material: info.basic['Material'],
-              dimensiones: info.basic['Dimensiones'],
-              acabado: info.basic['Acabado'],
-              color: info.basic['Color'],
-              productosRelacionados: relatedProducts // Pasamos los productos relacionados a la vista
-            });
-          }
-        );
-      });
-    } else {
-      res.status(404).send('Producto no encontrado');
-    }
-  });
+    // Paso 5: Renderizar la plantilla EJS con los datos del producto, archivo y productos relacionados
+    res.render('producto', {
+      producto,
+      descripcion1: info.catalog ? info.catalog['Descripción 1'] : 'No disponible',
+      descripcion2: info.catalog ? info.catalog['Descripción 2'] : 'No disponible',
+      material: info.basic ? info.basic['Material'] : 'No disponible',
+      dimensiones: info.basic ? info.basic['Dimensiones'] : 'No disponible',
+      acabado: info.basic ? info.basic['Acabado'] : 'No disponible',
+      color: info.basic ? info.basic['Color'] : 'No disponible',
+      productosRelacionados: relatedProducts
+    });
+  } catch (err) {
+    console.error('Error en el servidor:', err);
+    res.status(500).send('Error interno del servidor');
+  }
 });
 
 

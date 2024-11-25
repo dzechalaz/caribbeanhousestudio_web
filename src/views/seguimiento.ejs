@@ -24,52 +24,13 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,700;1,600&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap" />
 </head>
+<header>    
+    <!-- Contenedor para la barra de navegación -->
+    <div id="barra"></div>
+</header>
 <body>
     <div class="seguimiento3">
         <img class="bef28-e2d2-463c-ae04-d69b5960f-icon2" alt="" src="/public/080bef28e2d2463cae04d69b5960f9f82@2x.png" />
-
-        <div class="barrabutom1">
-            <img class="path-253-icon3" alt="" src="/public/path-253.svg" />
-
-            <div class="facebook3">
-                <div class="facebook-inner1">
-                    <div class="group-child5"></div>
-                </div>
-            </div>
-            <div class="instagram3">
-                <img class="vector-smart-object3" alt="" src="/public/vector-smart-object@2x.png" />
-            </div>
-            <div class="linkedin3">
-                <div class="rectangle-81311-copy-4-wrapper1">
-                    <div class="rectangle-81311-copy-43"></div>
-                </div>
-                <div class="imagemask3"></div>
-            </div>
-            <div class="twitter3">
-                <div class="rectangle-813111-copy-6-wrapper1">
-                    <div class="rectangle-813111-copy-63"></div>
-                </div>
-            </div>
-            <div class="company3">COMPANY</div>
-            <div class="profile-about-us-contact-addre3">
-                <p class="nombre-juan-quintana">Profile</p>
-                <p class="nombre-juan-quintana">About us</p>
-                <p class="nombre-juan-quintana">Contact</p>
-                <p class="nombre-juan-quintana">Address</p>
-            </div>
-            <div class="returns3">RETURNS</div>
-            <div class="faqs-size-guide-contact-us-container3">
-                <p class="nombre-juan-quintana">FAQs</p>
-                <p class="nombre-juan-quintana">Size Guide</p>
-                <p class="nombre-juan-quintana">Contact us</p>
-            </div>
-            <div class="lorem-ipsum-dolor-container3">
-                <p class="nombre-juan-quintana">Lorem ipsum dolor sit amet,</p>
-                <p class="nombre-juan-quintana">consetetur sadipscing elitr,</p>
-                <p class="nombre-juan-quintana">sed diam nonumy</p>
-            </div>
-            <div class="caribbean-house-studio6">Caribbean House Studio</div>
-        </div>
         <div class="seguimiento-bloque">
             <div class="direccion-parent">
                 <div class="direccion" data-animate-on-scroll>
@@ -177,30 +138,82 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
                 </div>
             </div>
         </div>
-        <header class="barra-pestaas3">
-            <div class="component-1-5">
-                <div class="component-1-5-child"></div>
-                <div class="logo3" id="logo">
-                    <div class="caribbean-house-studio7">Caribbean House Studio</div>
-                </div>
-            </div>
-            <div class="inicio3" id="iNICIOText">INICIO</div>
-            <div class="catlogo3">CATÁLOGO</div>
-            <div class="blog3">BLOG</div>
-            <div class="nuestra-historia4" id="nUESTRAHISTORIAText">NUESTRA HISTORIA</div>
-            <b class="seguimiento5">SEGUIMIENTO</b>
-            <img class="serach-icon3" alt="" src="/public/serach.svg" />
-            <img class="cart-icon3" alt="" src="/public/cart.svg" />
-            <div class="login-wrapper1">
-                <div class="login3">Login</div>
-            </div>
-            <img class="path-74-icon3" alt="" src="/public/path-74.svg" />
-            <div class="div23">1</div>
-            <img class="logo-icon3" alt="" src="/public/logo.svg" />
-        </header>
+    
     </div>
 
+    <!-- Footer -->
+    <div id="footer"></div>
+
     <script>
+
+        window.onload = function () {
+            let claseAResaltar = "catlogo5"; 
+        
+            // Cargar barra.html dinámicamente
+            fetch("/Templates/barra.html")
+              .then((response) => response.text())
+              .then((data) => {
+                document.getElementById("barra").innerHTML = data;
+        
+                // Aplicar el estilo para el elemento resaltado
+                let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
+                if (elementoAResaltar) {
+                  elementoAResaltar.style.fontWeight = 'bold';
+                  elementoAResaltar.style.color = 'var(--color-lightseagreen)';
+                }
+        
+                // Por defecto, el login-wrapper3 redirige a /login
+                const loginWrapper = document.querySelector('#login-wrapper3'); 
+                const loginText = document.querySelector('.login5'); // El texto dentro del botón
+                const bienvenidoText = document.querySelector('#bienvenido-text'); // El texto de bienvenida
+      
+                
+                if (loginWrapper) {
+                  loginWrapper.onclick = function() {
+                    window.location.href = '/login';
+                  }; // Redirige a /login por defecto
+                }
+        
+                // Verificar la sesión para modificar el botón de login/logout si es necesario
+                fetch('/api/session')
+                  .then(response => response.json())
+                  .then(data => {
+                    console.log('Sesión obtenida:', data);
+        
+                    if (data.isAuthenticated) {
+                      // Cambiamos el color del contenedor (wrapper) a rojo chukum
+                      loginWrapper.setAttribute('style', 'background-color: #C19A6B; top: calc(50% - 18px);');
+        
+                      // Cambiamos el texto a "Cerrar sesión"
+                      loginText.textContent = 'Cerrar sesión';
+        
+                      // Cambiamos la acción a cerrar sesión
+                      loginWrapper.onclick = function() {
+                        window.location.href = '/logout';
+                      };
+      
+                      bienvenidoText.textContent = ` ${data.correo}`; // Mostrar el nombre del usuario
+                      
+                      console.log('Sesión iniciada. Usuario:', data.correo);
+                    } else {
+                      console.log('No hay sesión iniciada.');
+                      bienvenidoText.style.display = 'none';
+                    }
+                  })
+                  .catch(error => console.error('Error al cargar la sesión:', error));
+              })
+              .catch(error => console.error('Error al cargar la barra:', error));
+        
+            // Cargar el footer.html dinámicamente
+            fetch("/Templates/footer.html")
+              .then((response) => response.text())
+              .then((data) => {
+                document.getElementById("footer").innerHTML = data;
+              })
+              .catch(error => console.error('Error al cargar el footer:', error));
+          };
+    
+
         var logo = document.getElementById("logo");
         if (logo) {
             logo.addEventListener("click", function (e) {

@@ -18,7 +18,6 @@
     <table id="productos-table" class="display">
       <thead>
         <tr>
-         
           <th>Código</th>
           <th>Nombre</th>
           <th>Precio</th>
@@ -37,11 +36,16 @@
       <button id="modificar-producto">Modificar Producto</button>
       <button id="eliminar-producto">Eliminar Producto</button>
       <button id="guardar-cambios" style="display: none;">Guardar Cambios</button>
-
+      <button id="volver-menu" class="btn-rojo-chukum">Volver al Menú</button>
     </div>
   </div>
 
   <!-- Cargar el script de gestión de productos -->
   <script src="stock.js"></script>
+  <script>
+    document.getElementById('volver-menu').addEventListener('click', () => {
+      window.location.href = '/colaborador/menu';
+    });
+  </script>
 </body>
 </html>
