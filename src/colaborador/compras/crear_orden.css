@@ -1,125 +1,125 @@
+/* General Styles */
 body {
-    font-family: 'Montserrat', sans-serif;
-    background-color: #F4EDE0; /* Fondo cálido */
-    margin: 0;
-    padding: 20px;
-    color: #5B4536;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-  }
+  margin: 0;
+  padding: 20px;
+  font-family: 'Montserrat', sans-serif;
+  background-color: #F4EDE0; /* Fondo cálido */
+  color: #5B4536;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  max-width: 600px;
+  margin: 50px auto;
+  background-color: #FFF8F0; /* Fondo suave */
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px 30px;
+}
+
+h1 {
+  text-align: center;
+  color: #5B4536;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+h2 {
+  font-size: 18px;
+  color: #5B4536;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #E5D4C5;
+  padding-bottom: 5px;
+}
+
+/* Form Styles */
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  color: #5B4536;
+}
+
+input {
+  border: 1px solid #E5D4C5;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 14px;
+  margin-bottom: 15px;
+  width: 100%;
+  background-color: #FFF8F0;
+  color: #5B4536;
+}
+
+input[readonly] {
+  background-color: #F4EDE0;
+  cursor: not-allowed;
+}
+
+button {
+  padding: 10px 15px;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: #8EAA6D; /* Verde chukum */
+  color: #FFF8F0;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #6E8E51;
+}
+
+#verificar-correo {
+  background-color: #D65C4F; /* Rojo chukum */
+  margin-top: -10px;
+}
+
+#verificar-correo:hover {
+  background-color: #B5483E;
+}
+
+#btn-siguiente {
+  margin-top: 20px;
+  background-color: #8EAA6D; /* Verde chukum */
+}
+
+#btn-siguiente:hover {
+  background-color: #6E8E51;
+}
+
+.btn-rojo-chukum {
+  background: #D65C4F; /* Rojo chukum */
+  color: #FFF8F0;
   
+ 
+}
+
+.btn-rojo-chukum:hover {
+  background: #B5483E; /* Más oscuro en hover */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
   .container {
-    max-width: 700px;
-    background-color: #FFF8F0; /* Fondo suave */
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin: 20px;
+      padding: 15px;
   }
-  
+
   h1 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #5B4536;
+      font-size: 20px;
   }
-  
-  form {
-    width: 100%;
+
+  button {
+      font-size: 12px;
   }
-  
-  .form-group {
-    margin-bottom: 20px;
-  }
-  
-  .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 14px;
-    color: #5B4536;
-  }
-  
-  .form-group input,
-  .form-group textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #D99058; /* Borde chukum */
-    border-radius: 5px;
-    background: #FFF8F0; /* Fondo */
-    font-size: 14px;
-    color: #5B4536;
-  }
-  
-  .form-group textarea {
-    resize: none;
-  }
-  
-  .form-group input:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: #8EAA6D; /* Verde chukum */
-  }
-  
-  #productos-container {
-    margin-top: 10px;
-    border: 1px solid #E5D4C5;
-    padding: 10px;
-    border-radius: 5px;
-    background-color: #F9F1E8;
-    min-height: 50px;
-  }
-  
-  .btn-agregar {
-    margin-top: 10px;
-    background-color: #D99058; /* Naranja chukum */
-    color: #FFF8F0;
-    border: none;
-    border-radius: 5px;
-    padding: 8px 15px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .btn-agregar:hover {
-    background-color: #B86D36; /* Más oscuro */
-  }
-  
-  .buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-  }
-  
-  .btn-verde-chukum {
-    background: #8EAA6D; /* Verde chukum */
-    color: #FFF8F0;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-size: 14px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.3s ease;
-  }
-  
-  .btn-verde-chukum:hover {
-    background: #6E8E51; /* Hover más oscuro */
-  }
-  
-  .btn-rojo-chukum {
-    background: #D65C4F; /* Rojo chukum */
-    color: #FFF8F0;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-size: 14px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.3s ease;
-  }
-  
-  .btn-rojo-chukum:hover {
-    background: #B5483E; /* Hover más oscuro */
-  }
-  
+}

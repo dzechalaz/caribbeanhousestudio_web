@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seleccionar Productos</title>
+    <link rel="stylesheet" href="/colaborador/productos/stock.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Productos disponibles</h1>
+        <table id="productos-table">
+            <thead>
+                <tr>
+                    <th>Seleccionar</th>
+                    <th>ID</th>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Cantidad</th>
+                </tr>
+            </thead>
+            <tbody id="productos-body">
+                <!-- Los productos se cargarán aquí -->
+            </tbody>
+        </table>
+        <button id="finalizar-orden">Crear Orden</button>
+    </div>
+    <script src="/colaborador/compras/productos.js"></script>
+</body>
+</html>
