@@ -11,6 +11,11 @@ const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const fetch = require('node-fetch'); 
 
+
+const cors = require('cors');
+app.use(cors());
+
+
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 
 // Configuración del cliente S3 con las nuevas credenciales
@@ -152,7 +157,6 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
 });
 
 //########################################################### eliminar productos  ##################################################
-
 const { DeleteObjectCommand, ListObjectsCommand } = require('@aws-sdk/client-s3');
 
 app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, async (req, res) => {
@@ -166,6 +170,9 @@ app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, async (req
     }
 
     const productId = result[0].producto_id;
+
+    // Eliminar referencias de compras relacionadas con el producto
+    await db.promise().query('DELETE FROM Compras WHERE producto_id = ?', [productId]);
 
     // Eliminar el producto de la base de datos
     await db.promise().query('DELETE FROM Productos WHERE codigo = ?', [productoCodigo]);
@@ -192,12 +199,13 @@ app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, async (req
       }
     }
 
-    res.json({ success: true, message: 'Producto eliminado correctamente' });
+    res.json({ success: true, message: 'Producto y todas sus referencias eliminados correctamente' });
   } catch (error) {
     console.error('Error al eliminar el producto:', error.message);
     res.status(500).json({ success: false, error: 'Error interno al eliminar el producto' });
   }
 });
+
 
 
 // Ruta para actualizar el stock de los productos
@@ -548,106 +556,177 @@ app.get('/colaborador/compras/:ordenId', authMiddleware, (req, res) => {
 });
 
 //####################################### crear compra #####################################
-
 // Endpoint para renderizar la página de crear orden
+
+// Endpoint para renderizar el formulario de dirección
 app.get('/colaborador/ordenes/crear', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/compras/crear_orden.html'));
 });
 
+// Endpoint para pasar a la selección de productos después de agregar la dirección
+app.post('/colaborador/ordenes/direccion', authMiddleware, (req, res) => {
+  const { direccion, correo, nombre, telefono, referencia } = req.body;
 
-
-app.post('/colaborador/ordenes/crear', authMiddleware, (req, res) => {
-  const { correo, referencia, productos, direccion } = req.body;
-
-  // Validación del correo
-  if (!correo || !direccion || productos.length === 0) {
-      return res.status(400).json({ success: false, error: 'Faltan datos obligatorios.' });
+  if (!direccion || !correo || !nombre || !telefono || !referencia) {
+    return res.status(400).json({ success: false, error: 'Todos los campos son obligatorios.' });
   }
 
-  // Verificar si el cliente ya está en el sistema
-  const verificarCliente = `
-      SELECT usuario_id, prerregistro FROM Usuarios WHERE correo = ?;
-  `;
-  db.query(verificarCliente, [correo], (err, usuarios) => {
+  // Guardar dirección temporalmente en sesión (o una estructura similar)
+  req.session.ordenTemporal = { direccion, correo, nombre, telefono, referencia };
+  res.json({ success: true, message: 'Dirección registrada. Continúa con la selección de productos.' });
+});
+
+// Endpoint para renderizar la página de productos
+app.get('/colaborador/ordenes/productos', authMiddleware, (req, res) => {
+  if (!req.session.ordenTemporal) {
+    return res.redirect('/colaborador/ordenes/crear'); // Redirige si no hay datos previos
+  }
+  res.sendFile(path.join(__dirname, 'src/colaborador/compras/productos.html'));
+});
+
+// Endpoint para manejar la creación final de la orden
+app.post('/colaborador/ordenes/finalizar', authMiddleware, (req, res) => {
+  const { productos } = req.body;
+
+  if (!req.session.ordenTemporal) {
+    return res.status(400).json({ success: false, error: 'No se encontraron datos de la orden.' });
+  }
+
+  if (!productos || productos.length === 0) {
+    return res.status(400).json({ success: false, error: 'Debes agregar al menos un producto.' });
+  }
+
+  const { direccion, correo, nombre, telefono, referencia } = req.session.ordenTemporal;
+
+  // Crear usuario si no existe
+  db.query('SELECT usuario_id FROM Usuarios WHERE correo = ?', [correo], (err, results) => {
+    if (err) {
+      console.error('Error al verificar cliente:', err);
+      return res.status(500).json({ success: false, error: 'Error interno del servidor.' });
+    }
+
+    const usuarioId = results.length > 0 ? results[0].usuario_id : null;
+
+    if (!usuarioId) {
+      db.query('INSERT INTO Usuarios (nombre, correo, telefono, password) VALUES (?, ?, ?, ?)', 
+        [nombre, correo, telefono, ''], 
+        (err, result) => {
+          if (err) {
+            console.error('Error al crear cliente:', err);
+            return res.status(500).json({ success: false, error: 'Error al registrar el cliente.' });
+          }
+          crearOrden(result.insertId);
+        }
+      );
+    } else {
+      crearOrden(usuarioId);
+    }
+
+    function crearOrden(usuarioId) {
+      const queryUltimoNumero = 'SELECT numero_orden FROM ordenes ORDER BY orden_id DESC LIMIT 1';
+    
+      db.query(queryUltimoNumero, (err, result) => {
+        if (err) {
+          console.error('Error al obtener el último número de orden:', err);
+          return res.status(500).json({ success: false, error: 'Error interno del servidor.' });
+        }
+    
+        const ultimoNumero = result.length > 0 ? result[0].numero_orden : 'ORD-0000';
+        const nuevoNumeroOrden = generarNumeroOrden(ultimoNumero);
+    
+        const queryOrden = 'INSERT INTO ordenes (numero_orden, usuario_id, referencia, fecha_orden) VALUES (?, ?, ?, NOW())';
+        
+        db.query(queryOrden, [nuevoNumeroOrden, usuarioId, referencia], (err, result) => {
+          if (err) {
+            console.error('Error al crear orden:', err);
+            return res.status(500).json({ success: false, error: 'Error al crear la orden.' });
+          }
+    
+          const ordenId = result.insertId;
+    
+          const compras = productos.map(producto => [
+            producto.producto_id,
+            usuarioId,
+            new Date(),
+            1,
+            `${direccion.calle}, ${direccion.ciudad}, ${direccion.estado}, ${direccion.codigoPostal}`,
+            producto.cantidad,
+            ordenId
+          ]);
+    
+          const queryCompras = 'INSERT INTO Compras (producto_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad, orden_id) VALUES ?';
+    
+          db.query(queryCompras, [compras], (err) => {
+            if (err) {
+              console.error('Error al registrar las compras:', err);
+              return res.status(500).json({ success: false, error: 'Error al registrar las compras.' });
+            }
+    
+            // Actualizar el stock después de registrar las compras
+            actualizarStock(productos, res);
+    
+            // Limpiar la sesión temporal
+            req.session.ordenTemporal = null;
+            res.json({ success: true, message: 'Orden creada exitosamente.' });
+          });
+        });
+      });
+    }
+    // Función para actualizar el stock
+    function actualizarStock(productos, res) {
+      productos.forEach(producto => {
+        const queryActualizarStock = `
+          UPDATE Productos 
+          SET stock = stock - ? 
+          WHERE producto_id = ? AND stock > 0
+        `;
+    
+        db.query(queryActualizarStock, [producto.cantidad, producto.producto_id], (err, result) => {
+          if (err) {
+            console.error(`Error al actualizar stock del producto ${producto.producto_id}:`, err);
+            return res.status(500).json({ success: false, error: 'Error al actualizar el stock de los productos.' });
+          }
+    
+          if (result.affectedRows === 0) {
+            // Si el stock es 0, simplemente no se resta
+            console.warn(`El producto con ID ${producto.producto_id} no tiene stock, pero se fabricará automáticamente.`);
+          }
+        });
+      });
+    }
+    
+
+    function generarNumeroOrden(ultimoNumero) {
+      const hex = ultimoNumero.split('-')[1]; // Extraer la parte hexadecimal
+      const nuevoHex = (parseInt(hex, 16) + 1).toString(16).toUpperCase().padStart(4, '0'); // Incrementar y convertir a hexadecimal
+      return `ORD-${nuevoHex}`;
+    }
+  });
+});
+
+// Endpoint para verificar si el correo ya existe en la base de datos
+app.post('/colaborador/ordenes/verificar-correo', authMiddleware, (req, res) => {
+  const { correo } = req.body;
+
+  if (!correo) {
+      return res.status(400).json({ success: false, error: 'El correo es obligatorio.' });
+  }
+
+  db.query('SELECT usuario_id, nombre, telefono FROM Usuarios WHERE correo = ?', [correo], (err, results) => {
       if (err) {
-          console.error('Error al verificar cliente:', err);
+          console.error('Error al verificar el correo:', err);
           return res.status(500).json({ success: false, error: 'Error interno del servidor.' });
       }
 
-      let usuarioId = null;
-
-      // Si el usuario no existe, lo registramos
-      if (usuarios.length === 0) {
-          const registrarUsuario = `
-              INSERT INTO Usuarios (correo, nombre, telefono, prerregistro, password)
-              VALUES (?, ?, ?, 1, '');
-          `;
-          db.query(registrarUsuario, [correo, 'Cliente', '', 1], (err, result) => {
-              if (err) {
-                  console.error('Error al registrar usuario:', err);
-                  return res.status(500).json({ success: false, error: 'Error al registrar cliente.' });
-              }
-
-              usuarioId = result.insertId; // Nuevo ID del usuario
-              crearOrden(usuarioId);
+      if (results.length > 0) {
+          const usuario = results[0];
+          res.json({
+              success: true,
+              registrado: true,
+              datos: { nombre: usuario.nombre, telefono: usuario.telefono },
           });
       } else {
-          // Usuario ya existe
-          usuarioId = usuarios[0].usuario_id;
-          crearOrden(usuarioId);
-      }
-
-      // Crear la orden
-      function crearOrden(usuarioId) {
-          const obtenerUltimoNumero = `
-              SELECT numero_orden FROM ordenes ORDER BY orden_id DESC LIMIT 1;
-          `;
-          db.query(obtenerUltimoNumero, (err, resultados) => {
-              if (err) {
-                  console.error('Error al obtener último número de orden:', err);
-                  return res.status(500).json({ success: false, error: 'Error interno del servidor.' });
-              }
-
-              const ultimoNumero = resultados.length > 0 ? resultados[0].numero_orden : 'ORD-0000';
-              const nuevoNumero = generarNumeroOrden(ultimoNumero);
-
-              const insertarOrden = `
-                  INSERT INTO ordenes (numero_orden, usuario_id, referencia, fecha_orden)
-                  VALUES (?, ?, ?, NOW());
-              `;
-              db.query(insertarOrden, [nuevoNumero, usuarioId, referencia], (err, result) => {
-                  if (err) {
-                      console.error('Error al crear orden:', err);
-                      return res.status(500).json({ success: false, error: 'Error al crear la orden.' });
-                  }
-
-                  const ordenId = result.insertId;
-
-                  // Insertar productos en la tabla Compras
-                  const insertarCompras = `
-                      INSERT INTO Compras (producto_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad, orden_id)
-                      VALUES ?
-                  `;
-                  const valoresCompras = productos.map(producto => [
-                      producto.producto_id,
-                      usuarioId,
-                      new Date(),
-                      1,
-                      direccion,
-                      producto.cantidad,
-                      ordenId,
-                  ]);
-
-                  db.query(insertarCompras, [valoresCompras], (err) => {
-                      if (err) {
-                          console.error('Error al insertar productos:', err);
-                          return res.status(500).json({ success: false, error: 'Error al agregar productos.' });
-                      }
-
-                      res.json({ success: true, message: 'Orden creada correctamente.', ordenId });
-                  });
-              });
-          });
+          res.json({ success: true, registrado: false });
       }
   });
 });
@@ -1158,8 +1237,6 @@ app.get('/producto', async (req, res) => {
 });
 
 
-
-
 app.get('/catalogo', (req, res) => {
   const productosPorPagina = 12;
   const paginaActual = parseInt(req.query.page) || 1;
@@ -1167,8 +1244,8 @@ app.get('/catalogo', (req, res) => {
   const categoriaSeleccionada = req.query.categoria || 'Todos'; // Por defecto "Todos"
   const searchQuery = req.query.query || ''; // Verificar si hay término de búsqueda
 
-  // Consulta base de productos, ahora incluye el campo stock
-  let queryProductos = 'SELECT producto_id, nombre, precio, codigo, stock FROM Productos WHERE 1=1';
+  // Consulta base de productos, incluye el filtro de stock > 0
+  let queryProductos = 'SELECT producto_id, nombre, precio, codigo, stock FROM Productos WHERE stock > 0';
   let values = [];
 
   // Si la categoría no es "Todos", aplicar el filtro
@@ -1196,13 +1273,11 @@ app.get('/catalogo', (req, res) => {
 
     // Añadir la lógica para obtener la imagen principal de cada producto
     productos.forEach(producto => {
-      
       producto.imagePath = `${CFI}/Products/${producto.producto_id}/a.webp`;
-      
     });
 
     // Consulta para contar el número total de productos
-    let queryCount = 'SELECT COUNT(*) AS total FROM Productos WHERE 1=1';
+    let queryCount = 'SELECT COUNT(*) AS total FROM Productos WHERE stock > 0';
     let countValues = [];
 
     // Aplicar la lógica para la categoría en el conteo de productos, excepto si es "Todos"
@@ -1227,7 +1302,7 @@ app.get('/catalogo', (req, res) => {
       const totalPaginas = Math.ceil(totalProductos / productosPorPagina);
 
       // Consulta para contar las categorías
-      let queryCategorias = 'SELECT categoria, COUNT(*) AS cantidad FROM Productos GROUP BY categoria';
+      let queryCategorias = 'SELECT categoria, COUNT(*) AS cantidad FROM Productos WHERE stock > 0 GROUP BY categoria';
 
       db.query(queryCategorias, (err, categorias) => {
         if (err) {
@@ -1236,7 +1311,7 @@ app.get('/catalogo', (req, res) => {
         }
 
         // Añadir manualmente la categoría "Todos" al principio de la lista
-        const totalProductosQuery = 'SELECT COUNT(*) AS cantidad FROM Productos';
+        const totalProductosQuery = 'SELECT COUNT(*) AS cantidad FROM Productos WHERE stock > 0';
         db.query(totalProductosQuery, (err, resultadoTotal) => {
           if (err) {
             console.error('Error fetching total product count:', err);
@@ -1262,14 +1337,13 @@ app.get('/catalogo', (req, res) => {
     });
   });
 });
-
 app.get('/buscar', (req, res) => {
   const searchQuery = req.query.query; // Obtener la consulta de búsqueda
   const productosPorPagina = 12; // Número de productos por página
   const paginaActual = parseInt(req.query.page) || 1; // Página actual (por defecto la 1)
   const offset = (paginaActual - 1) * productosPorPagina;
 
-  const query = `SELECT producto_id, nombre, precio, codigo FROM Productos WHERE nombre LIKE ? OR codigo LIKE ? LIMIT ? OFFSET ?`;
+  const query = `SELECT producto_id, nombre, precio, codigo FROM Productos WHERE stock > 0 AND (nombre LIKE ? OR codigo LIKE ?) LIMIT ? OFFSET ?`;
   const values = [`%${searchQuery}%`, `%${searchQuery}%`, productosPorPagina, offset];
 
   db.query(query, values, (err, results) => {
@@ -1279,7 +1353,7 @@ app.get('/buscar', (req, res) => {
     }
 
     // Obtener el número total de productos que coinciden con la búsqueda
-    db.query(`SELECT COUNT(*) AS total FROM Productos WHERE nombre LIKE ? OR codigo LIKE ?`, [`%${searchQuery}%`, `%${searchQuery}%`], (err, countResults) => {
+    db.query(`SELECT COUNT(*) AS total FROM Productos WHERE stock > 0 AND (nombre LIKE ? OR codigo LIKE ?)`, [`%${searchQuery}%`, `%${searchQuery}%`], (err, countResults) => {
       if (err) {
         console.error('Error counting products:', err);
         return res.status(500).send('Error counting products');
@@ -1298,6 +1372,7 @@ app.get('/buscar', (req, res) => {
     });
   });
 });
+
 
 
 //################################################## INICIO DE SESION ##################################################
@@ -1386,49 +1461,76 @@ app.post('/login', (req, res) => {
   });
 });
 
-
 app.post('/crear-cuenta', (req, res) => {
   const { nombre, correo, telefono, password } = req.body;
 
   // Verifica que todos los campos estén presentes
-  if (!nombre || !correo || !telefono || !password) {
-    return res.status(400).send('Todos los campos son obligatorios');
+  if (!correo || !password) {
+    return res.status(400).send('El correo y la contraseña son obligatorios');
   }
 
   // Verifica si el correo ya está en uso
   db.query('SELECT * FROM Usuarios WHERE correo = ?', [correo], (err, results) => {
     if (err) {
-      console.error('Error checking email:', err);
+      console.error('Error verificando el correo:', err);
       return res.status(500).send('Error interno del servidor');
     }
 
     if (results.length > 0) {
-      // Si el correo ya está en uso, devuelve un error
-      return res.status(400).send('El correo ya está en uso');
-    }
+      const usuario = results[0];
 
-    // Encripta la contraseña antes de guardarla
-    bcrypt.hash(password, 10, (err, hashedPassword) => {
-      if (err) {
-        console.error('Error hashing password:', err);
-        return res.status(500).send('Error interno del servidor');
+      // Si el correo ya está asociado a una cuenta con contraseña
+      if (usuario.password && usuario.password.trim() !== '') {
+        return res.status(400).send('El correo ya está asociado a una cuenta existente');
       }
 
-      // Inserta el nuevo usuario en la base de datos
-      db.query(
-        'INSERT INTO Usuarios (nombre, correo, telefono, password) VALUES (?, ?, ?, ?)',
-        [nombre, correo, telefono, hashedPassword],
-        (err, result) => {
-          if (err) {
-            console.error('Error creating user:', err);
-            return res.status(500).send('Error al crear la cuenta');
-          }
-
-          // Redirige al usuario a la página de inicio de sesión después de crear la cuenta
-          res.redirect('/login');
+      // Si el correo está asociado a una cuenta sin contraseña
+      // Permitir actualizar los datos y asignar una contraseña
+      bcrypt.hash(password, 10, (err, hashedPassword) => {
+        if (err) {
+          console.error('Error encriptando la contraseña:', err);
+          return res.status(500).send('Error interno del servidor');
         }
-      );
-    });
+
+        // Actualiza los datos en la base de datos
+        db.query(
+          'UPDATE Usuarios SET nombre = ?, telefono = ?, password = ? WHERE correo = ?',
+          [nombre || usuario.nombre, telefono || usuario.telefono, hashedPassword, correo],
+          (err) => {
+            if (err) {
+              console.error('Error actualizando los datos del usuario:', err);
+              return res.status(500).send('Error al actualizar la cuenta');
+            }
+
+            // Redirige al usuario a la página de inicio de sesión
+            res.redirect('/login');
+          }
+        );
+      });
+    } else {
+      // Si el correo no está en uso, crea un nuevo usuario
+      bcrypt.hash(password, 10, (err, hashedPassword) => {
+        if (err) {
+          console.error('Error encriptando la contraseña:', err);
+          return res.status(500).send('Error interno del servidor');
+        }
+
+        // Inserta el nuevo usuario en la base de datos
+        db.query(
+          'INSERT INTO Usuarios (nombre, correo, telefono, password) VALUES (?, ?, ?, ?)',
+          [nombre, correo, telefono, hashedPassword],
+          (err) => {
+            if (err) {
+              console.error('Error creando el usuario:', err);
+              return res.status(500).send('Error al crear la cuenta');
+            }
+
+            // Redirige al usuario a la página de inicio de sesión
+            res.redirect('/login');
+          }
+        );
+      });
+    }
   });
 });
 

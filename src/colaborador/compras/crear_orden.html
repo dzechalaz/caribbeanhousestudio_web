@@ -1,46 +1,55 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crear Orden</title>
-  <link rel="stylesheet" href="/colaborador/compras/crear_orden.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Orden</title>
+    <link rel="stylesheet" href="/colaborador/compras/crear_orden.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Crear Nueva Orden</h1>
+    <div class="container">
+        <h1>Crear Orden</h1>
+        <form id="form-datos">
+            <label for="correo">Correo del Cliente:</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="email" id="correo" name="correo" placeholder="Correo electrónico" required>
+                <button type="button" id="verificar-correo">Verificar</button>
+            </div>
 
-    <form id="crear-orden-form">
-      <div class="form-group">
-        <label for="correo">Correo del Cliente:</label>
-        <input type="email" id="correo" name="correo" placeholder="cliente@example.com" required>
-      </div>
+            <label for="nombre">Nombre del Cliente:</label>
+            <input type="text" id="nombre" name="nombre" placeholder="Nombre completo" readonly required>
 
-      <div class="form-group">
-        <label for="referencia">Referencia de la Orden:</label>
-        <input type="text" id="referencia" name="referencia" placeholder="Descripción corta de la orden" required>
-      </div>
+            <label for="telefono">Teléfono del Cliente:</label>
+            <input type="tel" id="telefono" name="telefono" placeholder="Teléfono" readonly required>
 
-      <div class="form-group">
-        <label for="direccion">Dirección de Envío:</label>
-        <textarea id="direccion" name="direccion" rows="3" placeholder="Ingrese la dirección completa" required></textarea>
-      </div>
+            <label for="referencia">Referencia de la Orden:</label>
+            <input type="text" id="referencia" name="referencia" placeholder="Referencia" required>
 
-      <div class="form-group">
-        <label for="productos">Productos:</label>
-        <div id="productos-container">
-          <!-- Los productos seleccionados aparecerán aquí -->
-        </div>
-        <button type="button" id="agregar-producto" class="btn-agregar">Agregar Producto</button>
-      </div>
+            <h2>Dirección de Envío</h2>
+            <label for="calle">Calle:</label>
+            <input type="text" id="calle" name="calle" placeholder="Calle" required>
 
-      <div class="buttons">
-        <button type="submit" id="guardar-orden" class="btn-verde-chukum">Guardar Orden</button>
-        <button type="button" id="cancelar-orden" class="btn-rojo-chukum">Cancelar</button>
-      </div>
-    </form>
-  </div>
+            <label for="ciudad">Ciudad:</label>
+            <input type="text" id="ciudad" name="ciudad" placeholder="Ciudad" required>
 
-  <script src="/colaborador/compras/crear_orden.js"></script>
+            <label for="estado">Estado:</label>
+            <input type="text" id="estado" name="estado" placeholder="Estado" required>
+
+            <label for="codigoPostal">Código Postal:</label>
+            <input type="text" id="codigoPostal" name="codigoPostal" placeholder="Código Postal" required>
+
+            <button type="submit" id="btn-siguiente">Siguiente</button>
+            
+        </form>
+        <button id="ir-menu" class="btn-rojo-chukum">Volver</button>
+    </div>
+    <script src="/colaborador/compras/crear-orden.js"></script>
+        
+    <script>
+        document.getElementById('ir-menu').addEventListener('click', () => {
+        window.location.href = '/colaborador/ordenes';
+        });
+    </script>
+    <script src="/colaborador/compras/ordenes.js"></script>
 </body>
 </html>
