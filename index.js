@@ -92,19 +92,6 @@ app.set('views', path.join(__dirname, 'src/views'));
 app.use(express.static(path.join(__dirname, 'src')));
 app.use(bodyParser.json());
 
-app.get("/", (req, res) => {
-  console.log("Request received for /");
-  db.query('SELECT nombre FROM Usuarios', (err, results) => {
-    if (err) {
-      console.error('Error fetching client names:', err);
-      res.status(500).send('Error fetching client names');
-      return;
-    }
-
-    const clientes = results.map(row => row.nombre);
-    res.render('dashboard', { clientes });
-  });
-});
 
 
 // ########################################## AUTENTICACIÓN SIMPLE
@@ -1548,6 +1535,31 @@ app.post('/logout', (req, res) => {
     }
     // Redirige al usuario al inicio después de cerrar sesión
     res.redirect('/');
+  });
+});
+
+app.get('/', (req, res) => {
+  const productosPorPagina = 7; // Mostrar los 7 productos más recientes
+  const queryProductos = `
+    SELECT producto_id, nombre, precio, codigo, categoria, stock 
+    FROM Productos 
+    WHERE stock > 0 
+    ORDER BY created_at DESC 
+    LIMIT ?`;
+
+  db.query(queryProductos, [productosPorPagina], (err, productos) => {
+    if (err) {
+      console.error('Error al obtener productos recientes:', err);
+      return res.status(500).send('Error interno del servidor');
+    }
+
+    // Añadir la lógica para obtener la imagen principal de cada producto
+    productos.forEach(producto => {
+      producto.imagePath = `${CFI}/Products/${producto.producto_id}/a.webp`;
+    });
+
+    // Renderizar la vista 'index.ejs' con los productos procesados
+    res.render('index', { recientes: productos });
   });
 });
 
