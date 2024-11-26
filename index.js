@@ -1303,6 +1303,11 @@ app.get('/buscar', (req, res) => {
 //################################################## INICIO DE SESION ##################################################
 
 
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+
+
 // Middleware global para que el correo del usuario esté disponible en todas las vistas
 app.use((req, res, next) => {
   res.locals.correo = req.session.correo || null; // Si hay una sesión activa, pasa el correo del usuario, si no, es null
@@ -1332,49 +1337,63 @@ app.get('/api/session', (req, res) => {
     res.json({ isAuthenticated: false });
   }
 });
+
+// Ruta para manejar el inicio de sesión
 // Ruta para manejar el inicio de sesión
 app.post('/login', (req, res) => {
+  //console.log('Datos recibidos del formulario:', req.body);
   const { correo, password } = req.body;
 
-  // Buscamos al usuario en la base de datos por su correo
+  if (!correo || !password) {
+      console.error('Faltan datos:', req.body);
+      return res.status(400).send('Correo y contraseña son obligatorios');
+  }
+
   db.query('SELECT * FROM Usuarios WHERE correo = ?', [correo], (err, results) => {
-    if (err) {
-      console.error('Error fetching user:', err);
-      return res.status(500).send('Error interno del servidor');
-    }
-
-    if (results.length === 0) {
-      return res.status(401).send('Correo o contraseña incorrectos');
-    }
-
-    const user = results[0];
-
-    // Comparamos la contraseña
-    bcrypt.compare(password, user.password, (err, isMatch) => {
       if (err) {
-        console.error('Error comparing passwords:', err);
-        return res.status(500).send('Error interno del servidor');
+          //console.error('Error fetching user:', err);
+          return res.status(500).send('Error interno del servidor');
       }
 
-      if (!isMatch) {
-        return res.status(401).send('Correo o contraseña incorrectos');
+      if (results.length === 0) {
+          //console.warn('Usuario no encontrado:', correo);
+          return res.status(401).send('Correo o contraseña incorrectos');
       }
 
-      // Guardamos la información del usuario en la sesión
-      req.session.userId = user.usuario_id;
-      req.session.nombre = user.nombre;
-      req.session.correo = user.correo;
+      const user = results[0];
 
-      // Redirigimos al usuario a una página después de iniciar sesión
-      res.redirect('/');  // O redirige a la página que prefieras
-    });
+      //console.log('Contraseña ingresada:', password);
+      //console.log('Contraseña almacenada:', user.password);
+
+      bcrypt.compare(password, user.password, (err, isMatch) => {
+          if (err) {
+              console.error('Error comparing passwords:', err);
+              return res.status(500).send('Error interno del servidor');
+          }
+
+          if (!isMatch) {
+              console.warn('Contraseña no coincide para el usuario:', correo);
+              return res.status(401).send('Correo o contraseña incorrectos');
+          }
+
+          req.session.userId = user.usuario_id;
+          req.session.nombre = user.nombre;
+          req.session.correo = user.correo;
+
+          console.log('Inicio de sesión exitoso:', user.nombre);
+          res.redirect('/');
+      });
   });
 });
 
 
-// Ruta para manejar la creación de cuentas
 app.post('/crear-cuenta', (req, res) => {
   const { nombre, correo, telefono, password } = req.body;
+
+  // Verifica que todos los campos estén presentes
+  if (!nombre || !correo || !telefono || !password) {
+    return res.status(400).send('Todos los campos son obligatorios');
+  }
 
   // Verifica si el correo ya está en uso
   db.query('SELECT * FROM Usuarios WHERE correo = ?', [correo], (err, results) => {
@@ -1412,6 +1431,7 @@ app.post('/crear-cuenta', (req, res) => {
     });
   });
 });
+
 
 app.get('/logout', (req, res) => {
   // Renderiza una página que pide confirmación
