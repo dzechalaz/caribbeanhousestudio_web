@@ -63,8 +63,18 @@
               </li>
             <% }); %>
           </ul>
+          <div class="custom-quote-section">
+            <h2>¿Tienes algo en mente?</h2>
+            <p>Cotiza tu diseño personalizado con nosotros. Haz clic aquí para comenzar.</p>
+            <button class="quote-button" onclick="openCustomQuote()">Cotizar Ahora</button>
+
+
+          </div>
+          
+          <nav></nav>
         </aside>
-        
+
+     
         <section class="product-grid">
           <!-- Lista dinámica de productos -->
           <div class="product-list">
@@ -126,6 +136,8 @@
     <div id="footer"></div>
 
     <script>
+      
+      
       // Carga el archivo barra.html dinámicamente
       window.onload = function () {
         let claseAResaltar = "catlogo5"; 
@@ -207,11 +219,74 @@
         const menu = document.querySelector('.menu-container');
         menu.classList.toggle('active'); // Activa o desactiva el menú
       }
+      function openCustomQuote() {
+        const popupOverlay = document.createElement('div');
+        popupOverlay.id = 'popup-overlay';
+        popupOverlay.style.position = 'fixed';
+        popupOverlay.style.top = '0';
+        popupOverlay.style.left = '0';
+        popupOverlay.style.width = '100%';
+        popupOverlay.style.height = '100%';
+        
+        popupOverlay.style.display = 'flex';
+        popupOverlay.style.justifyContent = 'center';
+        popupOverlay.style.alignItems = 'center';
+        popupOverlay.style.zIndex = '1000';
+    
+        const iframe = document.createElement('iframe');
+        iframe.src = '/static/pedido_custom.html';
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        
+  
+    
+        // Botón de cierre
+        const closeButton = document.createElement('button');
+        closeButton.textContent = '✖';
+        closeButton.style.position = 'absolute';
+        closeButton.style.top = '10px';
+        closeButton.style.right = '10px';
+        closeButton.style.backgroundColor = '#FF4D4D'; // Color rojo llamativo
+        closeButton.style.color = '#FFF'; // Texto blanco para contraste
+        closeButton.style.border = 'none';
+        closeButton.style.borderRadius = '50%'; // Hace el botón circular
+        closeButton.style.padding = '10px';
+        closeButton.style.width = '60px'; // Ajustar tamaño del botón
+        closeButton.style.height = '60px';
+        closeButton.style.display = 'flex';
+        closeButton.style.justifyContent = 'center';
+        closeButton.style.alignItems = 'center';
+        closeButton.style.fontSize = '20px'; // Aumenta el tamaño del texto
+        closeButton.style.cursor = 'pointer';
+        closeButton.style.zIndex = '1001';
 
-      function hideSidebar() {
-        const menu = document.querySelector('.menu-container');
-        menu.classList.remove('active'); // Oculta el menú
-      }
+        closeButton.addEventListener('mouseover', () => {
+            closeButton.style.backgroundColor = '#FF3333'; // Cambia a un rojo más oscuro al pasar el cursor
+        });
+
+        closeButton.addEventListener('mouseout', () => {
+            closeButton.style.backgroundColor = '#FF4D4D'; // Vuelve al rojo original
+        });
+            
+        closeButton.addEventListener('click', () => {
+            popupOverlay.remove(); // Elimina el popup del DOM
+        });
+    
+        popupOverlay.appendChild(closeButton);
+        popupOverlay.appendChild(iframe);
+    
+        document.body.appendChild(popupOverlay);
+    
+        // Cierra el popup al hacer clic fuera del iframe
+        popupOverlay.addEventListener('click', (event) => {
+            if (event.target === popupOverlay) {
+                popupOverlay.remove(); // Elimina el popup del DOM
+            }
+        });
+    }
+    
+      
       
     </script>
 </body>

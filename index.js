@@ -10,6 +10,8 @@ const bcrypt = require('bcrypt'); // Asegúrate de tener esta línea
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const fetch = require('node-fetch'); 
+const nodemailer = require('nodemailer');
+
 
 
 const cors = require('cors');
@@ -1562,6 +1564,92 @@ app.get('/', (req, res) => {
     res.render('index', { recientes: productos });
   });
 });
+
+
+//################################ COSTUM PEDIDOS######################################
+
+
+app.use('/static', express.static(path.join(__dirname, 'src')));
+
+
+// Endpoint para obtener muebles de referencia desde la base de datos
+app.get("/api/muebles", (req, res) => {
+  const query = "SELECT producto_id AS id, nombre FROM Productos";
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error al obtener muebles:", err);
+      return res.status(500).json({ error: "Error al obtener los muebles." });
+    }
+    res.json(results);
+  });
+});
+app.post("/pedido-custom", upload.array("images"), async (req, res) => {
+  const { name, email, phone, referenceItem, description, dimensions, material, finish, generalNotes } = req.body;
+  const images = req.files || [];
+
+  // Email receptor (correo de los colaboradores)
+  const recipientEmail = "dmasmasdz@gmail.com";
+  let attachments = [];
+
+  // Procesar imágenes como adjuntos
+  if (images.length) {
+    attachments = images.map((file, index) => ({
+      filename: `imagen_${index + 1}.${file.mimetype.split("/")[1]}`, // Nombre dinámico
+      content: file.buffer,
+    }));
+  }
+
+  // Contenido del correo
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; border-radius: 10px; color: #333;">
+      <h2 style="color: #8EAA6D;">Nuevo Pedido Personalizado</h2>
+      <p><strong>Nombre del Cliente:</strong> ${name}</p>
+      <p><strong>Correo del Cliente:</strong> ${email}</p>
+      <p><strong>Teléfono del Cliente:</strong> ${phone}</p>
+      <p><strong>Mueble de Referencia:</strong> ${referenceItem || "No especificado"}</p>
+      <p><strong>Descripción:</strong> ${description}</p>
+      <p><strong>Medidas:</strong> ${dimensions}</p>
+      <p><strong>Material:</strong> ${material}</p>
+      <p><strong>Acabado:</strong> ${finish}</p>
+      <p><strong>Notas Generales:</strong> ${generalNotes || "Sin notas adicionales."}</p>
+      ${
+        attachments.length
+          ? `<h3>Imágenes de Referencia:</h3><p>Se han adjuntado ${attachments.length} imagen(es).</p>`
+          : "<p><strong>No se subieron imágenes.</strong></p>"
+      }
+    </div>
+  `;
+
+  // Configuración de Nodemailer
+   // Configuración del transportador de Nodemailer
+   const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "dmasmasdz@gmail.com", // Tu correo
+      pass: "lwqm ksts hhxy yfxy", // Contraseña generada
+    },
+  });
+  
+  // Opciones del correo
+  const mailOptions = {
+    from: '"Pedido Personalizado" <tu_correo@gmail.com>',
+    to: recipientEmail,
+    subject: `Nuevo Pedido Personalizado de ${name}`,
+    html: htmlContent,
+    attachments, // Adjuntar imágenes
+  };
+
+  // Enviar correo
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Correo enviado:", info.response);
+    res.json({ success: true, message: "Pedido enviado correctamente" });
+  } catch (error) {
+    console.error("Error al enviar el correo:", error);
+    res.status(500).json({ success: false, message: "Error al enviar el pedido" });
+  }
+});
+
 
 
 app.listen(PORT, () => {
