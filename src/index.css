@@ -300,6 +300,74 @@
   bottom: 0;
   width: 267px;
 }
+.featured-items {
+  position: relative;
+  top: calc(24%);/* Asegura que la sección respete el flujo normal */ /* Asegura que el bloque respete el flujo del documento */
+  margin: 40px auto; /* Espaciado superior e inferior */
+  text-align: center;
+  padding: 20px;
+  background-color: var(--color-seashell); /* Fondo claro */
+  border-radius: 8px;
+}
+
+
+.featured-items-title {
+  font-size: var(--font-size-19xl); /* Tamaño grande para el título */
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--color-lightseagreen); /* Color distintivo */
+  margin-bottom: 30px; /* Espaciado entre título y productos */
+}
+
+.destacados-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columnas por fila */
+  gap: 20px; /* Espacio entre productos */
+  justify-content: center;
+}
+
+.destacados-card {
+  border: 1px solid #C19A6B; /* Borde estilo chukum */
+  border-radius: 8px;
+  padding: 15px;
+  width: 100%;
+  max-width: 250px;
+  height: 320px;
+  background-color: #f4f4f4; /* Fondo claro */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.destacados-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.destacados-grid .product-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.destacados-grid .product-details {
+  text-align: left;
+  margin-top: 10px;
+}
+
+.destacados-grid .product-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #4A403A;
+}
+
+.destacados-grid .product-price {
+  font-size: 1.1em;
+  color: #705645;
+}
+
+
 .contenido,
 .repeat-grid-1 {
   position: absolute;
@@ -442,21 +510,29 @@
   position: absolute;
   top: calc(50% + 152.87px);
   left: calc(50% - 133.31px);
+  text-decoration: none; /* Elimina el subrayado del enlace */
+  color: inherit; /* Mantiene el color original del texto */
 }
 .closets,
 .sofas {
   top: calc(50% + 138.21px);
   left: calc(50% + 433.25px);
+  text-decoration: none; /* Elimina el subrayado del enlace */
+  color: inherit; /* Mantiene el color original del texto */
 }
 .sofas {
   top: calc(50% - 230.48px);
   left: calc(50% - 346.02px);
+  text-decoration: none; /* Elimina el subrayado del enlace */
+  color: inherit; /* Mantiene el color original del texto */
 }
 .camas,
 .gabinetes {
   position: absolute;
   bottom: 85px;
   left: calc(50% + 383.39px);
+  text-decoration: none; /* Elimina el subrayado del enlace */
+  color: inherit; /* Mantiene el color original del texto */
 }
 .gabinetes {
   left: calc(50% - 373.46px);
@@ -465,6 +541,8 @@
   position: absolute;
   top: calc(50% + 152.71px);
   left: calc(50% - 624.5px);
+  text-decoration: none; /* Elimina el subrayado del enlace */
+  color: inherit; /* Mantiene el color original del texto */
 }
 .categorias,
 .line-parent {

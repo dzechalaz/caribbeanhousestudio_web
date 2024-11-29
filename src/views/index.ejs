@@ -26,132 +26,31 @@
       <div class="fondocat"></div>
       
       
-      
-      <div class="home1contenidodescuentos">
-        <img
-          class="bef28-e2d2-463c-ae04-d69b5960f-icon"
-          alt=""
-          src="./public/080bef28e2d2463cae04d69b5960f9f8@2x.png"
-        />
-
-        <img
-          class="bef28-e2d2-463c-ae04-d69b5960f-icon1"
-          alt=""
-          src="./public/080bef28e2d2463cae04d69b5960f9f81@2x.png"
-        />
-
-        <div class="contenido">
-          <b class="descuentos">DESCUENTOS</b>
-          <div class="oferta-de-verano">OFERTA DE VERANO</div>
-          <div class="lorem-ipsum-dolor1">
-            Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam
-            nonumy eirmod
-          </div>
-          <div class="repeat-grid-1">
-            <div class="div1">
-              <img
-                class="e97-1bef-49b5-a039-25634b9aaaa-icon"
-                alt=""
-                src="./public/50677e971bef49b5a03925634b9aaaa4@2x.png"
-              />
-
-              <div class="lmpara-parent">
-                <div class="lmpara">Lámpara</div>
-                <div class="div2">$ 99.00</div>
-                <div class="parent">
-                  <div class="div3">$ 189.00</div>
-                  <img
-                    class="path-263-icon"
-                    alt=""
-                    src="./public/path-263.svg"
-                  />
-                </div>
-                <div class="ellipse-parent">
-                  <img
-                    class="group-item"
-                    alt=""
-                    src="./public/ellipse-18.svg"
-                  />
-
-                  <div class="div4">
-                    <span>20</span>
-                    <span class="span">%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="div5">
-              <img
-                class="e97-1bef-49b5-a039-25634b9aaaa-icon"
-                alt=""
-                src="./public/50677e971bef49b5a03925634b9aaaa41@2x.png"
-              />
-
-              <div class="lmpara-parent">
-                <div class="mesa">Mesa</div>
-                <div class="div2">$ 99.00</div>
-                <div class="parent">
-                  <div class="div3">$ 189.00</div>
-                  <img
-                    class="path-263-icon"
-                    alt=""
-                    src="./public/path-263.svg"
-                  />
-                </div>
-                <div class="ellipse-parent">
-                  <img
-                    class="group-item"
-                    alt=""
-                    src="./public/ellipse-18.svg"
-                  />
-
-                  <div class="div4">
-                    <span>20</span>
-                    <span class="span">%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="div9">
-              <img
-                class="e97-1bef-49b5-a039-25634b9aaaa-icon"
-                alt=""
-                src="./public/50677e971bef49b5a03925634b9aaaa42@2x.png"
-              />
-
-              <div class="lmpara-parent">
-                <div class="silla">Silla</div>
-                <div class="div2">$ 99.00</div>
-                <div class="parent">
-                  <div class="div3">$ 189.00</div>
-                  <img
-                    class="path-263-icon"
-                    alt=""
-                    src="./public/path-263.svg"
-                  />
-                </div>
-                <div class="ellipse-parent">
-                  <img
-                    class="group-item"
-                    alt=""
-                    src="./public/ellipse-18.svg"
-                  />
-
-                  <div class="div4">
-                    <span>20</span>
-                    <span class="span">%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
       <label class="frase">
         <p class="por-qu">El mejor lugar</p>
         <p class="por-qu">te hace sentir</p>
         <p class="por-qu">en casa</p>
       </label>
+
+      <div class="featured-items">
+        <div class="featured-items-title">Destacados</div>
+        <div class="product-grid destacados-grid">
+          <% destacados.forEach(function(producto) { %>
+            <a href="/producto?id=<%= producto.producto_id %>" class="product-link">
+              <div class="product-card destacados-card">
+                <img src="<%= producto.imagePath %>" alt="<%= producto.nombre %>" class="product-image">
+                <div class="product-details">
+                  <h3 class="product-title"><%= producto.nombre %></h3>
+                  <p class="product-price">$<%= producto.precio %></p>
+                </div>
+              </div>
+            </a>
+          <% }); %>
+        </div>
+      </div>
+      
+      
+
       <div class="categorias">
         <div class="line-parent">
           <div class="line-div"></div>
@@ -211,12 +110,12 @@
       
           <div class="categorias1">CATEGORIAS</div>
       
-          <a href="./catalogo?categoria=Salas" class="sillas">Salas</a>
-          <a href="./catalogo?categoria=Recamaras" class="closets">Recamaras</a>
-          <a href="./catalogo?categoria=Almacenaje" class="sofas">Almacenaje</a>
-          <a href="./catalogo?categoria=Sillas y bancos" class="camas">Sillas y bancos</a>
+          <a href="./catalogo?categoria=Salas" class="sillas">Sillas y bancos</a>
+          <a href="./catalogo?categoria=Recamaras" class="closets">Almacenaje</a>
+          <a href="./catalogo?categoria=Almacenaje" class="sofas">Recamaras</a>
+          <a href="./catalogo?categoria=Sillas y bancos" class="camas">Decoracion</a>
           <a href="./catalogo?categoria=Mesas" class="gabinetes">Mesas</a>
-          <a href="./catalogo?categoria=Decoracion" class="mesas">Decoracion</a>
+          <a href="./catalogo?categoria=Decoracion" class="mesas">Salas</a>
         </div>
       </div>
       
@@ -238,19 +137,13 @@
                 </div>
               </a>
             <% }); %>
+            <div id="footer"></div>
           </div>
         </div>
       </div>
-      
-       
-      <div class="footer2"></div>
-      
-      <div class="fabrica-herreria">
-        FABRICA - HERRERIA - MADERA - DECORACION - INTERIORISMO
-      </div>
-      
+     
     </div>
-    <div id="footer" style="z-index: 3;"></div>
+    
 
 
     <script>window.onload = function () {

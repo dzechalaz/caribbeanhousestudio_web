@@ -1542,26 +1542,46 @@ app.post('/logout', (req, res) => {
 
 app.get('/', (req, res) => {
   const productosPorPagina = 7; // Mostrar los 7 productos más recientes
-  const queryProductos = `
+  const queryRecientes = `
     SELECT producto_id, nombre, precio, codigo, categoria, stock 
     FROM Productos 
     WHERE stock > 0 
     ORDER BY created_at DESC 
     LIMIT ?`;
 
-  db.query(queryProductos, [productosPorPagina], (err, productos) => {
+  const queryDestacados = `
+    SELECT producto_id, nombre, precio, codigo, categoria, stock 
+    FROM Productos 
+    WHERE destacado = 1 
+    LIMIT 6`; // Mostrar 6 productos destacados
+
+  // Obtener productos destacados primero
+  db.query(queryDestacados, (err, destacados) => {
     if (err) {
-      console.error('Error al obtener productos recientes:', err);
+      console.error('Error al obtener productos destacados:', err);
       return res.status(500).send('Error interno del servidor');
     }
 
-    // Añadir la lógica para obtener la imagen principal de cada producto
-    productos.forEach(producto => {
+    // Procesar las rutas de imágenes para los destacados
+    destacados.forEach(producto => {
       producto.imagePath = `${CFI}/Products/${producto.producto_id}/a.webp`;
     });
 
-    // Renderizar la vista 'index.ejs' con los productos procesados
-    res.render('index', { recientes: productos });
+    // Obtener productos recientes
+    db.query(queryRecientes, [productosPorPagina], (err, recientes) => {
+      if (err) {
+        console.error('Error al obtener productos recientes:', err);
+        return res.status(500).send('Error interno del servidor');
+      }
+
+      // Procesar las rutas de imágenes para los recientes
+      recientes.forEach(producto => {
+        producto.imagePath = `${CFI}/Products/${producto.producto_id}/a.webp`;
+      });
+
+      // Renderizar la vista 'index.ejs' con ambos conjuntos de productos
+      res.render('index', { recientes, destacados });
+    });
   });
 });
 
