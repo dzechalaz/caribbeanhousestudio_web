@@ -285,3 +285,47 @@ body {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   box-shadow: none;
 }
+
+
+/*pedido costum */
+
+.custom-quote-section {
+  background-color: #E06666; /* Rojo suave estilo Chukum */
+  color: #FFF8F0; /* Texto en color claro */
+  padding: 20px; /* Ajuste del padding para más simetría */
+  border-radius: 8px;
+  text-align: center;
+  margin-top: 120Px; /* Espaciado */
+  width: 20vw; /* Asegura el mismo ancho que la barra lateral */
+  max-width: 250px; /* Asegura el ancho máximo */
+  min-width: 170px; /* Asegura el ancho mínimo */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+  margin-left: -20px;
+}
+
+.custom-quote-section h2 {
+  font-size: 1.8em;
+  margin-bottom: 10px;
+  color: #4A403A; /* Tono oscuro */
+}
+
+.custom-quote-section p {
+  font-size: 1.2em;
+  margin-bottom: 15px;
+}
+
+.quote-button, .xbutton {
+  background-color: #6E8E51; /* Verde Chukum */
+  color: #FFF8F0; /* Texto claro */
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 1.2em;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+  margin-bottom: 20px;
+}
+
+.quote-button:hover {
+  background-color: #497E39; /* Verde más oscuro para hover */
+}
