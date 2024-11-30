@@ -1,0 +1,213 @@
+body {
+  font-family: 'Montserrat', sans-serif;
+  margin: 0;
+  padding: 0;
+
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-container {
+  background: #FFF8F0;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 900px;
+  width: 100%;
+  align-items: center;
+}
+
+h1 {
+  color: #8EAA6D;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-top: 10px;
+  color: #5B4536;
+}
+
+input, textarea, select, button {
+  width: 80%;
+  margin-top: 5px;
+  padding: 10px;
+  border: 1px solid #E5D4C5;
+  border-radius: 5px;
+  font-size: 14px;
+  color: #5B4536;
+  
+}
+
+button {
+  background-color: #8EAA6D;
+  color: #FFF8F0;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #6E8E51;
+}
+
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centra todo el formulario horizontalmente */
+  padding: 20px;
+
+  max-width: 600px; /* Ancho máximo del formulario */
+  margin: 0 auto; /* Centra el formulario en la página */
+}
+
+form label {
+  display: block;
+  text-align: left; /* Alinea las etiquetas a la izquierda */
+  width: 100%; /* Ocupa el ancho completo del contenedor */
+  margin-bottom: 5px; /* Espacio entre etiqueta e input */
+  color: #5B4536;
+  font-weight: bold;
+}
+
+form input,
+form select,
+form textarea {
+  width: 100%; /* Haz que los inputs ocupen el ancho completo */
+  max-width: 600px; /* Limita el ancho de los inputs */
+  padding: 10px;
+  margin-bottom: 15px; /* Espaciado entre campos */
+  border: 1px solid #E5D4C5;
+  border-radius: 5px;
+  background-color: #F4EDE0;
+  font-size: 16px;
+}
+
+form button {
+  width: 100%;
+  max-width: 500px;
+  padding: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  background-color: #8EAA6D;
+  color: #FFF8F0;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+form button:hover {
+  background-color: #6E8E51;
+}
+
+.generalNotes{
+  height: 400px;
+}
+
+form textarea {
+  width: 100%; /* Asegura que ocupe todo el ancho disponible */
+  max-width: 600px; /* Limita el ancho máximo */
+  padding: 10px;
+  margin-bottom: 15px; /* Espaciado entre campos */
+  border: 1px solid #E5D4C5;
+  border-radius: 5px;
+  background-color: #F4EDE0;
+  font-size: 16px;
+  height: 150px; /* Incrementa la altura del campo */
+  resize: vertical; /* Permite ajustar manualmente la altura si es necesario */
+}
+
+.popup-container {
+  background: #FFF8F0;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 900px;
+  width: 100%;
+  align-items: center;
+  max-height: 90vh; /* Altura máxima del popup */
+  overflow-y: auto; /* Permite el scroll vertical */
+}
+
+button {
+  color: white;
+  background-color: #8EAA6D;
+  border-radius: 5px;
+  font-size: 16px;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  background-color: #B5B5B5;
+  cursor: not-allowed;
+}
+
+button.loading {
+  display: flex;
+  align-items: center;
+}
+
+button.loading svg {
+  animation: spin 1s linear infinite;
+  width: 1em;
+  height: 1em;
+}
+button:disabled:hover {
+  background-color: #B5B5B5; /* Color que ya tiene cuando está deshabilitado */
+  cursor: not-allowed; /* Asegura que no haya interacción visual */
+}
+
+.close-button {
+  position: absolute;
+  top: 50px;
+  right: px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  font-weight: bold;
+  color: #5B4536; /* Café oscuro */
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.close-button:hover {
+  color: #5a832c; /* Un verde suave al pasar el mouse */
+  background-color: #8eaa6d00;
+}
+
+.popup-overlay.show {
+  display: flex; /* Mostramos el popup */
+  pointer-events: auto; /* Permitimos la interacción */
+}
+
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
