@@ -118,6 +118,9 @@ const authMiddleware = (req, res, next) => {
 app.get('/colaborador/menu', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/menu.html'));
 });
+app.get('/colaborador/estadisticas', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src/colaborador/estadisticas.html'));
+});
 
 app.get('/colaborador/productos/crear', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/productos/crear_producto.html'));
@@ -574,6 +577,7 @@ app.get('/colaborador/ordenes/productos', authMiddleware, (req, res) => {
 });
 
 // Endpoint para manejar la creación final de la orden
+// Endpoint para manejar la creación final de la orden
 app.post('/colaborador/ordenes/finalizar', authMiddleware, (req, res) => {
   const { productos } = req.body;
 
@@ -651,6 +655,9 @@ app.post('/colaborador/ordenes/finalizar', authMiddleware, (req, res) => {
               return res.status(500).json({ success: false, error: 'Error al registrar las compras.' });
             }
     
+            // Registrar las compras en la tabla de Registros
+            registrarEnRegistros(productos, res);
+
             // Actualizar el stock después de registrar las compras
             actualizarStock(productos, res);
     
@@ -661,6 +668,26 @@ app.post('/colaborador/ordenes/finalizar', authMiddleware, (req, res) => {
         });
       });
     }
+
+    // Función para registrar en la tabla de Registros
+    function registrarEnRegistros(productos, res) {
+      const registros = productos.map(producto => [
+        producto.producto_id,
+        'compra', // Evento de compra
+        new Date(), // Fecha actual
+        producto.precio
+      ]);
+
+      const queryRegistros = 'INSERT INTO Registros (product_id, evento, fecha, precio) VALUES ?';
+
+      db.query(queryRegistros, [registros], (err) => {
+        if (err) {
+          console.error('Error al registrar en la tabla de Registros:', err);
+          return res.status(500).json({ success: false, error: 'Error al registrar las compras en Registros.' });
+        }
+      });
+    }
+
     // Función para actualizar el stock
     function actualizarStock(productos, res) {
       productos.forEach(producto => {
@@ -950,14 +977,17 @@ app.get('/compras', (req, res) => {
       const comprasConInfo = [];
       let pendientes = compras.length;
 
-      compras.forEach(compra => {
+      compras.forEach(async compra => {
         const productInfoPath = `${CFI}/Products/${compra.producto_id}/info.txt`;
-
-
-        // Leer el archivo `info.txt`
-        fs.readFile(productInfoPath, 'utf8', (err, data) => {
+      
+        try {
+          // Realiza una solicitud HTTP para obtener el contenido del archivo
+          const response = await fetch(productInfoPath);
+      
           let info = {};
-          if (!err && data) {
+          if (response.ok) {
+            const data = await response.text();
+      
             // Procesar el contenido del archivo si existe
             const infoLines = data.split('\n');
             infoLines.forEach(line => {
@@ -967,10 +997,10 @@ app.get('/compras', (req, res) => {
               }
             });
           }
-
+      
           // Verifica que `producto_id` exista y no sea nulo
           const productoId = compra.producto_id || 'default';
-
+      
           // Agregar la compra con la información procesada
           const direccionParts = compra.direccion_envio.split(', ');
           comprasConInfo.push({
@@ -981,7 +1011,6 @@ app.get('/compras', (req, res) => {
               categoria: compra.producto_categoria,
               codigo: compra.producto_codigo,
               path_imagen: `${CFI}/Products/${productoId}/a.webp`
-
             },
             info,
             direccion: {
@@ -991,7 +1020,7 @@ app.get('/compras', (req, res) => {
               codigoPostal: direccionParts[3] || 'N/A'
             }
           });
-
+      
           // Verificar si se procesaron todas las compras
           pendientes--;
           if (pendientes === 0) {
@@ -1002,11 +1031,50 @@ app.get('/compras', (req, res) => {
               searchQuery: ''
             });
           }
-        });
+        } catch (err) {
+          console.error(`Error fetching file from ${productInfoPath}:`, err);
+      
+          // Manejo del error: aún así agrega el objeto a `comprasConInfo` sin la información del archivo
+          const productoId = compra.producto_id || 'default';
+          const direccionParts = compra.direccion_envio.split(', ');
+          comprasConInfo.push({
+            ...compra,
+            producto: {
+              nombre: compra.producto_nombre,
+              precio: compra.producto_precio,
+              categoria: compra.producto_categoria,
+              codigo: compra.producto_codigo,
+              path_imagen: `${CFI}/Products/${productoId}/a.webp`
+            },
+            info: {},
+            direccion: {
+              calle: direccionParts[0] || 'N/A',
+              ciudad: direccionParts[1] || 'N/A',
+              estado: direccionParts[2] || 'N/A',
+              codigoPostal: direccionParts[3] || 'N/A'
+            }
+          });
+      
+          // Verificar si se procesaron todas las compras
+          pendientes--;
+          if (pendientes === 0) {
+            res.render('compras', {
+              ordenes,
+              compras: comprasConInfo,
+              mensaje: null,
+              searchQuery: ''
+            });
+          }
+        }
+      });
+      
+
+
+
       });
     });
   });
-});
+
 
 //########################################## BUSQUEDA COMPRAS ##################################################
 app.get('/comprasbuscar', (req, res) => {
@@ -1165,9 +1233,33 @@ app.get('/producto', async (req, res) => {
       return res.status(404).send('Producto no encontrado');
     }
 
-    const producto = results[0];
+    const producto = results[0]; // Este contiene el título y el precio del producto
 
-    // Paso 2: Leer el archivo info.txt desde Cloudflare R2
+    // **Registrar la visita en la tabla Registros**
+    const queryInsertVisita = `
+      INSERT INTO Registros (product_id, evento, fecha, precio)
+      VALUES (?, 'visita', NOW(), NULL)
+    `;
+    await db.promise().query(queryInsertVisita, [productoId]);
+
+    // Paso 2: Consultar las compras del último mes
+    const lastMonthDate = new Date();
+    lastMonthDate.setMonth(lastMonthDate.getMonth() - 1); // Fecha de hace un mes
+
+    const [comprasMes] = await db.promise().query(
+      'SELECT fecha, precio FROM Registros WHERE product_id = ? AND evento = "compra" AND fecha >= ? ORDER BY fecha ASC',
+      [productoId, lastMonthDate]
+    );
+
+    // Paso 3: Formatear los datos para la gráfica
+    const chartData = comprasMes.length > 0 
+      ? comprasMes.map(compra => ({
+          time: compra.fecha.toISOString().split('T')[0], // Formato YYYY-MM-DD
+          value: compra.precio
+        }))
+      : []; // Si no hay compras, devuelve un array vacío
+
+    // Paso 4: Leer el archivo info.txt desde Cloudflare R2
     const productInfoPath = `${CFI}/Products/${productoId}/info.txt`;
 
     let data;
@@ -1182,7 +1274,7 @@ app.get('/producto', async (req, res) => {
       return res.status(500).send('Error interno al obtener la información del producto');
     }
 
-    // Paso 3: Procesar el contenido del archivo info.txt
+    // Paso 5: Procesar el contenido del archivo info.txt
     const infoLines = data.split('\n');
     const info = {};
     let currentSection = null;
@@ -1202,22 +1294,23 @@ app.get('/producto', async (req, res) => {
       }
     });
 
-    // Paso 4: Seleccionar tres productos relacionados al azar de la misma categoría
+    // Paso 6: Seleccionar tres productos relacionados al azar de la misma categoría
     const [relatedProducts] = await db.promise().query(
       'SELECT * FROM Productos WHERE categoria = ? AND producto_id != ? ORDER BY RAND() LIMIT 3',
       [producto.categoria, productoId]
     );
 
-    // Paso 5: Renderizar la plantilla EJS con los datos del producto, archivo y productos relacionados
+    // Paso 7: Renderizar la plantilla EJS con los datos del producto, archivo, productos relacionados y datos de la gráfica
     res.render('producto', {
-      producto,
+      producto, // Enviar nombre y precio directamente desde la base de datos
       descripcion1: info.catalog ? info.catalog['Descripción 1'] : 'No disponible',
       descripcion2: info.catalog ? info.catalog['Descripción 2'] : 'No disponible',
       material: info.basic ? info.basic['Material'] : 'No disponible',
       dimensiones: info.basic ? info.basic['Dimensiones'] : 'No disponible',
       acabado: info.basic ? info.basic['Acabado'] : 'No disponible',
       color: info.basic ? info.basic['Color'] : 'No disponible',
-      productosRelacionados: relatedProducts
+      productosRelacionados: relatedProducts,
+      chartData: JSON.stringify(chartData) // Pasar los datos de la gráfica al frontend
     });
   } catch (err) {
     console.error('Error en el servidor:', err);
@@ -1541,6 +1634,7 @@ app.post('/logout', (req, res) => {
 });
 
 app.get('/', (req, res) => {
+  
   const productosPorPagina = 7; // Mostrar los 7 productos más recientes
   const queryProductos = `
     SELECT producto_id, nombre, precio, codigo, categoria, stock 
@@ -1563,8 +1657,29 @@ app.get('/', (req, res) => {
     // Renderizar la vista 'index.ejs' con los productos procesados
     res.render('index', { recientes: productos });
   });
-});
 
+  
+});
+app.get('/', async (req, res) => {
+  try {
+    const today = new Date().toISOString().split('T')[0]; // Obtener la fecha actual en formato YYYY-MM-DD
+
+    // Incrementar el contador de visitas para la fecha actual
+    await db.promise().query(
+      `
+      INSERT INTO Visitas (fecha, cantidad)
+      VALUES (?, 1)
+      ON DUPLICATE KEY UPDATE cantidad = cantidad + 1
+      `,
+      [today]
+    );
+
+    res.render('index'); // Renderiza tu página principal
+  } catch (err) {
+    console.error('Error al registrar visita general:', err);
+    res.status(500).send('Error interno del servidor');
+  }
+});
 
 //################################ COSTUM PEDIDOS######################################
 
@@ -1647,6 +1762,46 @@ app.post("/pedido-custom", upload.array("images"), async (req, res) => {
   } catch (error) {
     console.error("Error al enviar el correo:", error);
     res.status(500).json({ success: false, message: "Error al enviar el pedido" });
+  }
+});
+
+//#######################ESTADISTICAS################################
+app.get('/api/estadisticas', async (req, res) => {
+  try {
+    // Obtener visitas generales por día
+    const [visitasPorDia] = await db.promise().query(`
+      SELECT fecha, SUM(cantidad) AS total
+      FROM Visitas
+      GROUP BY fecha
+      ORDER BY fecha ASC
+    `);
+
+    // Top 5 productos más vendidos (ya existente)
+    const [topVendidos] = await db.promise().query(`
+      SELECT p.nombre, COUNT(r.product_id) as totalVentas
+      FROM Registros r
+      JOIN Productos p ON r.product_id = p.producto_id
+      WHERE r.evento = "compra"
+      GROUP BY r.product_id
+      ORDER BY totalVentas DESC
+      LIMIT 5
+    `);
+
+    // Top 5 productos más visitados (ya existente)
+    const [topVisitados] = await db.promise().query(`
+      SELECT p.nombre, COUNT(r.product_id) as totalVisitas
+      FROM Registros r
+      JOIN Productos p ON r.product_id = p.producto_id
+      WHERE r.evento = "visita" AND r.product_id IS NOT NULL
+      GROUP BY r.product_id
+      ORDER BY totalVisitas DESC
+      LIMIT 5
+    `);
+
+    res.json({ visitasPorDia, topVendidos, topVisitados });
+  } catch (err) {
+    console.error('Error al obtener estadísticas:', err);
+    res.status(500).send('Error interno del servidor');
   }
 });
 
