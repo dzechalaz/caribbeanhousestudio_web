@@ -327,7 +327,6 @@
 }
 
 .destacados-card {
-  border: 1px solid #C19A6B; /* Borde estilo chukum */
   border-radius: 8px;
   padding: 15px;
   width: 100%;
@@ -598,13 +597,13 @@
   gap: 20px;}
   
   .product-card {
-    border: 1px solid #C19A6B; /* Borde con color estilo chukum */
+    
     border-radius: 8px;
     padding: calc(15%);
     width: calc(65%);
     max-width: 250px;
     height: 320px;
-    background-color: #a5d1ce; /* Fondo estilo chukum */
+    background-color: rgba(165, 209, 206, 0.7); /* Fondo estilo chukum */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     cursor: pointer; /* Cambia el cursor para indicar que es clicable */
