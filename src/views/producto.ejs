@@ -140,58 +140,6 @@ if (producto) {
     <!-- scripts -->
 
     <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var chart = LightweightCharts.createChart(document.getElementById('price-chart'), {
-                width: 1200,
-                height: 500,  // Ajuste de altura
-                layout: {
-                    backgroundColor: { type: 'solid', color: '#eeeeee' },  // Esto hace que el fondo sea transparente
-                    textColor: '#333',
-                    fontSize: 20,
-                },
-                grid: {
-                    vertLines: {
-                        color: '#eeeeee',
-                    },
-                    horzLines: {
-                        color: '#eeeeee',
-                    },
-                },
-                priceScale: {
-                    borderColor: '#cccccc',
-                 
-                },
-                timeScale: {
-                    borderColor: '#cccccc',
-                },
-            });
-    
-            var lineSeries = chart.addLineSeries({
-                color: '#a5d1ce',
-                lineWidth: 2,
-            });
-    
-            // Datos simulados para la última semana
-            lineSeries.setData([
-                { time: '2023-12-01', value: 6699.00 },
-                { time: '2023-12-02', value: 6600.00 },
-                { time: '2023-12-03', value: 6500.00 },
-                { time: '2023-12-04', value: 6400.00 },
-                { time: '2023-12-05', value: 6450.00 },
-                { time: '2023-12-06', value: 6550.00 },
-                { time: '2023-12-07', value: 6699.00 },
-            ]);
-    
-            // Configura el timeScale para mostrar solo la última semana
-            chart.timeScale().setVisibleRange({
-                from: (new Date('2023-12-01T00:00:00Z').getTime() / 1000),
-                to: (new Date('2023-12-07T00:00:00Z').getTime() / 1000),
-            });
-        });
-        
-    </script>
     
     
 
@@ -201,43 +149,6 @@ if (producto) {
     }
     
 
-      var logo = document.getElementById("logo");
-      if (logo) {
-        logo.addEventListener("click", function (e) {
-          window.location.href = "./index.html";
-        });
-      }
-      
-      var iNICIOText = document.getElementById("iNICIOText");
-      if (iNICIOText) {
-        iNICIOText.addEventListener("click", function (e) {
-          window.location.href = "./index.html";
-        });
-      }
-
-      var CatalogoText = document.getElementById("catlogo6");
-      if (CatalogoText) {
-        CatalogoText.addEventListener("click", function (e) {
-          window.location.href = "./catalogo";
-        });
-      }
-      
-      var sEGUIMIENTOText = document.getElementById("sEGUIMIENTOText");
-      if (sEGUIMIENTOText) {
-        sEGUIMIENTOText.addEventListener("click", function (e) {
-          window.location.href = "./añadirID.html";
-        });
-      }
-   
-      
-      var nUESTRAHISTORIAText = document.getElementById("nUESTRAHISTORIAText");
-      if (nUESTRAHISTORIAText) {
-        nUESTRAHISTORIAText.addEventListener("click", function (e) {
-          window.location.href = "./about-us.html";
-        });
-      }
-      
-      
       var scrollAnimElements = document.querySelectorAll("[data-animate-on-scroll]");
       var observer = new IntersectionObserver(
         (entries) => {
@@ -324,7 +235,45 @@ if (producto) {
           })
           .catch(error => console.error('Error al cargar el footer:', error));
       };
+
+      document.addEventListener('DOMContentLoaded', function () {
+        var chart = LightweightCharts.createChart(document.getElementById('price-chart'), {
+          width: 1200,
+          height: 500,
+          layout: {
+            backgroundColor: { type: 'solid', color: '#eeeeee' },
+            textColor: '#333',
+          },
+          grid: {
+            vertLines: { color: '#eeeeee' },
+            horzLines: { color: '#eeeeee' },
+          },
+          priceScale: { borderColor: '#cccccc' },
+          timeScale: { borderColor: '#cccccc' },
+        });
+    
+        var lineSeries = chart.addLineSeries({
+          color: '#a5d1ce',
+          lineWidth: 2,
+        });
+    
+        // Datos enviados desde el backend
+        var chartData = <%- chartData %>;
+    
+        // Si no hay datos en chartData, mostramos un mensaje o manejamos el caso vacío
+        if (chartData.length > 0) {
+          lineSeries.setData(chartData);
+    
+          // Ajustar rango de tiempo automáticamente
+          chart.timeScale().fitContent();
+        } else {
+          console.warn('No hay datos disponibles para el historial de precios.');
+        }
+      });
+    </script>
       </script>
+
+      
   </body>
 </html>
 <% 
