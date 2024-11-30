@@ -547,7 +547,7 @@ app.get('/colaborador/compras/:ordenId', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/compras/compras.html'));
 });
 
-//####################################### crear compra #####################################
+//####################################### crear compra #####################################ds
 // Endpoint para renderizar la página de crear orden
 
 // Endpoint para renderizar el formulario de dirección
