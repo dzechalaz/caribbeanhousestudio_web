@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estadísticas</title>
+  <link rel="stylesheet" href="./global.css">
+  <link rel="stylesheet" href="./estadisticas.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Estadísticas del Mes</h1>
+
+    <button id="menuButton" class="btn-rojo-chukum">Ir al Menú</button>
+
+    <section>
+      <h2>Visitas por Día</h2>
+      <canvas id="visitasChart" width="400" height="200"></canvas>
+    </section>
+
+    <section>
+      <h2>Top 5 Productos Más Vendidos</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Ventas</th>
+          </tr>
+        </thead>
+        <tbody id="topVendidos">
+          <!-- Datos dinámicos -->
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Top 5 Productos Más Visitados</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Visitas</th>
+          </tr>
+        </thead>
+        <tbody id="topVisitados">
+          <!-- Datos dinámicos -->
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <script>
+    // Redirigir al menú cuando se haga clic en el botón
+    document.getElementById('menuButton').addEventListener('click', function () {
+      window.location.href = '/colaborador/menu';
+    });
+  </script>
+  <script src="./estadisticas.js"></script>
+</body>
+</html>
