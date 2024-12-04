@@ -34,19 +34,21 @@
 
       <div class="featured-items">
         <div class="featured-items-title">Destacados</div>
-        <div class="product-grid destacados-grid">
-          <% destacados.forEach(function(producto) { %>
-            <a href="/producto?id=<%= producto.producto_id %>" class="product-link">
-              <div class="product-card destacados-card">
-                <img src="<%= producto.imagePath %>" alt="<%= producto.nombre %>" class="product-image">
-                <div class="product-details">
-                  <h3 class="product-title"><%= producto.nombre %></h3>
-                  <p class="product-price">$<%= producto.precio %></p>
-                </div>
-              </div>
-            </a>
-          <% }); %>
-        </div>
+        <div class="product-grid">
+            <div class="destacados-grid">
+              <% destacados.forEach(function(producto) { %>
+                <a href="/producto?id=<%= producto.producto_id %>" class="product-link">
+                  <div class="product-card destacados-card">
+                    <img src="<%= producto.imagePath %>" alt="<%= producto.nombre %>" class="product-image">
+                    <div class="product-details">
+                      <h3 class="product-title"><%= producto.nombre %></h3>
+                      <p class="product-price">$<%= producto.precio %></p>
+                    </div>
+                  </div>
+                </a>
+              <% }); %>
+            </div>
+        </div>    
       </div>
       
       
