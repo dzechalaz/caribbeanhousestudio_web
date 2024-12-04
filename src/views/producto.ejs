@@ -237,7 +237,8 @@ if (producto) {
       };
 
       document.addEventListener('DOMContentLoaded', function () {
-        var chart = LightweightCharts.createChart(document.getElementById('price-chart'), {
+        // Crear el gráfico con configuración inicial
+        const chart = LightweightCharts.createChart(document.getElementById('price-chart'), {
           width: 1200,
           height: 500,
           layout: {
@@ -248,30 +249,48 @@ if (producto) {
             vertLines: { color: '#eeeeee' },
             horzLines: { color: '#eeeeee' },
           },
-          priceScale: { borderColor: '#cccccc' },
-          timeScale: { borderColor: '#cccccc' },
+          priceScale: {
+            borderColor: '#cccccc',
+            autoScale: true, // Escalado automático para los precios
+          },
+          timeScale: {
+            borderColor: '#cccccc',
+            timeVisible: true, // Mostrar tiempo con precisión horaria
+            secondsVisible: true, // Mostrar segundos si están disponibles
+          },
         });
-    
-        var lineSeries = chart.addLineSeries({
+      
+        // Agregar la serie de línea para los datos
+        const lineSeries = chart.addLineSeries({
           color: '#a5d1ce',
-          lineWidth: 2,
+          lineWidth: 6,
         });
-    
-        // Datos enviados desde el backend
-        var chartData = <%- chartData %>;
-    
-        // Si no hay datos en chartData, mostramos un mensaje o manejamos el caso vacío
-        if (chartData.length > 0) {
-          lineSeries.setData(chartData);
-    
-          // Ajustar rango de tiempo automáticamente
-          chart.timeScale().fitContent();
-        } else {
-          console.warn('No hay datos disponibles para el historial de precios.');
+      
+        try {
+          // Datos enviados desde el backend
+          let chartData = <%- JSON.stringify(chartData || []) %>;
+      
+          // Validar que chartData sea un array
+          if (Array.isArray(chartData) && chartData.length > 0) {
+            // Ordenar los datos cronológicamente
+            chartData = chartData.sort((a, b) => new Date(a.time) - new Date(b.time));
+      
+            // Configurar los datos en la serie
+            lineSeries.setData(chartData);
+      
+            // Ajustar la vista automáticamente al contenido
+            chart.timeScale().fitContent();
+          } else {
+            console.warn('No hay datos disponibles para el historial de precios.');
+          }
+        } catch (error) {
+          console.error('Error al procesar los datos del backend:', error);
         }
       });
+      
+      
     </script>
-      </script>
+      
 
       
   </body>
