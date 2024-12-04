@@ -150,7 +150,6 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
 
 //########################################################### eliminar productos  ##################################################
 const { DeleteObjectCommand, ListObjectsCommand } = require('@aws-sdk/client-s3');
-
 app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, async (req, res) => {
   const productoCodigo = req.params.codigo;
 
@@ -163,16 +162,24 @@ app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, async (req
 
     const productId = result[0].producto_id;
 
-    // Eliminar referencias de compras relacionadas con el producto
-    await db.promise().query('DELETE FROM Compras WHERE producto_id = ?', [productId]);
+    // Eliminar referencias en la tabla Registros relacionadas con el producto
+    const deleteRegistros = await db.promise().query('DELETE FROM Registros WHERE product_id = ?', [productId]);
+    console.log(`Eliminadas ${deleteRegistros[0].affectedRows} filas de Registros`);
+
+    // Eliminar referencias en la tabla Compras relacionadas con el producto
+    const deleteCompras = await db.promise().query('DELETE FROM Compras WHERE producto_id = ?', [productId]);
+    console.log(`Eliminadas ${deleteCompras[0].affectedRows} filas de Compras`);
 
     // Eliminar el producto de la base de datos
-    await db.promise().query('DELETE FROM Productos WHERE codigo = ?', [productoCodigo]);
+    const deleteProducto = await db.promise().query('DELETE FROM Productos WHERE codigo = ?', [productoCodigo]);
+    if (deleteProducto[0].affectedRows === 0) {
+      return res.status(404).json({ success: false, error: 'Producto no encontrado para eliminar' });
+    }
+    console.log('Producto eliminado correctamente de la base de datos.');
 
     // Eliminar los archivos relacionados del bucket en R2
     const folderPath = `Products/${productId}/`;
 
-    // Listar todos los objetos dentro de la carpeta del producto
     const listParams = {
       Bucket: 'products',
       Prefix: folderPath,
@@ -197,6 +204,7 @@ app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, async (req
     res.status(500).json({ success: false, error: 'Error interno al eliminar el producto' });
   }
 });
+
 
 
 
@@ -547,7 +555,7 @@ app.get('/colaborador/compras/:ordenId', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/compras/compras.html'));
 });
 
-//####################################### crear compra #####################################
+//####################################### crear compra #####################################ds
 // Endpoint para renderizar la página de crear orden
 
 // Endpoint para renderizar el formulario de dirección
@@ -1319,6 +1327,10 @@ app.get('/producto', async (req, res) => {
 });
 
 
+
+
+
+
 app.get('/catalogo', (req, res) => {
   const productosPorPagina = 12;
   const paginaActual = parseInt(req.query.page) || 1;
@@ -1327,7 +1339,7 @@ app.get('/catalogo', (req, res) => {
   const searchQuery = req.query.query || ''; // Verificar si hay término de búsqueda
 
   // Consulta base de productos, incluye el filtro de stock > 0
-  let queryProductos = 'SELECT producto_id, nombre, precio, codigo, stock FROM Productos WHERE stock > 0';
+  let queryProductos = 'SELECT producto_id, nombre, precio, codigo, stock FROM Productos';
   let values = [];
 
   // Si la categoría no es "Todos", aplicar el filtro
