@@ -51,53 +51,43 @@ app.use((req, res, next) => {
 
 
 
-const db = mysql.createPool({
+const db = mysql.createConnection({
   host: DB_HOST,
   user: DB_USER,
   password: DB_PASSWORD,
   port: DB_PORT,
-  database: DB_NAME,
-  connectionLimit: 0,  // Sin límite de conexiones simultáneas
-  waitForConnections: true, // Esperar si no hay conexiones disponibles
-  queueLimit: 0, // No limitar el número de conexiones en espera
+  database: DB_NAME
 });
 
-
-
-const sessionStore = new MySQLStore({
-  expiration: 86400000, // Tiempo de expiración de las sesiones (1 día)
-  checkExpirationInterval: 900000, // Comprobar expiración cada 15 minutos
-  createDatabaseTable: true, // Crear la tabla para almacenar sesiones
-  schema: {
-    tableName: 'sessions',
-    columnNames: {
-      session_id: 'session_id',
-      expires: 'expires',
-      data: 'data'
-    }
-  },
-  pool: db // Usar el pool para manejar las sesiones
-});
 
 // Configuración de la sesión
+const sessionStore = new MySQLStore({
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASSWORD,
+  database: DB_NAME,
+  port: DB_PORT
+});
+
 app.use(session({
-  key: 'caribbeanhouse_session',
+  key: 'caribbeanhouse_session', // Cambia el nombre de la cookie si lo deseas
   secret: 'tusuperclaveultrasecreta12345', // Cambia esta clave secreta por algo más seguro
   store: sessionStore,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24, // 1 día de duración de la sesión
+      maxAge: 1000 * 60 * 60 * 24 // 1 día de duración de la sesión
   }
 }));
 
-db.getConnection((err) => {
+db.connect((err) => {
   if (err) {
     console.error('Error connecting to MySQL:', err);
     return;
   }
   console.log('Connected to MySQL');
 });
+
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
