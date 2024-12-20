@@ -51,36 +51,47 @@ app.use((req, res, next) => {
 
 
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: DB_HOST,
   user: DB_USER,
   password: DB_PASSWORD,
   port: DB_PORT,
-  database: DB_NAME
+  database: DB_NAME,
+  connectionLimit: 0,  // Sin límite de conexiones simultáneas
+  waitForConnections: true, // Esperar si no hay conexiones disponibles
+  queueLimit: 0, // No limitar el número de conexiones en espera
 });
 
+
+
+const sessionStore = new MySQLStore({
+  expiration: 86400000, // Tiempo de expiración de las sesiones (1 día)
+  checkExpirationInterval: 900000, // Comprobar expiración cada 15 minutos
+  createDatabaseTable: true, // Crear la tabla para almacenar sesiones
+  schema: {
+    tableName: 'sessions',
+    columnNames: {
+      session_id: 'session_id',
+      expires: 'expires',
+      data: 'data'
+    }
+  },
+  pool: db // Usar el pool para manejar las sesiones
+});
 
 // Configuración de la sesión
-const sessionStore = new MySQLStore({
-  host: DB_HOST,
-  user: DB_USER,
-  password: DB_PASSWORD,
-  database: DB_NAME,
-  port: DB_PORT
-});
-
 app.use(session({
-  key: 'caribbeanhouse_session', // Cambia el nombre de la cookie si lo deseas
+  key: 'caribbeanhouse_session',
   secret: 'tusuperclaveultrasecreta12345', // Cambia esta clave secreta por algo más seguro
   store: sessionStore,
   resave: false,
   saveUninitialized: false,
   cookie: {
-      maxAge: 1000 * 60 * 60 * 24 // 1 día de duración de la sesión
+    maxAge: 1000 * 60 * 60 * 24, // 1 día de duración de la sesión
   }
 }));
 
-db.connect((err) => {
+db.getConnection((err) => {
   if (err) {
     console.error('Error connecting to MySQL:', err);
     return;
@@ -1339,7 +1350,7 @@ app.get('/catalogo', (req, res) => {
   const searchQuery = req.query.query || ''; // Verificar si hay término de búsqueda
 
   // Consulta base de productos, incluye el filtro de stock > 0
-  let queryProductos = 'SELECT producto_id, nombre, precio, codigo, stock FROM Productos';
+  let queryProductos = 'SELECT producto_id, nombre, precio, codigo, stock, categoria FROM Productos WHERE stock > 0';
   let values = [];
 
   // Si la categoría no es "Todos", aplicar el filtro
@@ -1350,8 +1361,8 @@ app.get('/catalogo', (req, res) => {
 
   // Añadir filtro de búsqueda si hay un término de búsqueda
   if (searchQuery) {
-    queryProductos += ' AND nombre LIKE ?';
-    values.push(`%${searchQuery}%`);
+    queryProductos += ' AND (nombre LIKE ? OR codigo LIKE ?)';
+    values.push(`%${searchQuery}%`, `%${searchQuery}%`);
   }
 
   // Añadir límite y desplazamiento para la paginación
@@ -1381,8 +1392,8 @@ app.get('/catalogo', (req, res) => {
     }
 
     if (searchQuery) {
-      queryCount += ' AND nombre LIKE ?';
-      countValues.push(`%${searchQuery}%`);
+      queryCount += ' AND (nombre LIKE ? OR codigo LIKE ?)';
+      countValues.push(`%${searchQuery}%`, `%${searchQuery}%`);
     }
 
     // Ejecutar la consulta de conteo de productos
@@ -1431,13 +1442,15 @@ app.get('/catalogo', (req, res) => {
     });
   });
 });
+
 app.get('/buscar', (req, res) => {
   const searchQuery = req.query.query; // Obtener la consulta de búsqueda
   const productosPorPagina = 12; // Número de productos por página
   const paginaActual = parseInt(req.query.page) || 1; // Página actual (por defecto la 1)
   const offset = (paginaActual - 1) * productosPorPagina;
 
-  const query = `SELECT producto_id, nombre, precio, codigo FROM Productos WHERE stock > 0 AND (nombre LIKE ? OR codigo LIKE ?) LIMIT ? OFFSET ?`;
+  // Realizar consulta para productos que coincidan con la búsqueda
+  const query = `SELECT producto_id, nombre, precio, codigo, stock, categoria FROM Productos WHERE stock > 0 AND (nombre LIKE ? OR codigo LIKE ?) LIMIT ? OFFSET ?`;
   const values = [`%${searchQuery}%`, `%${searchQuery}%`, productosPorPagina, offset];
 
   db.query(query, values, (err, results) => {
@@ -1447,7 +1460,8 @@ app.get('/buscar', (req, res) => {
     }
 
     // Obtener el número total de productos que coinciden con la búsqueda
-    db.query(`SELECT COUNT(*) AS total FROM Productos WHERE stock > 0 AND (nombre LIKE ? OR codigo LIKE ?)`, [`%${searchQuery}%`, `%${searchQuery}%`], (err, countResults) => {
+    const countQuery = `SELECT COUNT(*) AS total FROM Productos WHERE stock > 0 AND (nombre LIKE ? OR codigo LIKE ?)`;
+    db.query(countQuery, [`%${searchQuery}%`, `%${searchQuery}%`], (err, countResults) => {
       if (err) {
         console.error('Error counting products:', err);
         return res.status(500).send('Error counting products');
@@ -1456,12 +1470,12 @@ app.get('/buscar', (req, res) => {
       const totalProductos = countResults[0].total;
       const totalPaginas = Math.ceil(totalProductos / productosPorPagina);
 
-      // Renderizar la vista con los productos encontrados, y los valores de paginación
+      // Renderizar la vista con los productos encontrados y los valores de paginación
       res.render('catalogo', {
         productos: results,
         paginaActual: paginaActual,
         totalPaginas: totalPaginas,
-        searchQuery: searchQuery // Pasar también la consulta de búsqueda
+        searchQuery: searchQuery // Pasar el término de búsqueda
       });
     });
   });
