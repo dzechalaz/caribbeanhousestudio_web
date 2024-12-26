@@ -334,7 +334,7 @@
   width: 100%; /* Ajusta al tamaño de la celda */
   max-width: 350px; /* Cambia este valor para hacerlas más anchas */
   height: 450px; /* Ajusta este valor para aumentar la altura */
-  border-radius: 16px; /* Ajusta las esquinas si es necesario */
+  border-radius: 15px; /* Ajusta las esquinas si es necesario */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Resalta las tarjetas */
   background-color: #a5d1ce; /* Fondo */
   display: flex;
