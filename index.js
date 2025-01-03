@@ -12,11 +12,8 @@ const MySQLStore = require('express-mysql-session')(session);
 const fetch = require('node-fetch'); 
 const nodemailer = require('nodemailer');
 
-
-
 const cors = require('cors');
 app.use(cors());
-
 
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 
@@ -48,9 +45,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
-
-
 const db = mysql.createConnection({
   host: DB_HOST,
   user: DB_USER,
@@ -58,7 +52,6 @@ const db = mysql.createConnection({
   port: DB_PORT,
   database: DB_NAME
 });
-
 
 // Configuración de la sesión
 const sessionStore = new MySQLStore({
@@ -88,6 +81,16 @@ db.connect((err) => {
   console.log('Connected to MySQL');
 });
 
+// Mantener la conexión viva usando un ping cada 5 minutos (300000 ms)
+setInterval(() => {
+  db.ping((err) => {
+    if (err) {
+      console.error('Error pinging MySQL:', err);
+    } else {
+      console.log('MySQL connection is alive');
+    }
+  });
+}, 300000); // 5 minutos en milisegundos
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
