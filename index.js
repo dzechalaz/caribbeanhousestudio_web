@@ -375,17 +375,33 @@ app.get('/colaborador/productos/generar-codigo', (req, res) => {
 
 
 //################################# MODIFICAR PRODUCTOS ##################################################
-// Ruta para modificar un producto
+// Ruta para modificar un producto// ############################## MODIFICAR PRODUCTOS ####################################
 app.post('/colaborador/productos/modificar/:codigo', upload.array('imagenes', 4), async (req, res) => {
-  const { nombre, precio, categoria, stock, material, dimensiones, acabado, color, descripcion1, descripcion2 } = req.body;
+  const {
+    nombre,
+    precio,
+    categoria,
+    stock,
+    material = '',
+    dimensiones = '',
+    acabado = '',
+    color = '',
+    descripcion1 = '',
+    descripcion2 = '',
+  } = req.body;
+
   const codigoProducto = req.params.codigo;
 
+  // Validación básica
   if (!nombre || !precio || !categoria || !stock) {
-    return res.status(400).json({ success: false, error: 'Los campos nombre, precio, categoría y stock son obligatorios' });
+    return res.status(400).json({
+      success: false,
+      error: 'Los campos nombre, precio, categoría y stock son obligatorios',
+    });
   }
 
   try {
-    // Obtener el producto_id basado en el código del producto
+    // 1) Obtener el producto_id a partir del código
     db.query('SELECT producto_id FROM Productos WHERE codigo = ?', [codigoProducto], async (err, result) => {
       if (err) {
         console.error('Error al obtener el producto_id:', err);
@@ -399,64 +415,66 @@ app.post('/colaborador/productos/modificar/:codigo', upload.array('imagenes', 4)
       const productoId = result[0].producto_id;
       const productPath = `Products/${productoId}/`;
 
-      // Actualizar los datos básicos del producto en la base de datos
-      const updateQuery = 'UPDATE Productos SET nombre = ?, precio = ?, categoria = ?, stock = ? WHERE codigo = ?';
+      // 2) Actualizar los datos en la base de datos (solo los campos que están ahí)
+      const updateQuery = `
+        UPDATE Productos
+        SET nombre = ?, precio = ?, categoria = ?, stock = ?
+        WHERE codigo = ?
+      `;
       const values = [nombre, precio, categoria, stock, codigoProducto];
 
-      db.query(updateQuery, values, async (err) => {
-        if (err) {
-          console.error('Error al actualizar el producto:', err);
+      db.query(updateQuery, values, async (errUpdate) => {
+        if (errUpdate) {
+          console.error('Error al actualizar el producto:', errUpdate);
           return res.status(500).json({ success: false, error: 'Error al actualizar el producto' });
         }
 
-        // Manejo de imágenes subidas
+        // 3) Manejo de imágenes subidas
+        //    Solo reemplaza las que el usuario envía en `req.files`.
+        //    Si no sube nada, se dejan las imágenes tal como están en el bucket.
         const imageFiles = req.files || [];
         const imageNames = ['a.webp', 'b.webp', 'c.webp', 'd.webp'];
-        const placeholderPath = path.join(__dirname, 'src', 'Templates', 'placeholder.webp');
 
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < imageFiles.length; i++) {
+          const file = imageFiles[i];
           const imagePath = `${productPath}${imageNames[i]}`;
 
-          if (imageFiles[i]) {
-            // Subir las nuevas imágenes proporcionadas
-            const file = imageFiles[i];
-            const params = {
-              Bucket: 'products',
-              Key: imagePath,
-              Body: file.buffer,
-              ContentType: file.mimetype,
-            };
+          // Subir/reescribir la imagen en el bucket
+          const params = {
+            Bucket: 'products',
+            Key: imagePath,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+          };
 
-            try {
-              await s3.send(new PutObjectCommand(params));
-              console.log(`Imagen subida correctamente: ${imagePath}`);
-            } catch (uploadError) {
-              console.error(`Error subiendo la imagen ${imageNames[i]}:`, uploadError.message);
-              return res.status(500).json({ success: false, error: `Error subiendo la imagen ${imageNames[i]}` });
-            }
-          } else {
-            // Completar las imágenes faltantes con el placeholder
-            const placeholderBuffer = fs.readFileSync(placeholderPath);
-            const params = {
-              Bucket: 'products',
-              Key: imagePath,
-              Body: placeholderBuffer,
-              ContentType: 'image/webp',
-            };
-
-            try {
-              await s3.send(new PutObjectCommand(params));
-              console.log(`Placeholder subido correctamente para: ${imagePath}`);
-            } catch (placeholderError) {
-              console.error(`Error subiendo placeholder para ${imageNames[i]}:`, placeholderError.message);
-              return res.status(500).json({ success: false, error: `Error subiendo placeholder para ${imageNames[i]}` });
-            }
+          try {
+            await s3.send(new PutObjectCommand(params));
+            console.log(`Imagen reemplazada correctamente: ${imageNames[i]}`);
+          } catch (uploadError) {
+            console.error(`Error subiendo la imagen ${imageNames[i]}:`, uploadError.message);
+            return res.status(500).json({
+              success: false,
+              error: `Error subiendo la imagen ${imageNames[i]}`,
+            });
           }
         }
 
-        // Actualizar el archivo info.txt en Cloudflare R2
-        const infoContent = `Información Básica\nNombre: ${nombre}\nMaterial: ${material}\nDimensiones: ${dimensiones}\nAcabado: ${acabado}\nColor: ${color}\n\n` +
-                            `Información de Catálogo\nPrecio: ${precio}\nCategoría: ${categoria}\nDescripción 1: ${descripcion1}\nDescripción 2: ${descripcion2}`;
+        // 4) Actualizar el archivo info.txt con los campos adicionales
+        //    Se sobrescribe por completo con la nueva información.
+        const infoContent = `
+Información Básica
+Nombre: ${nombre}
+Material: ${material}
+Dimensiones: ${dimensiones}
+Acabado: ${acabado}
+Color: ${color}
+
+Información de Catálogo
+Precio: ${precio}
+Categoría: ${categoria}
+Descripción 1: ${descripcion1}
+Descripción 2: ${descripcion2}
+        `.trim(); // Elimina espacios en blanco al inicio y fin
 
         const infoParams = {
           Bucket: 'products',
@@ -469,11 +487,18 @@ app.post('/colaborador/productos/modificar/:codigo', upload.array('imagenes', 4)
           await s3.send(new PutObjectCommand(infoParams));
           console.log('Archivo info.txt actualizado correctamente.');
         } catch (infoError) {
-          console.error('Error actualizando el archivo info.txt:', infoError.message);
-          return res.status(500).json({ success: false, error: 'Error actualizando el archivo info.txt' });
+          console.error('Error subiendo info.txt:', infoError.message);
+          return res.status(500).json({
+            success: false,
+            error: 'Error subiendo info.txt',
+          });
         }
 
-        res.json({ success: true, message: 'Producto actualizado correctamente.' });
+        // 5) Responder con éxito
+        res.json({
+          success: true,
+          message: 'Producto actualizado correctamente.',
+        });
       });
     });
   } catch (err) {
