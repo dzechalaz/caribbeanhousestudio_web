@@ -375,6 +375,7 @@ app.get('/colaborador/productos/generar-codigo', (req, res) => {
 
 
 
+
 //################################# MODIFICAR PRODUCTOS ##################################################
 // Ruta para modificar un producto
 app.post('/colaborador/productos/modificar/:codigo', upload.fields([
