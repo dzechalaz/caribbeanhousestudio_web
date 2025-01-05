@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -81,9 +83,20 @@
 
       <!-- Subir imágenes -->
       <div class="form-group">
-        <label for="imagenes">Subir Imágenes (entre 1 y 4):</label>
-        <input type="file" id="imagenes" name="imagenes" accept=".webp" multiple required>
-        <small>Sube entre 1 y 4 imágenes en formato .webp.</small>
+        <label for="imagen_a">Imagen A:</label>
+        <input type="file" id="imagen_a" name="imagen_a" accept=".webp">
+      </div>
+      <div class="form-group">
+        <label for="imagen_b">Imagen B:</label>
+        <input type="file" id="imagen_b" name="imagen_b" accept=".webp">
+      </div>
+      <div class="form-group">
+        <label for="imagen_c">Imagen C:</label>
+        <input type="file" id="imagen_c" name="imagen_c" accept=".webp">
+      </div>
+      <div class="form-group">
+        <label for="imagen_d">Imagen D:</label>
+        <input type="file" id="imagen_d" name="imagen_d" accept=".webp">
       </div>
 
       <button type="submit" class="btn-primary">Crear Producto</button>
@@ -91,24 +104,6 @@
   </div>
 
   <script>
-    // Generar el código basado en la categoría
-    document.getElementById('generar-codigo').addEventListener('click', function () {
-      const categoria = document.getElementById('categoria').value;
-      const codigoInput = document.getElementById('codigo');
-      
-      if (categoria) {
-        fetch(`/colaborador/productos/generar-codigo?categoria=${categoria}`)
-          .then(response => response.json())
-          .then(data => {
-            codigoInput.value = data.codigo;
-          })
-          .catch(error => console.error('Error al generar código:', error));
-      } else {
-        alert('Selecciona una categoría primero');
-      }
-    });
-
-    // Validar el formulario y enviar los datos
     document.getElementById('crear-producto-form').addEventListener('submit', function (event) {
       event.preventDefault(); // Detener el envío predeterminado del formulario
 
@@ -117,14 +112,12 @@
       if (confirmacion) {
         const formData = new FormData(this);
 
-        // Validar que se suban entre 1 y 4 imágenes
-        const imagenesInput = document.getElementById('imagenes');
-        if (imagenesInput.files.length === 0) {
+        // Validar que al menos una imagen haya sido seleccionada
+        const imagenInputs = ['imagen_a', 'imagen_b', 'imagen_c', 'imagen_d'];
+        const hasImages = imagenInputs.some(id => document.getElementById(id).files.length > 0);
+
+        if (!hasImages) {
           alert('Debes subir al menos 1 imagen.');
-          return;
-        }
-        if (imagenesInput.files.length > 4) {
-          alert('No puedes subir más de 4 imágenes.');
           return;
         }
 
@@ -147,6 +140,21 @@
           });
       } else {
         alert('La creación del producto fue cancelada.');
+      }
+    });
+    document.getElementById('generar-codigo').addEventListener('click', function () {
+      const categoria = document.getElementById('categoria').value;
+      const codigoInput = document.getElementById('codigo');
+      
+      if (categoria) {
+        fetch(`/colaborador/productos/generar-codigo?categoria=${categoria}`)
+          .then(response => response.json())
+          .then(data => {
+            codigoInput.value = data.codigo;
+          })
+          .catch(error => console.error('Error al generar código:', error));
+      } else {
+        alert('Selecciona una categoría primero');
       }
     });
   </script>

@@ -239,13 +239,13 @@ app.post('/colaborador/productos/actualizar-stock', authMiddleware, (req, res) =
 
 
 
-
 //################################# CREAR PRODUCTOS ##################################################
-
-
-
-// Ruta para crear productos y subir imágenes
-app.post('/colaborador/productos/crear', upload.array('imagenes', 4), async (req, res) => {
+app.post('/colaborador/productos/crear', upload.fields([
+  { name: 'imagen_a', maxCount: 1 },
+  { name: 'imagen_b', maxCount: 1 },
+  { name: 'imagen_c', maxCount: 1 },
+  { name: 'imagen_d', maxCount: 1 }
+]), async (req, res) => {
   const { nombre, precio, categoria, codigo, stock, material, dimensiones, acabado, color, descripcion1, descripcion2 } = req.body;
 
   if (!nombre || !precio || !categoria || !codigo || !stock || !material || !dimensiones || !acabado || !color || !descripcion1 || !descripcion2) {
@@ -253,6 +253,7 @@ app.post('/colaborador/productos/crear', upload.array('imagenes', 4), async (req
   }
 
   try {
+    // Insertar en la tabla Productos
     const query = 'INSERT INTO Productos (nombre, precio, categoria, codigo, stock) VALUES (?, ?, ?, ?, ?)';
     const values = [nombre, precio, categoria, codigo, stock];
 
@@ -265,74 +266,65 @@ app.post('/colaborador/productos/crear', upload.array('imagenes', 4), async (req
       const productId = results.insertId;
       const productPath = `Products/${productId}/`;
 
-      // Subir imágenes al bucket
-      const imageFiles = req.files || [];
-      if (imageFiles.length === 0) {
-        return res.status(400).json({ success: false, error: 'Debes subir al menos una imagen.' });
-      }
+      // Insertar los detalles del producto en la tabla Productos_detalles
+      const detailsQuery = `
+        INSERT INTO Productos_detalles (producto_id, material, dimensiones, acabado, color, descripcion1, descripcion2)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `;
+      const detailsValues = [productId, material, dimensiones, acabado, color, descripcion1, descripcion2];
 
-      const imageNames = ['a.webp', 'b.webp', 'c.webp', 'd.webp'];
-      const placeholderPath = path.join(__dirname, 'src', 'Templates', 'placeholder.webp');
-
-      for (let i = 0; i < 4; i++) {
-        const file = imageFiles[i];
-        const imagePath = `${productPath}${imageNames[i]}`;
-
-        let params;
-        if (file) {
-          // Usar la imagen subida por el usuario
-          params = {
-            Bucket: 'products',
-            Key: imagePath,
-            Body: file.buffer,
-            ContentType: file.mimetype,
-          };
-        } else {
-          // Usar el placeholder si no se subió una imagen
-          const placeholderBuffer = fs.readFileSync(placeholderPath);
-          params = {
-            Bucket: 'products',
-            Key: imagePath,
-            Body: placeholderBuffer,
-            ContentType: 'image/webp',
-          };
+      db.query(detailsQuery, detailsValues, async (detailsErr) => {
+        if (detailsErr) {
+          console.error('Error al insertar detalles del producto:', detailsErr.message);
+          return res.status(500).json({ success: false, error: 'Error al insertar detalles del producto' });
         }
 
-        try {
-          await s3.send(new PutObjectCommand(params));
-          console.log(`Imagen subida correctamente: ${imagePath}`);
-        } catch (uploadError) {
-          console.error(`Error subiendo imagen ${imageNames[i]}:`, uploadError.message);
-          return res.status(500).json({ success: false, error: `Error subiendo imagen ${imageNames[i]}` });
+        // Manejo de imágenes
+        const imageNames = { imagen_a: 'a.webp', imagen_b: 'b.webp', imagen_c: 'c.webp', imagen_d: 'd.webp' };
+        const placeholderPath = path.join(__dirname, 'src', 'Templates', 'placeholder.webp');
+
+        for (const [fieldName, fileName] of Object.entries(imageNames)) {
+          const file = req.files[fieldName] ? req.files[fieldName][0] : null;
+          const imagePath = `${productPath}${fileName}`;
+
+          let params;
+          if (file) {
+            // Usar la imagen subida por el usuario
+            params = {
+              Bucket: 'products',
+              Key: imagePath,
+              Body: file.buffer,
+              ContentType: file.mimetype,
+            };
+          } else {
+            // Usar el placeholder si no se subió una imagen
+            const placeholderBuffer = fs.readFileSync(placeholderPath);
+            params = {
+              Bucket: 'products',
+              Key: imagePath,
+              Body: placeholderBuffer,
+              ContentType: 'image/webp',
+            };
+          }
+
+          try {
+            await s3.send(new PutObjectCommand(params));
+            console.log(`Imagen subida correctamente: ${imagePath}`);
+          } catch (uploadError) {
+            console.error(`Error subiendo imagen ${fileName}:`, uploadError.message);
+            return res.status(500).json({ success: false, error: `Error subiendo imagen ${fileName}` });
+          }
         }
-      }
 
-      // Crear y subir el archivo info.txt
-      const infoContent = `Información Básica\nNombre: ${nombre}\nMaterial: ${material}\nDimensiones: ${dimensiones}\nAcabado: ${acabado}\nColor: ${color}\n\n` +
-                          `Información de Catálogo\nPrecio: ${precio}\nCategoría: ${categoria}\nDescripción 1: ${descripcion1}\nDescripción 2: ${descripcion2}`;
-
-      const infoParams = {
-        Bucket: 'products',
-        Key: `${productPath}info.txt`,
-        Body: infoContent,
-        ContentType: 'text/plain',
-      };
-
-      try {
-        await s3.send(new PutObjectCommand(infoParams));
-        console.log('Archivo info.txt subido correctamente.');
-      } catch (infoError) {
-        console.error('Error subiendo info.txt:', infoError.message);
-        return res.status(500).json({ success: false, error: 'Error subiendo info.txt' });
-      }
-
-      res.json({ success: true, redirectUrl: '/colaborador/productos/stock' });
+        res.json({ success: true, redirectUrl: '/colaborador/productos/stock' });
+      });
     });
   } catch (err) {
     console.error('Error general al procesar el producto:', err.message);
     res.status(500).json({ success: false, error: 'Error general al procesar el producto' });
   }
 });
+
 
 //################################# crear codigS ##################################################
 
@@ -357,27 +349,52 @@ app.get('/colaborador/productos/generar-codigo', (req, res) => {
     return res.status(400).json({ success: false, error: 'Categoría no válida' });
   }
 
-  const query = 'SELECT COUNT(*) AS total FROM Productos WHERE codigo LIKE ?';
+  const query = `
+    SELECT MAX(CAST(SUBSTRING(codigo, LENGTH(?) + 1) AS UNSIGNED)) AS max_codigo
+    FROM Productos
+    WHERE codigo LIKE ?
+  `;
+
   const likePrefix = `${prefix}%`;
 
-  db.query(query, [likePrefix], (err, results) => {
+  db.query(query, [prefix, likePrefix], (err, results) => {
     if (err) {
       console.error('Error al generar el código:', err);
       return res.status(500).json({ success: false, error: 'Error al generar el código' });
     }
 
-    const totalProductos = results[0].total + 1;
-    const codigo = `${prefix}${String(totalProductos).padStart(5, '0')}`;
+    const maxCodigo = results[0].max_codigo || 0; // Si no hay registros, comienza desde 0
+    const nextCodigo = maxCodigo + 1;
+    const codigo = `${prefix}${String(nextCodigo).padStart(5, '0')}`;
 
     res.json({ codigo });
   });
 });
 
 
+
+
+
 //################################# MODIFICAR PRODUCTOS ##################################################
 // Ruta para modificar un producto
-app.post('/colaborador/productos/modificar/:codigo', upload.array('imagenes', 4), async (req, res) => {
-  const { nombre, precio, categoria, stock, material, dimensiones, acabado, color, descripcion1, descripcion2 } = req.body;
+app.post('/colaborador/productos/modificar/:codigo', upload.fields([
+  { name: 'imagenA', maxCount: 1 },
+  { name: 'imagenB', maxCount: 1 },
+  { name: 'imagenC', maxCount: 1 },
+  { name: 'imagenD', maxCount: 1 }
+]), async (req, res) => {
+  const {
+    nombre,
+    precio,
+    categoria,
+    stock,
+    material,
+    dimensiones,
+    acabado,
+    color,
+    descripcion1,
+    descripcion2
+  } = req.body;
   const codigoProducto = req.params.codigo;
 
   if (!nombre || !precio || !categoria || !stock) {
@@ -399,7 +416,7 @@ app.post('/colaborador/productos/modificar/:codigo', upload.array('imagenes', 4)
       const productoId = result[0].producto_id;
       const productPath = `Products/${productoId}/`;
 
-      // Actualizar los datos básicos del producto en la base de datos
+      // Actualizar los datos básicos del producto en la tabla Productos
       const updateQuery = 'UPDATE Productos SET nombre = ?, precio = ?, categoria = ?, stock = ? WHERE codigo = ?';
       const values = [nombre, precio, categoria, stock, codigoProducto];
 
@@ -409,71 +426,69 @@ app.post('/colaborador/productos/modificar/:codigo', upload.array('imagenes', 4)
           return res.status(500).json({ success: false, error: 'Error al actualizar el producto' });
         }
 
-        // Manejo de imágenes subidas
-        const imageFiles = req.files || [];
-        const imageNames = ['a.webp', 'b.webp', 'c.webp', 'd.webp'];
-        const placeholderPath = path.join(__dirname, 'src', 'Templates', 'placeholder.webp');
+        // Actualizar los detalles en la tabla Productos_detalles
+        const detailsQuery = `
+          INSERT INTO Productos_detalles (producto_id, material, dimensiones, acabado, color, descripcion1, descripcion2)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+          ON DUPLICATE KEY UPDATE
+            material = VALUES(material),
+            dimensiones = VALUES(dimensiones),
+            acabado = VALUES(acabado),
+            color = VALUES(color),
+            descripcion1 = VALUES(descripcion1),
+            descripcion2 = VALUES(descripcion2)
+        `;
 
-        for (let i = 0; i < 4; i++) {
-          const imagePath = `${productPath}${imageNames[i]}`;
+        const detailsValues = [
+          productoId,
+          material,
+          dimensiones,
+          acabado,
+          color,
+          descripcion1,
+          descripcion2
+        ];
 
-          if (imageFiles[i]) {
-            // Subir las nuevas imágenes proporcionadas
-            const file = imageFiles[i];
-            const params = {
-              Bucket: 'products',
-              Key: imagePath,
-              Body: file.buffer,
-              ContentType: file.mimetype,
-            };
+        db.query(detailsQuery, detailsValues, async (detailsErr) => {
+          if (detailsErr) {
+            console.error('Error al actualizar los detalles del producto:', detailsErr);
+            return res.status(500).json({ success: false, error: 'Error al actualizar los detalles del producto' });
+          }
 
-            try {
-              await s3.send(new PutObjectCommand(params));
-              console.log(`Imagen subida correctamente: ${imagePath}`);
-            } catch (uploadError) {
-              console.error(`Error subiendo la imagen ${imageNames[i]}:`, uploadError.message);
-              return res.status(500).json({ success: false, error: `Error subiendo la imagen ${imageNames[i]}` });
-            }
-          } else {
-            // Completar las imágenes faltantes con el placeholder
-            const placeholderBuffer = fs.readFileSync(placeholderPath);
-            const params = {
-              Bucket: 'products',
-              Key: imagePath,
-              Body: placeholderBuffer,
-              ContentType: 'image/webp',
-            };
+          // Manejo de imágenes subidas
+          const uploadedImages = req.files || {};
+          const imageNames = ['imagenA', 'imagenB', 'imagenC', 'imagenD'];
+          const imagePaths = ['a.webp', 'b.webp', 'c.webp', 'd.webp'];
 
-            try {
-              await s3.send(new PutObjectCommand(params));
-              console.log(`Placeholder subido correctamente para: ${imagePath}`);
-            } catch (placeholderError) {
-              console.error(`Error subiendo placeholder para ${imageNames[i]}:`, placeholderError.message);
-              return res.status(500).json({ success: false, error: `Error subiendo placeholder para ${imageNames[i]}` });
+          for (let i = 0; i < imageNames.length; i++) {
+            const imageField = imageNames[i];
+            const imagePath = `${productPath}${imagePaths[i]}`;
+
+            if (uploadedImages[imageField] && uploadedImages[imageField][0]) {
+              // Subir la nueva imagen proporcionada
+              const file = uploadedImages[imageField][0];
+              const params = {
+                Bucket: 'products',
+                Key: imagePath,
+                Body: file.buffer,
+                ContentType: file.mimetype,
+              };
+
+              try {
+                await s3.send(new PutObjectCommand(params));
+                console.log(`Imagen subida correctamente: ${imagePath}`);
+              } catch (uploadError) {
+                console.error(`Error subiendo la imagen ${imagePaths[i]}:`, uploadError.message);
+                return res.status(500).json({ success: false, error: `Error subiendo la imagen ${imagePaths[i]}` });
+              }
+            } else {
+              // Si no se sube una nueva imagen, mantener la existente
+              console.log(`No se proporcionó una nueva imagen para: ${imagePaths[i]}. Manteniendo la existente.`);
             }
           }
-        }
 
-        // Actualizar el archivo info.txt en Cloudflare R2
-        const infoContent = `Información Básica\nNombre: ${nombre}\nMaterial: ${material}\nDimensiones: ${dimensiones}\nAcabado: ${acabado}\nColor: ${color}\n\n` +
-                            `Información de Catálogo\nPrecio: ${precio}\nCategoría: ${categoria}\nDescripción 1: ${descripcion1}\nDescripción 2: ${descripcion2}`;
-
-        const infoParams = {
-          Bucket: 'products',
-          Key: `${productPath}info.txt`,
-          Body: infoContent,
-          ContentType: 'text/plain',
-        };
-
-        try {
-          await s3.send(new PutObjectCommand(infoParams));
-          console.log('Archivo info.txt actualizado correctamente.');
-        } catch (infoError) {
-          console.error('Error actualizando el archivo info.txt:', infoError.message);
-          return res.status(500).json({ success: false, error: 'Error actualizando el archivo info.txt' });
-        }
-
-        res.json({ success: true, message: 'Producto actualizado correctamente.' });
+          res.json({ success: true, message: 'Producto actualizado correctamente.' });
+        });
       });
     });
   } catch (err) {
@@ -482,10 +497,33 @@ app.post('/colaborador/productos/modificar/:codigo', upload.array('imagenes', 4)
   }
 });
 
+
+//################################# OBTENER PRODUCTO Y DETALLES ##################################################
+// Ruta para obtener datos del producto y sus detalles
 app.get('/colaborador/productos/data/:codigo', (req, res) => {
   const codigoProducto = req.params.codigo;
 
-  db.query('SELECT * FROM Productos WHERE codigo = ?', [codigoProducto], (err, result) => {
+  const query = `
+    SELECT 
+      Productos.producto_id, 
+      Productos.nombre, 
+      Productos.precio, 
+      Productos.categoria, 
+      Productos.codigo, 
+      Productos.stock, 
+      Productos.created_at, 
+      Productos_detalles.material, 
+      Productos_detalles.dimensiones, 
+      Productos_detalles.acabado, 
+      Productos_detalles.color, 
+      Productos_detalles.descripcion1, 
+      Productos_detalles.descripcion2
+    FROM Productos
+    LEFT JOIN Productos_detalles ON Productos.producto_id = Productos_detalles.producto_id
+    WHERE Productos.codigo = ?
+  `;
+
+  db.query(query, [codigoProducto], (err, result) => {
     if (err) {
       console.error('Error al obtener los datos del producto:', err);
       return res.status(500).json({ success: false, error: 'Error al obtener los datos del producto' });
@@ -499,11 +537,12 @@ app.get('/colaborador/productos/data/:codigo', (req, res) => {
   });
 });
 
+
+//################################# SERVIR FORMULARIO DE MODIFICACIÓN ##################################################
+// Ruta para servir la página de modificación del producto
 app.get('/colaborador/productos/modificar', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/productos/modificar_producto.html'));
 });
-
-
 
 //####################################### COMPRAS MONITOREO Y MODIFICACION DESDE COLABORADOT #####################################
 
@@ -1239,96 +1278,81 @@ app.get('/producto', async (req, res) => {
 
   try {
     // Paso 1: Consultar el producto en la base de datos
-    const [results] = await db.promise().query('SELECT * FROM Productos WHERE producto_id = ?', [productoId]);
+    const [productoResult] = await db.promise().query(
+      'SELECT * FROM Productos WHERE producto_id = ?',
+      [productoId]
+    );
 
-    if (results.length === 0) {
+    if (productoResult.length === 0) {
       return res.status(404).send('Producto no encontrado');
     }
 
-    const producto = results[0]; // Este contiene el título y el precio del producto
+    const producto = productoResult[0];
+
+    // Paso 2: Consultar los detalles del producto en la tabla Productos_detalles
+    const [detallesResult] = await db.promise().query(
+      'SELECT * FROM Productos_detalles WHERE producto_id = ?',
+      [productoId]
+    );
+
+    const detalles = detallesResult.length > 0 ? detallesResult[0] : {};
 
     // **Registrar la visita en la tabla Registros**
     const queryInsertVisita = `
       INSERT INTO Registros (product_id, evento, fecha, precio)
-      VALUES (?, 'visita', NOW(), NULL)
+      SELECT ?, 'visita', NOW(), precio
+      FROM Productos
+      WHERE producto_id = ?
     `;
-    await db.promise().query(queryInsertVisita, [productoId]);
+    
+    // Ejecutar la consulta
+    await db.promise().query(queryInsertVisita, [productoId, productoId]);
 
-    // Paso 2: Consultar las compras del último mes
+    // Paso 3: Consultar las compras del último mes
     const lastMonthDate = new Date();
-    lastMonthDate.setMonth(lastMonthDate.getMonth() - 1); // Fecha de hace un mes
+    lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
 
     const [comprasMes] = await db.promise().query(
-      'SELECT fecha, precio FROM Registros WHERE product_id = ? AND evento = "compra" AND fecha >= ? ORDER BY fecha ASC',
+      'SELECT fecha, precio FROM Registros WHERE product_id = ?  AND fecha >= ? ORDER BY fecha ASC',
       [productoId, lastMonthDate]
     );
 
-    // Paso 3: Formatear los datos para la gráfica
-    const chartData = comprasMes.length > 0 
-      ? comprasMes.map(compra => ({
-          time: compra.fecha.toISOString().split('T')[0], // Formato YYYY-MM-DD
-          value: compra.precio
-        }))
-      : []; // Si no hay compras, devuelve un array vacío
 
-    // Paso 4: Leer el archivo info.txt desde Cloudflare R2
-    const productInfoPath = `${CFI}/Products/${productoId}/info.txt`;
+    // Imprimir los datos obtenidos en la terminal
+    
 
-    let data;
-    try {
-      const response = await fetch(productInfoPath);
-      if (!response.ok) {
-        throw new Error(`Error fetching file: ${response.statusText}`);
-      }
-      data = await response.text();
-    } catch (err) {
-      console.error('Error fetching file:', err);
-      return res.status(500).send('Error interno al obtener la información del producto');
-    }
+    // Formatear los datos para la gráfica
+    const chartData = comprasMes.map(compra => ({
+      time: compra.fecha.toISOString().split('T')[0],
+      value: compra.precio
+    }));
 
-    // Paso 5: Procesar el contenido del archivo info.txt
-    const infoLines = data.split('\n');
-    const info = {};
-    let currentSection = null;
+    console.log('Datos obtenidos para chartData:', chartData);
 
-    infoLines.forEach(line => {
-      if (line.trim() === "Información Básica") {
-        currentSection = "basic";
-        info[currentSection] = {};
-      } else if (line.trim() === "Información de Catálogo") {
-        currentSection = "catalog";
-        info[currentSection] = {};
-      } else if (line.trim() !== "") {
-        const [key, value] = line.split(': ');
-        if (currentSection && key && value) {
-          info[currentSection][key.trim()] = value.trim();
-        }
-      }
-    });
-
-    // Paso 6: Seleccionar tres productos relacionados al azar de la misma categoría
+    // Paso 4: Seleccionar productos relacionados
     const [relatedProducts] = await db.promise().query(
       'SELECT * FROM Productos WHERE categoria = ? AND producto_id != ? ORDER BY RAND() LIMIT 3',
       [producto.categoria, productoId]
     );
 
-    // Paso 7: Renderizar la plantilla EJS con los datos del producto, archivo, productos relacionados y datos de la gráfica
+    // Renderizar la plantilla EJS con los datos del producto
     res.render('producto', {
-      producto, // Enviar nombre y precio directamente desde la base de datos
-      descripcion1: info.catalog ? info.catalog['Descripción 1'] : 'No disponible',
-      descripcion2: info.catalog ? info.catalog['Descripción 2'] : 'No disponible',
-      material: info.basic ? info.basic['Material'] : 'No disponible',
-      dimensiones: info.basic ? info.basic['Dimensiones'] : 'No disponible',
-      acabado: info.basic ? info.basic['Acabado'] : 'No disponible',
-      color: info.basic ? info.basic['Color'] : 'No disponible',
+      producto,
+      descripcion1: detalles.descripcion1 || 'No disponible',
+      descripcion2: detalles.descripcion2 || 'No disponible',
+      material: detalles.material || 'No disponible',
+      dimensiones: detalles.dimensiones || 'No disponible',
+      acabado: detalles.acabado || 'No disponible',
+      color: detalles.color || 'No disponible',
       productosRelacionados: relatedProducts,
-      chartData: JSON.stringify(chartData) // Pasar los datos de la gráfica al frontend
+      chartData
     });
   } catch (err) {
     console.error('Error en el servidor:', err);
     res.status(500).send('Error interno del servidor');
   }
 });
+
 
 
 
