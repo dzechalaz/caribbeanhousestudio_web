@@ -24,7 +24,7 @@
 
       <div class="form-group">
         <label for="categoria">Categoría:</label>
-        <select id="categoria" name="categoria" required style="pointer-events: none; background-color: #e9ecef;">
+        <select id="categoria" name="categoria" required>
           <option value="Decoración">Decoración</option>
           <option value="Salas">Salas</option>
           <option value="Mesas">Mesas</option>
@@ -35,7 +35,6 @@
           <option value="Varios">Varios</option>
         </select>
       </div>
-      
 
       <div class="form-group">
         <label for="codigo">Código:</label>
@@ -79,11 +78,22 @@
         <textarea id="descripcion2" name="descripcion2" rows="4"></textarea>
       </div>
 
-      <!-- Subir nuevas imágenes -->
+      <!-- Subir nuevas imágenes individualmente -->
       <div class="form-group">
-        <label for="imagenes">Subir Nuevas Imágenes (opcional):</label>
-        <input type="file" id="imagenes" name="imagenes" accept=".webp" multiple>
-        <small>Puedes subir hasta 4 imágenes nuevas. Las imágenes que no subas conservarán las existentes.</small>
+        <label for="imagenA">Imagen A:</label>
+        <input type="file" id="imagenA" name="imagenA" accept=".webp">
+      </div>
+      <div class="form-group">
+        <label for="imagenB">Imagen B:</label>
+        <input type="file" id="imagenB" name="imagenB" accept=".webp">
+      </div>
+      <div class="form-group">
+        <label for="imagenC">Imagen C:</label>
+        <input type="file" id="imagenC" name="imagenC" accept=".webp">
+      </div>
+      <div class="form-group">
+        <label for="imagenD">Imagen D:</label>
+        <input type="file" id="imagenD" name="imagenD" accept=".webp">
       </div>
 
       <!-- Botones de Guardar Cambios y Cancelar -->

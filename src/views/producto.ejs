@@ -41,9 +41,10 @@ if (producto) {
     </div>
       <div class="descripcion">
         <div class="description1">Descripción</div>
-        <div class="desc">
-            <%= descripcion2 %> <!-- Mostramos la Descripción 2 aquí -->
-        </div>
+        
+        <div class="desc"><%- descripcion2 %></div>
+
+        
         <div class="review">Opiniones</div>
     </div>
 
@@ -62,7 +63,7 @@ if (producto) {
       </div>
     
   
-      <div class="divisor0"></div>
+   
       <div class="info">
         <img
           id="mainImage"
@@ -80,9 +81,7 @@ if (producto) {
         <div class="addcart">
           <div class="add-to-cart">+ add to cart</div>
         </div>
-        <img class="like-icon" alt="" src="/public/like.svg" />
-
-        <img class="share-icon" alt="" src="/public/share.svg" />
+       
 
         <div class="imagenes">
           <div class="a">
@@ -105,11 +104,18 @@ if (producto) {
           src="/public/proximamente@2x.png"
         />
 
-        <div class="precio">$ <%= producto.precio %></div>
+        <div class="producto-info">
+          <div class="nombreproducto"><%= producto.nombre.toUpperCase() %></div>
+          <div class="precio">$ <%= producto.precio %></div>
+        </div>
         <div class="descripcionbasica">
             <%= descripcion1 %> <!-- Mostramos la Descripción 1 aquí -->
         </div>
         <div class="caracteristicas">
+            <p class="material-tela">
+              <b>Color: </b>
+              <span class="tela"><%= color %></span> <!-- Color desde info.txt -->
+            </p>
             <p class="material-tela">
                 <b>Material:</b>
                 <span class="tela"> <%= material %></span> <!-- Material desde info.txt -->
@@ -122,18 +128,16 @@ if (producto) {
                 <b>Acabado: </b>
                 <span class="tela"><%= acabado %></span> <!-- Acabado desde info.txt -->
             </p>
-            <p class="material-tela">
-                <b>Color: </b>
-                <span class="tela"><%= color %></span> <!-- Color desde info.txt -->
-            </p>
+            
         </div>
-        <b class="nombreproducto"><%= producto.nombre.toUpperCase() %></b>
+        
+
       </div>
       
     </div>
 
     <!-- Footer -->
-    <div id="footer"></div>
+    <div id="footer" class="footer"></div>
 
 
 
@@ -235,9 +239,41 @@ if (producto) {
           })
           .catch(error => console.error('Error al cargar el footer:', error));
       };
-
+      function interpolateData(data) {
+        const interpolated = [];
+        
+        for (let i = 0; i < data.length - 1; i++) {
+          const current = data[i];
+          const next = data[i + 1];
+          
+          interpolated.push(current); // Agregar el punto actual
+      
+          const currentDate = new Date(current.time);
+          const nextDate = new Date(next.time);
+      
+          const diffDays = Math.floor((nextDate - currentDate) / (1000 * 60 * 60 * 24));
+          
+          if (diffDays > 1) {
+            // Interpolar valores entre los días
+            const priceStep = (next.value - current.value) / diffDays;
+            
+            for (let j = 1; j < diffDays; j++) {
+              const interpolatedDate = new Date(currentDate);
+              interpolatedDate.setDate(currentDate.getDate() + j);
+      
+              interpolated.push({
+                time: interpolatedDate.toISOString().split('T')[0],
+                value: current.value + priceStep * j
+              });
+            }
+          }
+        }
+      
+        interpolated.push(data[data.length - 1]); // Agregar el último punto
+        return interpolated;
+      }
+      
       document.addEventListener('DOMContentLoaded', function () {
-        // Crear el gráfico con configuración inicial
         const chart = LightweightCharts.createChart(document.getElementById('price-chart'), {
           width: 1200,
           height: 500,
@@ -251,34 +287,33 @@ if (producto) {
           },
           priceScale: {
             borderColor: '#cccccc',
-            autoScale: true, // Escalado automático para los precios
+            autoScale: true,
           },
           timeScale: {
             borderColor: '#cccccc',
-            timeVisible: true, // Mostrar tiempo con precisión horaria
-            secondsVisible: true, // Mostrar segundos si están disponibles
+            timeVisible: true,
+            secondsVisible: true,
           },
         });
       
-        // Agregar la serie de línea para los datos
         const lineSeries = chart.addLineSeries({
           color: '#a5d1ce',
           lineWidth: 6,
         });
       
+        let chartData = <%- JSON.stringify(chartData) %>;
+      
         try {
-          // Datos enviados desde el backend
-          let chartData = <%- JSON.stringify(chartData || []) %>;
-      
-          // Validar que chartData sea un array
           if (Array.isArray(chartData) && chartData.length > 0) {
-            // Ordenar los datos cronológicamente
-            chartData = chartData.sort((a, b) => new Date(a.time) - new Date(b.time));
+            chartData = chartData.map(data => ({
+              time: data.time,
+              value: parseFloat(data.value),
+            }));
       
-            // Configurar los datos en la serie
+            // Aplicar interpolación
+            chartData = interpolateData(chartData);
+      
             lineSeries.setData(chartData);
-      
-            // Ajustar la vista automáticamente al contenido
             chart.timeScale().fitContent();
           } else {
             console.warn('No hay datos disponibles para el historial de precios.');
@@ -287,6 +322,11 @@ if (producto) {
           console.error('Error al procesar los datos del backend:', error);
         }
       });
+      
+      
+      
+        
+        
       
       
     </script>
