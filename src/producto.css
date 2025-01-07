@@ -219,28 +219,26 @@
   left: calc(50% - 278px);
 }
 .desc {
-
-  white-space: pre; /* Esto respeta los saltos de línea */
-  line-height: 1.6; /* Ajusta la altura entre líneas si es necesario */
+  white-space: pre-wrap; /* Respeta los saltos de línea y ajusta el texto automáticamente */
+  word-wrap: break-word; /* Fuerza un salto de línea si una palabra es muy larga */
+  overflow-wrap: break-word; /* Compatibilidad con navegadores modernos */
+  line-height: 1.6; /* Ajusta la altura entre líneas */
   font-size: var(--font-size-xl);
-  line-height: 35px;
   font-family: var(--font-montserrat);
   position: absolute;
-  top:calc(35%);
-  line-height: 35px;
+  top: calc(35%);
   text-align: left;
   display: inline-block;
   width: calc(60%);
   max-width: 700px;
   min-width: 500px;
-  
   max-height: 200px; /* Mantiene la altura máxima del contenedor */
   overflow-y: auto; /* Habilita el desplazamiento vertical si el contenido excede la altura máxima */
   padding: 10px; /* Espaciado interno */
   left: calc(50% - 300px);
-  
   border-radius: 5px; /* Esquinas redondeadas opcionales */
 }
+
 .review {
   position: absolute;
   top: 92px;
