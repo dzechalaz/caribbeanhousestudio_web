@@ -99,14 +99,14 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
                 <div class="description">
                     <b class="informacin-del-pedido">Información del pedido</b>
                     <div class="mueble-credenza-material-mad-container">
-                        <p class="nombre-juan-quintana">Mueble: <%= info['Nombre'] %></p>
-                        <p class="nombre-juan-quintana">Material: <%= info['Material'] %></p>
-                        <p class="nombre-juan-quintana">Dimensiones: <%= info['Dimensiones'] %></p>
-                        <p class="nombre-juan-quintana">Acabado: <%= info['Acabado'] %></p>
-                        <p class="nombre-juan-quintana">Color: <%= info['Color'] %></p>
+                        <p class="nombre-juan-quintana">Mueble: <%= producto.nombre || "No disponible" %></p>
+                        <p class="nombre-juan-quintana">Material: <%= info.material || "No disponible" %></p>
+                        <p class="nombre-juan-quintana">Dimensiones: <%= info.dimensiones || "No disponible" %></p>
+                        <p class="nombre-juan-quintana">Acabado: <%= info.acabado || "No disponible" %></p>
+                        <p class="nombre-juan-quintana">Color: <%= info.color || "No disponible" %></p>
                     </div>
                 </div>
-                <div class="credenza"><%= info['Nombre'] %></div>
+                <div class="credenza"><%= producto.nombre || "No disponible" %></div>
                 <div class="id-de-envo">ID de Envío:</div>
                 <div class="div18"><%= idCompra %></div>
                 <div class="repeat-grid-3">

@@ -25,7 +25,16 @@
 
 .profile {
   margin: 0;
+  white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+  overflow: hidden; /* Oculta cualquier desbordamiento de texto */
+  text-overflow: ellipsis; /* Muestra "..." si el texto es demasiado largo */
+  max-width: 250px; /* Define el ancho máximo del texto */
+  cursor: pointer; /* Cambia el cursor para indicar que hay más información */
+  position: relative; /* Necesario para el tooltip */
 }
+
+/* Estilo para el tooltip */
+
 .inputbuscar {
   position: absolute;
   border-radius: var(--br-xs);
@@ -160,7 +169,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.informacionBasica{
+.informacionBasica {
   position: absolute;
   bottom: 15px;
   left: 0;
@@ -168,10 +177,13 @@
   color: #707070;
   font-family: 'Montserrat', sans-serif;
   font-weight: 500; /* Medium weight */
-  white-space: nowrap; /* Evita que el texto se IDComida en varias líneas */
-  overflow: hidden; /* Opcional: oculta cualquier desbordamiento de texto */
-  text-overflow: ellipsis; /* Opcional: añade "..." si el texto es demasiado largo */
+  white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+  overflow: hidden; /* Oculta cualquier desbordamiento de texto */
+  text-overflow: ellipsis; /* Añade "..." si el texto es demasiado largo */
+  max-width: 280px; /* Limita el ancho del texto */
+  cursor: pointer; /* Cambia el cursor para indicar que hay más información */
 }
+
 .detalles {
   position: absolute;
   bottom: 25px;
@@ -399,6 +411,7 @@
   border: 1px solid var(--color-lightseagreen);
   border-radius: var(--br-xs);
   background-color: rgba(240, 240, 240, 0.9);
+
 }
 
 .compra-container h3 {
