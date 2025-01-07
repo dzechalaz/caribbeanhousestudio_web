@@ -1243,8 +1243,13 @@ app.get('/producto', async (req, res) => {
     const lastMonthDate = new Date();
     lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
 
+  // Modificación en la consulta para filtrar registros
     const [comprasMes] = await db.promise().query(
-      'SELECT fecha, precio FROM Registros WHERE product_id = ?  AND fecha >= ? ORDER BY fecha ASC',
+      `SELECT DATE(fecha) AS fecha, MAX(precio) AS precio
+      FROM Registros
+      WHERE product_id = ? AND fecha IS NOT NULL AND fecha >= ?
+      GROUP BY DATE(fecha)
+      ORDER BY fecha ASC`,
       [productoId, lastMonthDate]
     );
 
