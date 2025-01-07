@@ -680,6 +680,7 @@ app.post('/colaborador/ordenes/finalizar', authMiddleware, (req, res) => {
         const nuevoNumeroOrden = generarNumeroOrden(ultimoNumero);
     
         const queryOrden = 'INSERT INTO ordenes (numero_orden, usuario_id, referencia, fecha_orden) VALUES (?, ?, ?, NOW())';
+
         
         db.query(queryOrden, [nuevoNumeroOrden, usuarioId, referencia], (err, result) => {
           if (err) {
@@ -693,7 +694,7 @@ app.post('/colaborador/ordenes/finalizar', authMiddleware, (req, res) => {
             producto.producto_id,
             usuarioId,
             new Date(),
-            1,
+            0,
             `${direccion.calle}, ${direccion.ciudad}, ${direccion.estado}, ${direccion.codigoPostal}`,
             producto.cantidad,
             ordenId
@@ -800,7 +801,6 @@ app.post('/colaborador/ordenes/verificar-correo', authMiddleware, (req, res) => 
 });
 
 
-
 //####################################### Modificar estado #####################################
 
 // Endpoint para obtener los datos de una compra específica
@@ -808,7 +808,7 @@ app.get('/colaborador/compras/data/:compra_id', authMiddleware, (req, res) => {
   const compraId = req.params.compra_id;
 
   const query = `
-    SELECT Compras.compra_id, Productos.nombre AS producto_nombre, Compras.estado
+    SELECT Compras.compra_id, Productos.nombre AS producto_nombre, Compras.estado, Compras.FechaEstimada
     FROM Compras
     JOIN Productos ON Compras.producto_id = Productos.producto_id
     WHERE Compras.compra_id = ?
@@ -828,42 +828,48 @@ app.get('/colaborador/compras/data/:compra_id', authMiddleware, (req, res) => {
   });
 });
 
-
 app.get('/colaborador/compras/modificar-estado/:compra_id', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/compras/modificar_estado.html'));
 });
 
-
-// Endpoint para modificar el estado de la compra
 app.post('/colaborador/compras/modificar-estado/:compra_id', authMiddleware, (req, res) => {
   const compraId = req.params.compra_id;
-  const { estado } = req.body;
+  const { estado, FechaEstimada } = req.body;
 
-  if (!estado) {
-    return res.status(400).json({ success: false, error: 'El estado es obligatorio.' });
+  // Validar que al menos uno de los campos tenga un valor
+  if (!estado && !FechaEstimada) {
+    return res.status(400).json({ success: false, error: 'Debe proporcionar un estado o una fecha estimada.' });
   }
 
-  const query = 'UPDATE Compras SET estado = ? WHERE compra_id = ?';
+  const updates = [];
+  const values = [];
 
-  db.query(query, [estado, compraId], (err, results) => {
+  if (estado) {
+    updates.push('estado = ?');
+    values.push(estado);
+  }
+
+  if (FechaEstimada) {
+    updates.push('FechaEstimada = ?');
+    values.push(FechaEstimada);
+  }
+
+  const query = `UPDATE Compras SET ${updates.join(', ')} WHERE compra_id = ?`;
+  values.push(compraId);
+
+  db.query(query, values, (err, results) => {
     if (err) {
-      console.error('Error al actualizar estado:', err);
-      return res.status(500).json({ success: false, error: 'Error al actualizar el estado' });
+      console.error('Error al actualizar estado o fecha estimada:', err);
+      return res.status(500).json({ success: false, error: 'Error al actualizar el estado o la fecha estimada.' });
     }
 
     if (results.affectedRows === 0) {
       return res.status(404).json({ success: false, error: 'Compra no encontrada.' });
     }
 
-    res.json({ success: true, message: 'Estado actualizado correctamente.' });
+    res.json({ success: true, message: 'Estado o fecha estimada actualizados correctamente.' });
   });
 });
-
-
-
-
-
-
 
 
 
@@ -908,6 +914,13 @@ app.get('/seguimiento', async (req, res) => {
     // Dividir la dirección de envío
     const direccionParts = compra.direccion_envio.split(', ');
 
+    // Formatear FechaEstimada a formato 10/ENE/2025
+    let fechaEstimada = ''; // Valor por defecto si no hay FechaEstimada
+    if (compra.FechaEstimada) {
+      const opcionesFecha = { day: '2-digit', month: 'short', year: 'numeric' };
+      fechaEstimada = new Date(compra.FechaEstimada).toLocaleDateString('es-ES', opcionesFecha).toUpperCase();
+    }
+
     // Renderizar la página
     res.render('seguimiento', {
       idCompra,
@@ -917,7 +930,7 @@ app.get('/seguimiento', async (req, res) => {
         path_imagen: `${CFI}/Products/${compra.producto_id}/a.webp`
       },
       info: {
-        material: w.material,
+        material: detalles.material,
         dimensiones: detalles.dimensiones,
         acabado: detalles.acabado,
         color: detalles.color
@@ -927,13 +940,15 @@ app.get('/seguimiento', async (req, res) => {
         ciudad: direccionParts[1] || 'No especificado',
         estado: direccionParts[2] || 'No especificado',
         codigoPostal: direccionParts[3] || 'No especificado'
-      }
+      },
+      fechaEstimada // Pasar FechaEstimada al frontend
     });
   } catch (error) {
     console.error(`Error en la ruta /seguimiento: ${error.message}`);
     res.status(500).send('Error interno del servidor');
   }
 });
+
 
 
 
@@ -1639,11 +1654,11 @@ app.get('/', (req, res) => {
 
   
 });
-app.get('/', async (req, res) => {
+app.use(async (req, res, next) => {
   try {
-    const today = new Date().toISOString().split('T')[0]; // Obtener la fecha actual en formato YYYY-MM-DD
+    const today = new Date().toISOString().split('T')[0]; // Fecha actual en formato YYYY-MM-DD
 
-    // Incrementar el contador de visitas para la fecha actual
+    // Incrementar contador o insertar registro para la fecha actual
     await db.promise().query(
       `
       INSERT INTO Visitas (fecha, cantidad)
@@ -1652,13 +1667,13 @@ app.get('/', async (req, res) => {
       `,
       [today]
     );
-
-    res.render('index'); // Renderiza tu página principal
+    console.log(`Visita registrada para la fecha: ${today}`);
   } catch (err) {
-    console.error('Error al registrar visita general:', err);
-    res.status(500).send('Error interno del servidor');
+    console.error('Error al registrar visita:', err);
   }
+  next(); // Continuar con la siguiente ruta
 });
+
 
 //################################ COSTUM PEDIDOS######################################
 

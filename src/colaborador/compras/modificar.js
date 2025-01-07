@@ -2,11 +2,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const compraId = window.location.pathname.split('/').pop();
     const progressBar = document.getElementById('progress-bar');
     const estadoDetalles = document.querySelector('.details');
-    const confirmarBtn = document.getElementById('confirmar-btn');
     const cancelarBtn = document.getElementById('cancelar-btn');
-    let estadoActual;
+    const guardarFechaBtn = document.getElementById('guardar-fecha-btn');
+    const fechaInput = document.getElementById('fecha-input');
+    const ultimaFechaSpan = document.getElementById('ultima-fecha');
 
-    console.log(`Compra ID: ${compraId}`);
+    let estadoActual;
 
     if (!compraId) {
         alert('No se encontró el ID de la compra.');
@@ -19,17 +20,54 @@ document.addEventListener('DOMContentLoaded', function () {
         .then((data) => {
             if (data.success) {
                 const compra = data.compra;
-                estadoActual = compra.estado; // Guardar el estado actual para el incremento
-                console.log(`Estado actual: ${estadoActual}`);
+                estadoActual = compra.estado;
                 generarBarraProgreso(estadoActual);
                 estadoDetalles.innerText = obtenerDescripcionEstado(estadoActual);
+
+                // Mostrar la última fecha estimada (si existe) y cargarla en el input
+                if (compra.FechaEstimada) {
+                    fechaInput.value = new Date(compra.FechaEstimada).toISOString().split('T')[0];
+                    ultimaFechaSpan.textContent = `Última fecha estimada: ${formatFecha(compra.FechaEstimada)}`;
+                }
             } else {
                 alert(data.error || 'Error al cargar la compra.');
             }
         })
         .catch((error) => console.error('Error al cargar los datos:', error));
 
-    // Generar la barra de progreso dinámicamente
+    // Función para formatear la fecha a "10/ENE/2025"
+    function formatFecha(fecha) {
+        const opciones = { day: '2-digit', month: 'short', year: 'numeric' };
+        return new Date(fecha).toLocaleDateString('es-ES', opciones).toUpperCase();
+    }
+
+    // Guardar fecha estimada
+    guardarFechaBtn.addEventListener('click', () => {
+        const nuevaFecha = fechaInput.value;
+
+        if (!nuevaFecha) {
+            alert('Por favor, ingrese una fecha estimada.');
+            return;
+        }
+
+        fetch(`/colaborador/compras/modificar-estado/${compraId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ FechaEstimada: nuevaFecha }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    alert('Fecha estimada actualizada correctamente.');
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Error al actualizar la fecha estimada.');
+                }
+            })
+            .catch((error) => console.error('Error al actualizar la fecha estimada:', error));
+    });
+
+    // Generar la barra de progreso dinámica
     function generarBarraProgreso(estadoActual) {
         const estados = [
             'Pedido Confirmado',
@@ -46,13 +84,12 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        progressBar.innerHTML = ''; // Limpiar el contenido antes de generar dinámicamente
+        progressBar.innerHTML = ''; // Limpiar contenido previo
 
         estados.forEach((estado, index) => {
-            const step = document.createElement('div');
             const stepIndex = index + 1;
+            const step = document.createElement('div');
 
-            // Asignar clases según el estado actual
             let stepClass = '';
             if (stepIndex < estadoActual) {
                 stepClass = 'completed';
@@ -61,23 +98,29 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             step.className = `step ${stepClass}`;
+            step.setAttribute('data-step', stepIndex);
             step.innerHTML = `
                 <div class="icon">${stepIndex}</div>
                 <p>${estado}</p>
             `;
+
+            // Hacer interactiva cada esfera
+            step.addEventListener('click', () => {
+                actualizarEstado(stepIndex);
+            });
+
             progressBar.appendChild(step);
         });
     }
 
     // Actualizar el estado de la compra
     function actualizarEstado(nuevoEstado) {
-        if (nuevoEstado <= estadoActual) {
-            alert('No puedes regresar a un estado anterior.');
+        if (nuevoEstado === estadoActual) {
+            alert('El estado seleccionado ya es el actual.');
             return;
         }
 
-        if (confirm(`¿Estás seguro de cambiar al estado "${nuevoEstado}"?`)) {
-            console.log(`Actualizando a estado: ${nuevoEstado}`);
+        if (confirm(`¿Estás seguro de cambiar al estado "${obtenerDescripcionEstado(nuevoEstado)}"?`)) {
             fetch(`/colaborador/compras/modificar-estado/${compraId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -87,7 +130,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then((data) => {
                     if (data.success) {
                         alert(data.message || 'Estado actualizado correctamente.');
-                        console.log(`Estado actualizado a: ${nuevoEstado}`);
                         window.location.reload();
                     } else {
                         alert(data.error || 'Error al actualizar el estado.');
@@ -111,16 +153,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return descripciones[estado] || 'Estado desconocido.';
     }
 
- // Evento para cancelar
+    // Evento para cancelar
     cancelarBtn.addEventListener('click', () => {
-        window.location.href = '/colaborador/ordenes'; // Redirige a la página de órdenes
-    });
-
-    
-    // Evento para confirmar el estado
-    confirmarBtn.addEventListener('click', () => {
-        const nuevoEstado = estadoActual + 1; // Incrementar el estado actual
-        actualizarEstado(nuevoEstado);
-
+        window.location.href = '/colaborador/ordenes';
     });
 });
