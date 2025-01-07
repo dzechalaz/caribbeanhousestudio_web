@@ -881,8 +881,7 @@ app.post('/colaborador/compras/modificar-estado/:compra_id', authMiddleware, (re
 
 //########################################## SEGUIMIENTO ##################################################
 
-
-app.get('/seguimiento', async (req, res) => { // Declarar la función como async
+app.get('/seguimiento', async (req, res) => {
   const idCompra = req.query.id;
 
   try {
@@ -902,39 +901,9 @@ app.get('/seguimiento', async (req, res) => { // Declarar la función como async
 
     const producto = productoResults[0];
 
-    // Leer el archivo info.txt desde Cloudflare R2
-    const productInfoPath = `${CFI}/Products/${compra.producto_id}/info.txt`;
-    let info = {};
-
-    try {
-      const response = await fetch(productInfoPath); // Ahora está dentro de una función async
-      if (!response.ok) {
-        throw new Error(`Error al obtener el archivo info.txt: ${response.statusText}`);
-      }
-      const data = await response.text();
-
-      // Procesar el contenido del archivo info.txt
-      const infoLines = data.split('\n');
-      let currentSection = null;
-
-      infoLines.forEach(line => {
-        if (line.trim() === "Información Básica") {
-          currentSection = "basic";
-          info[currentSection] = {};
-        } else if (line.trim() === "Información de Catálogo") {
-          currentSection = "catalog";
-          info[currentSection] = {};
-        } else if (line.trim() !== "") {
-          const [key, value] = line.split(': ');
-          if (currentSection && key && value) {
-            info[currentSection][key.trim()] = value.trim();
-          }
-        }
-      });
-    } catch (error) {
-      console.error(`Error al leer el archivo info.txt: ${error.message}`);
-      info = { basic: {}, catalog: {} }; // Devolver valores vacíos si ocurre un error
-    }
+    // Obtener los detalles del producto desde la base de datos
+    const [detallesResults] = await db.promise().query('SELECT material, dimensiones, acabado, color FROM Productos_detalles WHERE producto_id = ?', [compra.producto_id]);
+    const detalles = detallesResults.length > 0 ? detallesResults[0] : { material: 'No disponible', dimensiones: 'No disponible', acabado: 'No disponible', color: 'No disponible' };
 
     // Dividir la dirección de envío
     const direccionParts = compra.direccion_envio.split(', ');
@@ -947,12 +916,17 @@ app.get('/seguimiento', async (req, res) => { // Declarar la función como async
         ...producto,
         path_imagen: `${CFI}/Products/${compra.producto_id}/a.webp`
       },
-      info: info.basic,
+      info: {
+        material: w.material,
+        dimensiones: detalles.dimensiones,
+        acabado: detalles.acabado,
+        color: detalles.color
+      },
       direccion: {
-        calle: direccionParts[0],
-        ciudad: direccionParts[1],
-        estado: direccionParts[2],
-        codigoPostal: direccionParts[3]
+        calle: direccionParts[0] || 'No especificado',
+        ciudad: direccionParts[1] || 'No especificado',
+        estado: direccionParts[2] || 'No especificado',
+        codigoPostal: direccionParts[3] || 'No especificado'
       }
     });
   } catch (error) {
@@ -963,8 +937,8 @@ app.get('/seguimiento', async (req, res) => { // Declarar la función como async
 
 
 
+
 //########################################## COMPRAS 987 ##################################################
-// Ruta `/compras`
 app.get('/compras', (req, res) => {
   const userId = req.session.userId;
 
@@ -999,13 +973,21 @@ app.get('/compras', (req, res) => {
         Productos.precio AS producto_precio, 
         Productos.categoria AS producto_categoria, 
         Productos.codigo AS producto_codigo,
-        Productos.producto_id AS producto_id 
+        Productos.producto_id AS producto_id,
+        Productos_detalles.material AS producto_material,
+        Productos_detalles.dimensiones AS producto_dimensiones,
+        Productos_detalles.acabado AS producto_acabado,
+        Productos_detalles.color AS producto_color
       FROM 
         Compras 
       LEFT JOIN 
         Productos 
       ON 
-        Compras.producto_id = Productos.producto_id 
+        Compras.producto_id = Productos.producto_id
+      LEFT JOIN
+        Productos_detalles
+      ON
+        Compras.producto_id = Productos_detalles.producto_id
       WHERE 
         Compras.orden_id IN (?);
     `;
@@ -1025,107 +1007,40 @@ app.get('/compras', (req, res) => {
         });
       }
 
-      // Paso 3: Leer `info.txt` para cada compra y procesar los datos
-      const comprasConInfo = [];
-      let pendientes = compras.length;
-
-      compras.forEach(async compra => {
-        const productInfoPath = `${CFI}/Products/${compra.producto_id}/info.txt`;
-      
-        try {
-          // Realiza una solicitud HTTP para obtener el contenido del archivo
-          const response = await fetch(productInfoPath);
-      
-          let info = {};
-          if (response.ok) {
-            const data = await response.text();
-      
-            // Procesar el contenido del archivo si existe
-            const infoLines = data.split('\n');
-            infoLines.forEach(line => {
-              const [key, value] = line.split(': ');
-              if (key && value) {
-                info[key.trim()] = value.trim();
-              }
-            });
+      // Paso 3: Procesar las compras y renderizar
+      const comprasConInfo = compras.map(compra => {
+        const direccionParts = compra.direccion_envio.split(', ');
+        return {
+          ...compra,
+          producto: {
+            nombre: compra.producto_nombre,
+            precio: compra.producto_precio,
+            categoria: compra.producto_categoria,
+            codigo: compra.producto_codigo,
+            path_imagen: `${CFI}/Products/${compra.producto_id}/a.webp`,
+            material: compra.producto_material || 'No disponible',
+            dimensiones: compra.producto_dimensiones || 'No disponible',
+            acabado: compra.producto_acabado || 'No disponible',
+            color: compra.producto_color || 'No disponible',
+          },
+          direccion: {
+            calle: direccionParts[0] || 'N/A',
+            ciudad: direccionParts[1] || 'N/A',
+            estado: direccionParts[2] || 'N/A',
+            codigoPostal: direccionParts[3] || 'N/A'
           }
-      
-          // Verifica que `producto_id` exista y no sea nulo
-          const productoId = compra.producto_id || 'default';
-      
-          // Agregar la compra con la información procesada
-          const direccionParts = compra.direccion_envio.split(', ');
-          comprasConInfo.push({
-            ...compra,
-            producto: {
-              nombre: compra.producto_nombre,
-              precio: compra.producto_precio,
-              categoria: compra.producto_categoria,
-              codigo: compra.producto_codigo,
-              path_imagen: `${CFI}/Products/${productoId}/a.webp`
-            },
-            info,
-            direccion: {
-              calle: direccionParts[0] || 'N/A',
-              ciudad: direccionParts[1] || 'N/A',
-              estado: direccionParts[2] || 'N/A',
-              codigoPostal: direccionParts[3] || 'N/A'
-            }
-          });
-      
-          // Verificar si se procesaron todas las compras
-          pendientes--;
-          if (pendientes === 0) {
-            res.render('compras', {
-              ordenes,
-              compras: comprasConInfo,
-              mensaje: null,
-              searchQuery: ''
-            });
-          }
-        } catch (err) {
-          console.error(`Error fetching file from ${productInfoPath}:`, err);
-      
-          // Manejo del error: aún así agrega el objeto a `comprasConInfo` sin la información del archivo
-          const productoId = compra.producto_id || 'default';
-          const direccionParts = compra.direccion_envio.split(', ');
-          comprasConInfo.push({
-            ...compra,
-            producto: {
-              nombre: compra.producto_nombre,
-              precio: compra.producto_precio,
-              categoria: compra.producto_categoria,
-              codigo: compra.producto_codigo,
-              path_imagen: `${CFI}/Products/${productoId}/a.webp`
-            },
-            info: {},
-            direccion: {
-              calle: direccionParts[0] || 'N/A',
-              ciudad: direccionParts[1] || 'N/A',
-              estado: direccionParts[2] || 'N/A',
-              codigoPostal: direccionParts[3] || 'N/A'
-            }
-          });
-      
-          // Verificar si se procesaron todas las compras
-          pendientes--;
-          if (pendientes === 0) {
-            res.render('compras', {
-              ordenes,
-              compras: comprasConInfo,
-              mensaje: null,
-              searchQuery: ''
-            });
-          }
-        }
+        };
       });
-      
 
-
-
+      res.render('compras', {
+        ordenes,
+        compras: comprasConInfo,
+        mensaje: null,
+        searchQuery: ''
       });
     });
   });
+});
 
 
 //########################################## BUSQUEDA COMPRAS ##################################################

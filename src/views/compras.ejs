@@ -77,10 +77,10 @@
                 <div class="detalles">
                   <b class="NombreProducto"><%= compra.producto?.nombre || 'Producto no disponible' %></b>
                   <div class="informacionBasica">
-                    <p class="profile">Material: <%= compra.info?.Material || 'N/A' %></p>
-                    <p class="profile">Dimensiones: <%= compra.info?.Dimensiones || 'N/A' %></p>
-                    <p class="profile">Acabado: <%= compra.info?.Acabado || 'N/A' %></p>
-                    <p class="profile">Color: <%= compra.info?.Color || 'N/A' %></p>
+                    <p class="profile">Material: <%= compra.producto?.material || 'N/A' %></p>
+                    <p class="profile">Dimensiones: <%= compra.producto?.dimensiones || 'N/A' %></p>
+                    <p class="profile">Acabado: <%= compra.producto?.acabado || 'N/A' %></p>
+                    <p class="profile">Color: <%= compra.producto?.color || 'N/A' %></p>
                   </div>
                 </div>
                 <div class="direccionenvio">
