@@ -1,7 +1,7 @@
 
 .barra-pestaas5 {
     position: fixed;
-    z-index: 3;
+    z-index: 7;
     width: calc(100% + 2.1px);
     top: -0.5px;
     right: -2.1px;
@@ -37,6 +37,8 @@
     font-size: var(--font-size-18xl);
     color: var(--color-darkslategray-200);
   }
+
+  
 
 .component-1-13-child{
     display: flex;
@@ -272,3 +274,5 @@
       }
   }
 
+  
+  

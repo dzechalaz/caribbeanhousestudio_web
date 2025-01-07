@@ -45,6 +45,7 @@ body {
     z-index: 1;
     text-align: center;
     width: calc(100% / 7);
+    
 }
 
 .step .icon {
@@ -60,6 +61,7 @@ body {
     font-size: 16px;
     font-weight: bold;
     transition: background 0.3s ease;
+    cursor: pointer; /* Cambia el cursor a una mano cuando el mouse pasa sobre la esfera */
 }
 
 .step.active .icon {
@@ -127,4 +129,33 @@ body {
 
 #cancelar-btn:hover {
     background: #B86D36; /* Más oscuro en hover */
+}
+
+#guardar-fecha-btn{
+    background: #8EAA6D; /* Verde chukum */
+    color: #FFF8F0;
+}
+
+#fecha-input {
+    width: 200px;
+    padding: 10px;
+    border: 2px solid #C19A6B; /* Color Chukum claro */
+    border-radius: 5px;
+    background-color: #F4EDE5; /* Color Chukum arena */
+    color: #704214; /* Color Chukum oscuro */
+    font-family: 'Montserrat', sans-serif;
+    font-size: 20px;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    margin-bottom: 20px;
+}
+#fecha-input:focus {
+    border-color: #8E5C42; /* Color Chukum profundo */
+    box-shadow: 0 0 5px #8E5C42;
+    background-color: #FAF7F3; /* Fondo un poco más claro al enfocar */
+}
+
+#fecha-input::placeholder {
+    color: #A3826B; /* Color para el placeholder */
+    font-style: italic;
 }

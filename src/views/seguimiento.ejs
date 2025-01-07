@@ -1,5 +1,6 @@
 <% 
 const descripciones = {
+    0: 'El pedido no ha sido confirmado y está en proceso de pago.',
     1: 'El pedido ha sido confirmado y está en proceso de preparación.',
     2: 'Todos los insumos están listos para comenzar la fabricación.',
     3: 'El producto está en proceso de maquila, se está llevando a cabo la producción.',
@@ -44,15 +45,9 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
                     <img class="package-2-icon" alt="" src="/public/package-2.svg" />
                 </div>
                 <div class="fecha" data-animate-on-scroll>
-                    <b class="tiempo-estimado">Tiempo Estimado</b>
-                    <img class="reloj-icon" alt="" src="/public/reloj.svg" />
-                    <img class="stopwatch-icon" alt="" src="/public/stopwatch.svg" />
-                    <b class="b">2</b>
-                    <div class="ribbon">
-                        <img class="path-285-icon" alt="" src="/public/path-285.svg" />
-                        <img class="path-286-icon" alt="" src="/public/path-286.svg" />
-                        <b class="das">Días</b>
-                    </div>
+                    <b class="tiempo-estimado">Fecha Estimada</b>
+                    <img class="calendar" alt="" src="public/calendar.svg" />
+                    <b class="fechaEstimada"><%= fechaEstimada %></b>
                 </div>
                 <div class="detalleetapaactual animate">
                     <div class="c77ba59f830c693638c79c15db96bf-icon"></div>

@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1, width=device-width" />
 
     <link rel="stylesheet" href="./global.css" />
     <link rel="stylesheet" href="./index.css" />
+    <link rel="stylesheet" href="/Templates/footer.css" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Josefin Sans:wght@400;600;700&display=swap"
@@ -19,11 +20,16 @@
       href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
     />
   </head>
+
+  <header>
+    <div id="barra"></div>
+  </header>
   <body>
-    <div id="barra"style="z-index: 3;"></div>
+    
     <div class="home1">
       <div class="portada"></div>
       <div class="fondocat"></div>
+     
       
       
       <label class="frase">
@@ -139,89 +145,111 @@
                 </div>
               </a>
             <% }); %>
-            <div id="footer"></div>
+            
           </div>
         </div>
       </div>
-     
+
     </div>
+    <footer>
+      <div class="footer-content">
+        <!-- Sección del título "Caribbean House Studio" -->
+        <div class="footer-section brand">
+          <h1>CARIBBEAN HOUSE STUDIO</h1>
+        </div>
+    
+        <!-- Sección de enlaces -->
+        <div class="footer-section links">
+          <div>
+            <h4>COMPANY</h4>
+            <p>Profile</p>
+            <p>About us</p>
+            <p>Contact</p>
+            <p>Address</p>
+          </div>
+    
+          <div>
+            <h4>RETURNS</h4>
+            <p>FAQs</p>
+            <p>Size Guide</p>
+            <p>Contact us</p>
+          </div>
+        </div>
+      </div>
+    </footer>
     
 
 
-    <script>window.onload = function () {
-      let claseAResaltar = "inicio5"; 
-  
-      // Cargar barra.html dinámicamente
-      fetch("/Templates/barra.html")
-        .then((response) => response.text())
-        .then((data) => { 
-          document.getElementById("barra").innerHTML = data;
-  
-          // Aplicar el estilo para el elemento resaltado
-          let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
-          if (elementoAResaltar) {
-            elementoAResaltar.style.fontWeight = 'bold';
-            elementoAResaltar.style.color = 'var(--color-lightseagreen)';
-          }
-  
-          // Por defecto, el login-wrapper3 redirige a /login
-          const loginWrapper = document.querySelector('#login-wrapper3'); 
-          const loginText = document.querySelector('.login5'); // El texto dentro del botón
-          const bienvenidoText = document.querySelector('#bienvenido-text'); // El texto de bienvenida
 
-          
-          if (loginWrapper) {
-            loginWrapper.onclick = function() {
-              window.location.href = '/login';
-            }; // Redirige a /login por defecto
-          }
+    <script>
+    
+ 
+        window.onload = function () {
+        let claseAResaltar = "inicio5"; 
+    
+        // Cargar barra.html dinámicamente
+        fetch("/Templates/barra.html")
+          .then((response) => response.text())
+          .then((data) => {
+            document.getElementById("barra").innerHTML = data;
+    
+            // Aplicar el estilo para el elemento resaltado
+            let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
+            if (elementoAResaltar) {
+              elementoAResaltar.style.fontWeight = 'bold';
+              elementoAResaltar.style.color = 'var(--color-lightseagreen)';
+            }
+    
+            // Por defecto, el login-wrapper3 redirige a /login
+            const loginWrapper = document.querySelector('#login-wrapper3'); 
+            const loginText = document.querySelector('.login5'); // El texto dentro del botón
+            const bienvenidoText = document.querySelector('#bienvenido-text'); // El texto de bienvenida
   
-          // Verificar la sesión para modificar el botón de login/logout si es necesario
-          fetch('/api/session')
-            .then(response => response.json())
-            .then(data => {
-              console.log('Sesión obtenida:', data);
+            
+            if (loginWrapper) {
+              loginWrapper.onclick = function() {
+                window.location.href = '/login';
+              }; // Redirige a /login por defecto
+            }
+    
+            // Verificar la sesión para modificar el botón de login/logout si es necesario
+            fetch('/api/session')
+              .then(response => response.json())
+              .then(data => {
+                console.log('Sesión obtenida:', data);
+    
+                if (data.isAuthenticated) {
+                  // Cambiamos el color del contenedor (wrapper) a rojo chukum
+                  loginWrapper.setAttribute('style', 'background-color: #C19A6B; top: calc(50% - 18px);');
+    
+                  // Cambiamos el texto a "Cerrar sesión"
+                  loginText.textContent = 'Cerrar sesión';
+    
+                  // Cambiamos la acción a cerrar sesión
+                  loginWrapper.onclick = function() {
+                    window.location.href = '/logout';
+                  };
   
-              if (data.isAuthenticated) {
-                // Cambiamos el color del contenedor (wrapper) a rojo chukum
-                loginWrapper.setAttribute('style', 'background-color: #C19A6B; top: calc(50% - 18px);');
-  
-                // Cambiamos el texto a "Cerrar sesión"
-                loginText.textContent = 'Cerrar sesión';
-  
-                // Cambiamos la acción a cerrar sesión
-                loginWrapper.onclick = function() {
-                  window.location.href = '/logout';
-                };
-
-                bienvenidoText.textContent = ` ${data.correo}`; // Mostrar el nombre del usuario
-                
-                console.log('Sesión iniciada. Usuario:', data.correo);
-              } else {
-                console.log('No hay sesión iniciada.');
-                bienvenidoText.style.display = 'none';
-              }
-            })
-            .catch(error => console.error('Error al cargar la sesión:', error));
-        })
-        .catch(error => console.error('Error al cargar la barra:', error));
-  
-      // Cargar el footer.html dinámicamente
-      fetch("/Templates/footer.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("footer").innerHTML = data;
-        })
-        .catch(error => console.error('Error al cargar el footer:', error));
-    };
-
-
-      var logo = document.getElementById("logo");
-      if (logo) {
-        logo.addEventListener("click", function (e) {
-          window.location.href = "/";
-        });
-      }
+                  bienvenidoText.textContent = ` ${data.correo}`; // Mostrar el nombre del usuario
+                  
+                  console.log('Sesión iniciada. Usuario:', data.correo);
+                } else {
+                  console.log('No hay sesión iniciada.');
+                  bienvenidoText.style.display = 'none';
+                }
+              })
+              .catch(error => console.error('Error al cargar la sesión:', error));
+          })
+          .catch(error => console.error('Error al cargar la barra:', error));
+    
+        // Cargar el footer.html dinámicamente
+        fetch("/Templates/footer.html")
+          .then((response) => response.text())
+          .then((data) => {
+            document.getElementById("footer").innerHTML = data;
+          })
+          .catch(error => console.error('Error al cargar el footer:', error));
+      };
 
       function toggleMenu() {
         const menu = document.querySelector('.menu-container');
@@ -232,14 +260,7 @@
         const menu = document.querySelector('.menu-container');
         menu.classList.remove('active'); // Oculta el menú
       }
-      window.onload = function () {
-          fetch("/Templates/barra.html")
-            .then((response) => response.text())
-            .then((data) => {
-              document.getElementById("barra").innerHTML = data;
-            })
-            .catch((error) => console.error("Error al cargar la barra:", error));
-        };
+     
     </script>
     
     
