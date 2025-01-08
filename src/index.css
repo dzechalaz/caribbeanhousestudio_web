@@ -126,6 +126,7 @@
   gap: 15px; /* Espacio entre productos */
   justify-content: left; /* Centra el contenido horizontalmente */
   max-width: 100%; /* Asegura que el contenedor no sea más ancho que el viewport */
+  
 }
 
 
@@ -163,7 +164,7 @@
 }
 
 .destacados-grid .product-title {
-  font-size: 1.2em;
+  font-size: 1em;
   font-weight: bold;
   color: #4A403A;
 }
@@ -192,6 +193,9 @@
   margin-bottom: 30px;
   max-width: 1920px;
   flex: 2; /* Ocupa más espacio que la gráfica */
+  min-width: 600px;
+  margin-left: 50px;
+ 
 }
 
 .chart-container {
@@ -202,7 +206,8 @@
   position: relative;
   height: 500px;
   width: 100%;
-  
+  margin-right: 50px;
+  min-width: 300px;
 }
 
 .chart-container h3 {
@@ -362,7 +367,15 @@
     color: #4A403A; /* Color de texto estilo chukum */
     margin: 0 0 10px;
     font-weight: bold;
+    display: -webkit-box; /* Para limitar líneas */
+    -webkit-line-clamp: 2; /* Limitar a 2 líneas */
+    -webkit-box-orient: vertical; /* Orientación del recorte */
+    overflow: hidden; /* Ocultar texto excedente */
+    text-overflow: ellipsis; /* Añadir "..." al texto truncado */
+    cursor: pointer; /* Cambiar cursor para indicar interacción */
+    position: relative; /* Necesario para el tooltip */
   }
+  
   
  
   .product-price {
@@ -393,9 +406,51 @@
   background-repeat: no-repeat;
   z-index: -2;
   background-position: bottom;
+  top: 80px;
 }
 
 #main-content {
   transform: scale(1); /* No aplica escala aquí */
   transform-origin: top left;
+}
+
+.portadaSpace{
+  height:860px;
+ 
+}
+
+
+.chart-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px; /* Ajusta el margen según sea necesario */
+}
+
+.chart-button {
+  display: inline-block;
+  padding: 10px 20px;
+  text-decoration: none; /* Elimina el subrayado */
+  color: #ffffff; /* Texto blanco */
+  background-color: #539c97; /* Color pastel chukum */
+  border-radius: 25px; /* Bordes redondeados */
+  font-size: 20px; /* Tamaño de fuente */
+  font-family: 'Josefin Sans', sans-serif; /* Fuente consistente */
+  font-weight: 600; /* Negrita moderada */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Transiciones suaves */
+  text-align: center; /* Asegura que el texto esté centrado */
+}
+
+.chart-button:hover {
+  background-color: #8EBFB7; /* Un tono ligeramente más oscuro al pasar el mouse */
+  transform: scale(1.05); /* Ampliación sutil al pasar el mouse */
+  cursor: pointer; /* Cambia el cursor a una mano */
+}
+
+.chart-button:active {
+  transform: scale(0.95); /* Efecto de clic */
+}
+
+.chart-button:focus {
+  outline: none; /* Elimina el contorno al enfocarse */
 }

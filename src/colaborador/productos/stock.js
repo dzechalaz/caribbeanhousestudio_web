@@ -18,6 +18,11 @@ $(document).ready(function () {
                         <td>${producto.precio}</td>
                         <td>${producto.categoria}</td>
                         <td contenteditable="true" class="editable-stock" data-codigo="${producto.codigo}">${producto.stock}</td>
+                        <td>
+                            <input type="checkbox" class="destacado-checkbox" 
+                                   data-id="${producto.codigo}" 
+                                   ${producto.destacado === 1 ? 'checked' : ''}>
+                        </td>
                     `;
                     productosBody.appendChild(row);
                 });
@@ -28,9 +33,43 @@ $(document).ready(function () {
             })
             .catch(error => console.error('Error al cargar productos:', error));
     }
-
+    
+    
     // Llamar a la función cargarProductos para obtener los datos al cargar la página
     cargarProductos();
+
+    // Evento del checkbox para manejar los destacados
+        $(document).on('change', '.destacado-checkbox', function () {
+            const checkbox = $(this);
+            const codigoProducto = checkbox.data('id');
+            const destacado = checkbox.is(':checked') ? 1 : 0;
+
+            // Contar cuántos productos están seleccionados como destacados
+            const destacadosSeleccionados = $('.destacado-checkbox:checked').length;
+
+            // Si hay más de 6 destacados, revertir el cambio y mostrar un mensaje
+            if (destacadosSeleccionados > 6) {
+                alert('Solo puedes seleccionar hasta 6 productos destacados.');
+                checkbox.prop('checked', !checkbox.is(':checked')); // Revertir el cambio
+                return;
+            }
+
+            // Enviar la actualización al servidor
+            fetch('/colaborador/productos/actualizar-destacado', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ codigo: codigoProducto, destacado }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    alert('Error al actualizar el estado de destacado.');
+                    checkbox.prop('checked', !checkbox.is(':checked')); // Revertir el cambio en caso de error
+                }
+            })
+        });
 
       // Evento del botón "Crear Producto"
       $('#crear-producto').click(function () {
