@@ -236,6 +236,38 @@ app.post('/colaborador/productos/actualizar-stock', authMiddleware, (req, res) =
   res.json({ success: true });
 });
 
+// Ruta para actualizar el estado de destacado de un producto
+app.post('/colaborador/productos/actualizar-destacado', authMiddleware, (req, res) => {
+  const { codigo, destacado } = req.body;
+
+  // Validar si ya hay 6 productos destacados
+  const queryCount = 'SELECT COUNT(*) AS count FROM Productos WHERE destacado = 1';
+  const queryUpdate = 'UPDATE Productos SET destacado = ? WHERE codigo = ?';
+
+  db.query(queryCount, (err, results) => {
+    if (err) {
+      console.error('Error al contar productos destacados:', err);
+      return res.status(500).json({ error: 'Error al contar productos destacados' });
+    }
+
+    const destacadosActuales = results[0].count;
+
+    // Permitir el cambio si se está desmarcando o si hay menos de 6 destacados
+    if (!destacado || destacadosActuales < 6) {
+      db.query(queryUpdate, [destacado ? 1 : 0, codigo], (err, results) => {
+        if (err) {
+          console.error('Error al actualizar producto destacado:', err);
+          return res.status(500).json({ error: 'Error al actualizar producto destacado' });
+        }
+
+        res.json({ success: true });
+      });
+    } else {
+      res.status(400).json({ error: 'Solo puedes tener un máximo de 6 productos destacados.' });
+    }
+  });
+});
+
 
 
 
@@ -1612,8 +1644,6 @@ app.post('/logout', (req, res) => {
   });
 });
 
-
-//############################### PAGINA HOME ######################################
 //############################### PAGINA HOME ######################################
 app.get('/', async (req, res) => {
   const productosPorPagina = 7; // Mostrar los 7 productos más recientes
@@ -1630,11 +1660,22 @@ app.get('/', async (req, res) => {
     WHERE destacado = 1 
     LIMIT 6`; // Mostrar 6 productos destacados
 
+  // Colores pastel predefinidos
+  const colores = [
+    '#C4A7E7', // Morado pastel
+    '#F2A1A1', // Rojo pastel
+    '#F6C28B', // Naranja pastel
+    '#FDE9A9', // Amarillo pastel
+    '#A5D1CE', // Verde pastel
+    '#A8C6EA', // Azul pastel
+  ];
+
   try {
     // Obtener productos destacados
     const destacados = await db.promise().query(queryDestacados);
-    destacados[0].forEach(producto => {
+    destacados[0].forEach((producto, index) => {
       producto.imagePath = `${CFI}/Products/${producto.producto_id}/a.webp`;
+      producto.color = colores[index % colores.length]; // Asignar color basado en el índice
     });
 
     // Obtener productos recientes
@@ -1651,11 +1692,7 @@ app.get('/', async (req, res) => {
   }
 });
 
-
-
-
-
-
+//############################### HISTORIAL DE PRODUCTO #############################
 app.get('/producto-historial/:id', async (req, res) => {
   const productoId = req.params.id;
 
@@ -1683,7 +1720,6 @@ app.get('/producto-historial/:id', async (req, res) => {
     res.status(500).send('Error interno del servidor');
   }
 });
-
 
 
 
