@@ -27,7 +27,7 @@
 
 .component-1-13 {
     position: absolute;
-    height: 105px;
+    height: 10vh;
     width: 100%;
     top: 0;
     right: 0;
@@ -107,7 +107,7 @@
     display: flex;
     align-items: center;
     gap: 50px;
-    margin-top: 38px; /* Ajusta la altura */
+    margin-top: 3.5vh; /* Ajusta la altura */
     width: 60%; /* Define el ancho del contenedor como el 60% de la página */
     transform: translateX(60%); /* Mueve el menú hacia el 60% del ancho */
     justify-content: flex-start; /* Mantén los elementos alineados desde el principio del contenedor */

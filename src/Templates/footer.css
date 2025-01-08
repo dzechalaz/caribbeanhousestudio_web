@@ -1,5 +1,6 @@
 /* Footer styling */
 footer {
+  position: static;
   background-color: #373737;
   display: flex;
   align-items: center; /* Puedes cambiar esto según tus necesidades */
@@ -7,6 +8,7 @@ footer {
   font-family: 'Montserrat', sans-serif;
   padding: 20px 60px; /* Reduce el padding si es necesario */
   z-index: 7;
+  top: 100%;
 }
   
   .footer-content {
