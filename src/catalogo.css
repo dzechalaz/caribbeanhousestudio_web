@@ -142,6 +142,7 @@ body {
 }
 .product-grid{
   max-width: 1500px;
+  min-height: 700px;
 }
 
 
@@ -295,12 +296,14 @@ body {
   padding: 20px; /* Ajuste del padding para más simetría */
   border-radius: 8px;
   text-align: center;
-  margin-top: 120Px; /* Espaciado */
+  margin-top: 80px; /* Espaciado */
   width: 20vw; /* Asegura el mismo ancho que la barra lateral */
   max-width: 250px; /* Asegura el ancho máximo */
   min-width: 170px; /* Asegura el ancho mínimo */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
   margin-left: -20px;
+  position: relative;
+ 
 }
 
 .custom-quote-section h2 {

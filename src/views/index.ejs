@@ -6,7 +6,12 @@
 
     <link rel="stylesheet" href="./global.css" />
     <link rel="stylesheet" href="./index.css" />
+    <script src="/global.js" defer></script>
+
     <link rel="stylesheet" href="/Templates/footer.css" />
+
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Josefin Sans:wght@400;600;700&display=swap"
@@ -23,165 +28,222 @@
 
   <header>
     <div id="barra"></div>
+    <div class="portada"></div>
+    
   </header>
   <body>
     
-    <div class="home1">
-      <div class="portada"></div>
-      <div class="fondocat"></div>
-     
+    <div id="main-content">
       
-      
-      <label class="frase">
-        <p class="por-qu">El mejor lugar</p>
-        <p class="por-qu">te hace sentir</p>
-        <p class="por-qu">en casa</p>
-      </label>
-
-      <div class="featured-items">
-        <div class="featured-items-title">Destacados</div>
-        <div class="product-grid">
-            <div class="destacados-grid">
-              <% destacados.forEach(function(producto) { %>
-                <a href="/producto?id=<%= producto.producto_id %>" class="product-link">
-                  <div class="product-card destacados-card">
+      <div class="home1">
+        <div class="containerLable">
+          <label class="frase">
+            <p class="por-qu">El mejor lugar</p>
+            <p class="por-qu">te hace sentir</p>
+            <p class="por-qu">en casa</p>
+          </label>
+        </div>
+        
+        <div class="featured-items">
+          <div class="featured-items-title">DESTACADOS</div>
+          <div class="featured-content">
+            <div class="product-grid2 ">
+              <div class="destacados-grid">
+                <% destacados.forEach(function(producto) { %>
+                  <div class="product-card" data-id="<%= producto.producto_id %>">
                     <img src="<%= producto.imagePath %>" alt="<%= producto.nombre %>" class="product-image">
                     <div class="product-details">
                       <h3 class="product-title"><%= producto.nombre %></h3>
                       <p class="product-price">$<%= producto.precio %></p>
                     </div>
                   </div>
+                <% }); %>
+              </div>
+            </div>
+            <!-- Contenedor de la gráfica -->
+            <div class="chart-container">
+              <h3>Historial de Precios</h3>
+              <div id="price-chart-container">
+                
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+        
+        
+
+        <div class="categorias">
+
+          <div class="categorias1">CATEGORIAS</div>
+
+          <div class="line-parent">
+            <div class="categoria">
+              <a href="./catalogo?categoria=Salas">
+                <img
+                  class="categoria-icon salasIcon"
+                  alt="Salas"
+                  src="./public/sillonBig.png"
+                />
+                <span class="categoria-nombre">Salas</span>
+              </a>
+            </div>
+            
+            <div class="categoria">
+              <a href="./catalogo?categoria=Recámara">
+                <img
+                  class="categoria-icon recamaraIcon"
+                  alt="Recamaras"
+                  src="./public/bed.png"
+                />
+                <span class="categoria-nombre">Recámara</span>
+              </a>
+            </div>
+            
+            <div class="categoria">
+              <a href="./catalogo?categoria=Almacenaje">
+                <img
+                  class="categoria-icon almacenajeIcon"
+                  alt="Almacenaje"
+                  src="./public/closet.png"
+                />
+                <span class="categoria-nombre">Almacenaje</span>
+              </a>
+            </div>
+            
+            <div class="categoria">
+              <a href="./catalogo?categoria=Sillas y bancos">
+                <img
+                  class="categoria-icon sillasBancosIcon"
+                  alt="Sillas y bancos"
+                  src="./public/whiteSofa.png"
+                />
+                <span class="categoria-nombre">Sillas y bancos</span>
+              </a>
+            </div>
+            
+            <div class="categoria">
+              <a href="./catalogo?categoria=Mesas">
+                <img
+                  class="categoria-icon mesasIcon"
+                  alt="Mesas"
+                  src="./public/woodTable.png"
+                />
+                <span class="categoria-nombre">Mesas</span>
+              </a>
+            </div>
+            
+            <div class="categoria">
+              <a href="./catalogo?categoria=Decoración">
+                <img
+                  class="categoria-icon decoracionIcon"
+                  alt="Decoración"
+                  src="./public/lamp.png"
+                />
+                <span class="categoria-nombre">Decoración</span>
+              </a>
+            </div>
+          </div>
+          
+        </div>
+        
+        
+        <div class="recent-items">
+          <div class="recent-items1">AGREGADOS RECIENTEMENTE</div>
+          
+          <div class="product-grid">
+            <div class="product-list">
+              <% recientes.forEach(function(producto) { %>
+                <a href="/producto?id=<%= producto.producto_id %>" class="product-link">
+                  <div class="product-card2">
+                    <img src="<%= producto.imagePath %>" alt="<%= producto.nombre %>" class="product-image2">
+                    <div class="product-details">
+                      <h3 class="product-title"><%= producto.nombre %></h3>
+                      <div class="product-price">
+                        <p class="discounted-price">$<%= producto.precio %></p>
+                      </div>
+                    </div>
+                  </div>
                 </a>
               <% }); %>
             </div>
-        </div>    
-      </div>
-      
-      
-
-      <div class="categorias">
-        <div class="line-parent">
-          <div class="line-div"></div>
-          <div class="group-child1"></div>
-          <img class="line-icon" alt="" src="./public/line-52.svg" />
-      
-          <div class="group-child2"></div>
-          <div class="group-child3"></div>
-      
-          <a href="./catalogo?categoria=Salas">
-            <img
-              class="d4713349-2e2e-473f-928f-b5c048-icon"
-              alt="Salas"
-              src="./public/d47133492e2e473f928fb5c048928252@2x.png"
-            />
-          </a>
-      
-          <a href="./catalogo?categoria=Recámara">
-            <img
-              class="da0-1cc1-43d4-9e1e-61c12afab3d-icon"
-              alt="Recamaras"
-              src="./public/22635da01cc143d49e1e61c12afab3db@2x.png"
-            />
-          </a>
-      
-          <a href="./catalogo?categoria=Almacenaje">
-            <img
-              class="shopping-icon"
-              alt="Almacenaje"
-              src="./public/shopping@2x.png"
-            />
-          </a>
-      
-          <a href="./catalogo?categoria=Sillas y bancos">
-            <img
-              class="ab18eb1-3696-44be-9e6f-ed51751-icon"
-              alt="Sillas y bancos"
-              src="./public/6ab18eb1369644be9e6fed51751d63bc@2x.png"
-            />
-          </a>
-      
-          <a href="./catalogo?categoria=Mesas">
-            <img
-              class="e1288d-086d-42c6-aa4e-61575049-icon"
-              alt="Mesas"
-              src="./public/24e1288d086d42c6aa4e61575049751d@2x.png"
-            />
-          </a>
-      
-          <a href="./catalogo?categoria=Decoración">
-            <img
-              class="cd0d-49be-9a31-e6a0f5253c99-icon"
-              alt="Decoración"
-              src="./public/58928688cd0d49be9a31e6a0f5253c99@2x.png"
-            />
-          </a>
-      
-          <div class="categorias1">CATEGORIAS</div>
-      
-          <a href="./catalogo?categoria=Salas" class="sillas">Sillas y bancos</a>
-          <a href="./catalogo?categoria=Recamaras" class="closets">Almacenaje</a>
-          <a href="./catalogo?categoria=Almacenaje" class="sofas">Recamaras</a>
-          <a href="./catalogo?categoria=Sillas y bancos" class="camas">Decoracion</a>
-          <a href="./catalogo?categoria=Mesas" class="gabinetes">Mesas</a>
-          <a href="./catalogo?categoria=Decoracion" class="mesas">Salas</a>
+          </div>
+          
         </div>
-      </div>
-      
-      <div class="recent-items">
-        <div class="recent-items1">Agregados Recientemente</div>
-        <div class="product-grid">
-          <div class="product-list">
-            <% recientes.forEach(function(producto) { %>
-              <a href="/producto?id=<%= producto.producto_id %>" class="product-link">
-                <div class="product-card">
-                  <img src="<%= producto.imagePath %>" alt="<%= producto.nombre %>" class="product-image">
-                  <div class="product-details">
-                    <h3 class="product-title"><%= producto.nombre %></h3>
-                    <p class="product-sku">SKU <%= producto.codigo %></p>
-                    <div class="product-price">
-                      <p class="discounted-price">$<%= producto.precio %></p>
-                    </div>
-                  </div>
-                </div>
-              </a>
-            <% }); %>
+        
             
-          </div>
-        </div>
+      
+        <div id="footer"></div>
       </div>
-
     </div>
-    <footer>
-      <div class="footer-content">
-        <!-- Sección del título "Caribbean House Studio" -->
-        <div class="footer-section brand">
-          <h1>CARIBBEAN HOUSE STUDIO</h1>
-        </div>
-    
-        <!-- Sección de enlaces -->
-        <div class="footer-section links">
-          <div>
-            <h4>COMPANY</h4>
-            <p>Profile</p>
-            <p>About us</p>
-            <p>Contact</p>
-            <p>Address</p>
-          </div>
-    
-          <div>
-            <h4>RETURNS</h4>
-            <p>FAQs</p>
-            <p>Size Guide</p>
-            <p>Contact us</p>
-          </div>
-        </div>
-      </div>
-    </footer>
-    
 
 
 
     <script>
+          document.addEventListener('DOMContentLoaded', async () => {
+            const productos = document.querySelectorAll('.product-card');
+            const chartContainer = document.getElementById('price-chart-container');
+
+            let chart = LightweightCharts.createChart(chartContainer, {
+              width: chartContainer.width,
+              height: chartContainer.height,
+              layout: {
+                backgroundColor: 'rgba(0, 0, 0, 0)', // Hace que el fondo sea transparente
+                textColor: '#000',
+                fontSize: 20, // Tamaño de fuente (ajusta según necesites)
+                
+              },
+              grid: {
+                vertLines: { color: '#eeeeee' },
+                horzLines: { color: '#eeeeee' },
+              },
+              priceScale: {
+                borderColor: '#cccccc',
+              },
+              timeScale: {
+                borderColor: '#cccccc',
+                timeVisible: true,
+              },
+            });
+
+            let lineSeries = chart.addLineSeries();
+
+            const updateChart = async (productoId) => {
+              try {
+                const response = await fetch(`/producto-historial/${productoId}`);
+                const chartData = await response.json();
+
+                // Actualizar la gráfica con los datos obtenidos
+                lineSeries.setData(chartData);
+                chart.timeScale().fitContent();
+
+                // Imprimir en la consola del cliente
+                console.log(`Datos del producto ${productoId}:`, chartData);
+              } catch (err) {
+                console.error('Error al actualizar la gráfica:', err);
+              }
+            };
+
+            // Cargar el primer producto destacado por defecto
+            if (productos.length > 0) {
+              const firstProductId = productos[0].getAttribute('data-id');
+              await updateChart(firstProductId); // Actualizar la gráfica para el primer producto
+            }
+
+            // Agregar evento de clic a cada producto destacado
+            productos.forEach((producto) => {
+              producto.addEventListener('click', async (event) => {
+                event.preventDefault();
+
+                const productoId = producto.getAttribute('data-id');
+                await updateChart(productoId); // Actualizar la gráfica con el producto seleccionado
+              });
+            });
+          });
+
+
+            
     
  
         window.onload = function () {

@@ -1612,15 +1612,17 @@ app.post('/logout', (req, res) => {
   });
 });
 
-app.get('/', (req, res) => {
-  
+
+//############################### PAGINA HOME ######################################
+//############################### PAGINA HOME ######################################
+app.get('/', async (req, res) => {
   const productosPorPagina = 7; // Mostrar los 7 productos más recientes
   const queryRecientes = `
     SELECT producto_id, nombre, precio, codigo, categoria, stock 
     FROM Productos 
     WHERE stock > 0 
     ORDER BY created_at DESC 
-    LIMIT ?`;
+    LIMIT 6`;
 
   const queryDestacados = `
     SELECT producto_id, nombre, precio, codigo, categoria, stock 
@@ -1628,37 +1630,68 @@ app.get('/', (req, res) => {
     WHERE destacado = 1 
     LIMIT 6`; // Mostrar 6 productos destacados
 
-  // Obtener productos destacados primero
-  db.query(queryDestacados, (err, destacados) => {
-    if (err) {
-      console.error('Error al obtener productos destacados:', err);
-      return res.status(500).send('Error interno del servidor');
-    }
-
-    // Procesar las rutas de imágenes para los destacados
-    destacados.forEach(producto => {
+  try {
+    // Obtener productos destacados
+    const destacados = await db.promise().query(queryDestacados);
+    destacados[0].forEach(producto => {
       producto.imagePath = `${CFI}/Products/${producto.producto_id}/a.webp`;
     });
 
     // Obtener productos recientes
-    db.query(queryRecientes, [productosPorPagina], (err, recientes) => {
-      if (err) {
-        console.error('Error al obtener productos recientes:', err);
-        return res.status(500).send('Error interno del servidor');
-      }
-
-      // Procesar las rutas de imágenes para los recientes
-      recientes.forEach(producto => {
-        producto.imagePath = `${CFI}/Products/${producto.producto_id}/a.webp`;
-      });
-
-      // Renderizar la vista 'index.ejs' con ambos conjuntos de productos
-      res.render('index', { recientes, destacados });
+    const recientes = await db.promise().query(queryRecientes);
+    recientes[0].forEach(producto => {
+      producto.imagePath = `${CFI}/Products/${producto.producto_id}/a.webp`;
     });
-  });
 
-  
+    // Renderizar la vista 'index.ejs' con ambos conjuntos de productos
+    res.render('index', { recientes: recientes[0], destacados: destacados[0] });
+  } catch (err) {
+    console.error('Error al cargar los datos:', err);
+    res.status(500).send('Error interno del servidor');
+  }
 });
+
+
+
+
+
+
+app.get('/producto-historial/:id', async (req, res) => {
+  const productoId = req.params.id;
+
+  try {
+    const [historial] = await db.promise().query(
+      `SELECT DATE(fecha) AS fecha, MAX(precio) AS precio
+      FROM Registros
+      WHERE product_id = ? AND fecha IS NOT NULL
+      GROUP BY DATE(fecha)
+      ORDER BY fecha ASC`,
+      [productoId]
+    );
+
+    // Formatear los datos para la gráfica
+    const chartData = historial.map(registro => ({
+      time: registro.fecha.toISOString().split('T')[0],
+      value: registro.precio,
+    }));
+
+    console.log(`Datos para producto ${productoId}:`, chartData); // Imprimir en el servidor
+
+    res.json(chartData); // Enviar los datos de la gráfica como JSON
+  } catch (err) {
+    console.error('Error al obtener historial de precios:', err);
+    res.status(500).send('Error interno del servidor');
+  }
+});
+
+
+
+
+
+
+
+
+
 app.use(async (req, res, next) => {
   try {
     const today = new Date().toISOString().split('T')[0]; // Fecha actual en formato YYYY-MM-DD
