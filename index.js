@@ -12,6 +12,9 @@ const MySQLStore = require('express-mysql-session')(session);
 const fetch = require('node-fetch'); 
 const nodemailer = require('nodemailer');
 
+const archiver = require('archiver');
+
+
 const cors = require('cors');
 app.use(cors());
 
@@ -129,6 +132,7 @@ app.get('/colaborador/estadisticas', authMiddleware, (req, res) => {
 app.get('/colaborador/productos/crear', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/productos/crear_producto.html'));
 });
+
 
 
 
@@ -605,14 +609,20 @@ app.get('/colaborador/ordenes/data', authMiddleware, (req, res) => {
   });
 });
 
-
 app.get('/colaborador/ordenes/compras/:orden_id', authMiddleware, (req, res) => {
   const ordenId = req.params.orden_id;
 
   const query = `
-    SELECT c.compra_id, p.nombre AS producto_nombre, c.cantidad, c.fecha_compra, c.direccion_envio, c.estado
+    SELECT 
+      c.compra_id,
+      COALESCE(p.nombre, pc.nombre) AS producto_nombre, -- Muestra el nombre del producto normal o personalizado
+      c.cantidad,
+      c.fecha_compra,
+      c.direccion_envio,
+      c.estado
     FROM Compras c
-    JOIN Productos p ON c.producto_id = p.producto_id
+    LEFT JOIN Productos p ON c.producto_id = p.producto_id
+    LEFT JOIN ProductCostum pc ON c.CostumProduct_id = pc.CostumProduct_id
     WHERE c.orden_id = ?
   `;
 
@@ -629,6 +639,49 @@ app.get('/colaborador/ordenes/compras/:orden_id', authMiddleware, (req, res) => 
 
 app.get('/colaborador/compras/:ordenId', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/compras/compras.html'));
+});
+
+
+
+app.get('/colaborador/compras/descargar-anexos/:CostumProduct_id', authMiddleware, (req, res) => {
+  const CostumProductId = req.params.CostumProduct_id;
+
+  // Ruta de la carpeta de CustomProducts
+  const folderPath = path.join(__dirname, `public/CustomProducts/${CostumProductId}`);
+
+  // Verificar que la carpeta existe
+  if (!fs.existsSync(folderPath)) {
+    return res.status(404).json({ error: 'Archivos no encontrados.' });
+  }
+
+  // Crear un archivo ZIP
+  const zipFileName = `CustomProduct_${CostumProductId}_Anexos.zip`;
+  const output = fs.createWriteStream(zipFileName);
+  const archive = archiver('zip', {
+    zlib: { level: 9 }, // Mayor compresión
+  });
+
+  // Manejar errores de archivo
+  archive.on('error', (err) => {
+    console.error('Error al crear el archivo ZIP:', err);
+    res.status(500).json({ error: 'Error al crear el archivo ZIP.' });
+  });
+
+  // Enviar el archivo al cliente
+  output.on('close', () => {
+    res.download(zipFileName, () => {
+      // Eliminar el archivo ZIP después de enviarlo
+      fs.unlinkSync(zipFileName);
+    });
+  });
+
+  archive.pipe(output);
+
+  // Agregar todos los archivos de la carpeta al archivo ZIP
+  archive.directory(folderPath, false);
+
+  // Finalizar el proceso de compresión
+  archive.finalize();
 });
 
 //####################################### crear compra #####################################ds
@@ -832,38 +885,62 @@ app.post('/colaborador/ordenes/verificar-correo', authMiddleware, (req, res) => 
   });
 });
 
-
 //####################################### Modificar estado #####################################
 
 // Endpoint para obtener los datos de una compra específica
 app.get('/colaborador/compras/data/:compra_id', authMiddleware, (req, res) => {
   const compraId = req.params.compra_id;
 
-  const query = `
+  // Intentamos obtener la compra asociada a un producto normal primero
+  const queryNormal = `
     SELECT Compras.compra_id, Productos.nombre AS producto_nombre, Compras.estado, Compras.FechaEstimada
     FROM Compras
     JOIN Productos ON Compras.producto_id = Productos.producto_id
     WHERE Compras.compra_id = ?
   `;
 
-  db.query(query, [compraId], (err, results) => {
+  db.query(queryNormal, [compraId], (err, results) => {
     if (err) {
-      console.error('Error al obtener compra:', err);
+      console.error('Error al obtener compra normal:', err);
       return res.status(500).json({ success: false, error: 'Error al obtener la compra' });
     }
 
-    if (results.length === 0) {
-      return res.status(404).json({ success: false, error: 'Compra no encontrada' });
+    if (results.length > 0) {
+      // Si encontramos una compra normal, devolvemos los datos
+      return res.json({ success: true, compra: results[0] });
     }
 
-    res.json({ success: true, compra: results[0] });
+    // Si no es una compra normal, intentamos obtener una compra costumizada
+    const queryCostum = `
+      SELECT Compras.compra_id, ProductCostum.nombre AS producto_nombre, Compras.estado, Compras.FechaEstimada
+      FROM Compras
+      JOIN ProductCostum ON Compras.CostumProduct_id = ProductCostum.CostumProduct_id
+      WHERE Compras.compra_id = ?
+    `;
+
+    db.query(queryCostum, [compraId], (err, results) => {
+      if (err) {
+        console.error('Error al obtener compra costumizada:', err);
+        return res.status(500).json({ success: false, error: 'Error al obtener la compra costumizada' });
+      }
+
+      if (results.length === 0) {
+        // Si no se encuentra ninguna compra, devolvemos un error 404
+        return res.status(404).json({ success: false, error: 'Compra no encontrada' });
+      }
+
+      // Si encontramos una compra costumizada, devolvemos los datos
+      res.json({ success: true, compra: results[0] });
+    });
   });
 });
 
+// Endpoint para mostrar la página de modificar estado
 app.get('/colaborador/compras/modificar-estado/:compra_id', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/compras/modificar_estado.html'));
 });
 
+// Endpoint para actualizar el estado o la fecha estimada
 app.post('/colaborador/compras/modificar-estado/:compra_id', authMiddleware, (req, res) => {
   const compraId = req.params.compra_id;
   const { estado, FechaEstimada } = req.body;
@@ -905,6 +982,190 @@ app.post('/colaborador/compras/modificar-estado/:compra_id', authMiddleware, (re
 
 
 
+// ########################################## PRODUCTOS CUSTOMIZADOS
+app.get('/colaborador/costumProductCrear', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src/colaborador/CostumProyects/crearCosProd.html'));
+});
+
+
+
+
+// ########################################## PRODUCTOS CUSTOMIZADOS
+app.post(
+  '/colaborador/productos/costumizado/crear',
+  upload.fields([
+    { name: 'imagen_principal', maxCount: 1 }, // Imagen principal obligatoria
+    { name: 'archivos_anexos', maxCount: 5 }   // Hasta 5 archivos anexos opcionales
+  ]),
+  async (req, res) => {
+    const { nombre, precio, material, dimensiones, acabado, cantidad, fecha_estimada } = req.body; // Campo debe coincidir con el frontend
+
+    console.log("Request Body:", req.body); // Log del body del request
+
+    // Validar campos requeridos
+    if (!nombre || !precio || !material || !dimensiones || !acabado || !cantidad || !fecha_estimada) {
+      console.error("Validation Error: Missing required fields");
+      return res.status(400).json({ success: false, error: 'Todos los campos son obligatorios.' });
+    }
+
+    if (!req.files || !req.files['imagen_principal']) {
+      console.error("Validation Error: Missing required image");
+      return res.status(400).json({ success: false, error: 'La imagen principal es obligatoria.' });
+    }
+
+    try {
+      const queryProductCostum = 'INSERT INTO ProductCostum (nombre, precio, material, dimensiones, acabado, cantidad) VALUES (?, ?, ?, ?, ?, ?)';
+      const productValues = [nombre, precio, material, dimensiones, acabado, cantidad];
+
+      db.query(queryProductCostum, productValues, async (err, results) => {
+        if (err) {
+          console.error('Error al crear producto customizado:', err.message);
+          return res.status(500).json({ success: false, error: 'Error al crear producto customizado.' });
+        }
+
+        const costumProductId = results.insertId;
+        console.log("Producto Customizado Creado, ID:", costumProductId);
+
+        const productPath = `CustomProducts/${costumProductId}/`;
+
+        // Manejo de la imagen principal
+        const imagenPrincipal = req.files['imagen_principal'][0];
+        const imagenPath = `${productPath}principal.webp`;
+        const imagenParams = {
+          Bucket: 'products',
+          Key: imagenPath,
+          Body: imagenPrincipal.buffer,
+          ContentType: imagenPrincipal.mimetype
+        };
+
+        try {
+          await s3.send(new PutObjectCommand(imagenParams));
+          console.log(`Imagen principal subida correctamente: ${imagenPath}`);
+        } catch (uploadError) {
+          console.error('Error subiendo la imagen principal:', uploadError.message);
+          return res.status(500).json({ success: false, error: 'Error al subir la imagen principal.' });
+        }
+
+        if (req.files['archivos_anexos']) {
+          for (const [index, file] of req.files['archivos_anexos'].entries()) {
+            const anexoPath = `${productPath}anexo_${index + 1}.${file.originalname.split('.').pop()}`;
+            const anexoParams = {
+              Bucket: 'products',
+              Key: anexoPath,
+              Body: file.buffer,
+              ContentType: file.mimetype
+            };
+
+            try {
+              await s3.send(new PutObjectCommand(anexoParams));
+              console.log(`Archivo anexo subido correctamente: ${anexoPath}`);
+            } catch (uploadError) {
+              console.error(`Error subiendo archivo anexo ${index + 1}:`, uploadError.message);
+              return res.status(500).json({ success: false, error: `Error al subir archivo anexo ${index + 1}` });
+            }
+          }
+        }
+
+        crearOrdenCostum(costumProductId, fecha_estimada); // Usar fecha_estimada correctamente
+      });
+
+      function crearOrdenCostum(costumProductId, fecha_estimada) {
+        const { direccion, correo, nombre, telefono, referencia } = req.session.ordenTemporal;
+
+        console.log("Datos de la sesión:", req.session.ordenTemporal);
+
+        db.query('SELECT usuario_id FROM Usuarios WHERE correo = ?', [correo], (err, results) => {
+          if (err) {
+            console.error('Error al verificar cliente:', err);
+            return res.status(500).json({ success: false, error: 'Error interno del servidor.' });
+          }
+
+          const usuarioId = results.length > 0 ? results[0].usuario_id : null;
+          console.log("Usuario ID:", usuarioId);
+
+          if (!usuarioId) {
+            db.query('INSERT INTO Usuarios (nombre, correo, telefono, password) VALUES (?, ?, ?, ?)',
+              [nombre, correo, telefono, ''],
+              (err, result) => {
+                if (err) {
+                  console.error('Error al crear cliente:', err);
+                  return res.status(500).json({ success: false, error: 'Error al registrar el cliente.' });
+                }
+                procesarOrden(result.insertId, costumProductId, fecha_estimada);
+              }
+            );
+          } else {
+            procesarOrden(usuarioId, costumProductId, fecha_estimada);
+          }
+        });
+      }
+      
+      function procesarOrden(usuarioId, costumProductId, fecha_estimada) {
+        const queryUltimoNumero = 'SELECT numero_orden FROM ordenes ORDER BY orden_id DESC LIMIT 1';
+      
+        db.query(queryUltimoNumero, (err, result) => {
+          if (err) {
+            console.error('Error al obtener el último número de orden:', err);
+            return res.status(500).json({ success: false, error: 'Error interno del servidor.' });
+          }
+      
+          const ultimoNumero = result.length > 0 ? result[0].numero_orden : 'ORD-0000';
+          const nuevoNumeroOrden = generarNumeroOrden(ultimoNumero);
+      
+          console.log("Nuevo Número de Orden:", nuevoNumeroOrden);
+      
+          const referencia = req.session.ordenTemporal?.referencia || 'Sin referencia';
+      
+          const queryOrden = 'INSERT INTO ordenes (numero_orden, usuario_id, referencia, fecha_orden) VALUES (?, ?, ?, NOW())';
+      
+          db.query(queryOrden, [nuevoNumeroOrden, usuarioId, referencia], (err, result) => {
+            if (err) {
+              console.error('Error al crear orden:', err);
+              return res.status(500).json({ success: false, error: 'Error al crear la orden.' });
+            }
+      
+            const ordenId = result.insertId;
+            console.log("Orden Creada, ID:", ordenId);
+      
+            // Formatear dirección
+            const direccion = req.session.ordenTemporal?.direccion || {};
+            const direccionCompleta = `${direccion.calle}, ${direccion.ciudad}, ${direccion.estado}, ${direccion.codigoPostal}`;
+      
+            const queryCompraCostum = `
+              INSERT INTO Compras (CostumProduct_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad, orden_id, FechaEstimada) 
+              VALUES (?, ?, NOW(), ?, ?, ?, ?, ?)
+            `;
+      
+            const compraValues = [costumProductId, usuarioId, 0, direccionCompleta, cantidad, ordenId, fecha_estimada];
+            console.log("Valores de CompraCostum:", compraValues);
+      
+            db.query(queryCompraCostum, compraValues, (err) => {
+              if (err) {
+                console.error('Error al registrar la compra del producto costumizado:', err.message);
+                return res.status(500).json({ success: false, error: 'Error al registrar la compra.' });
+              }
+      
+              console.log("CompraCostum registrada con éxito");
+              req.session.ordenTemporal = null;
+              res.json({ success: true, message: 'Producto costumizado creado y orden registrada exitosamente.', redirectUrl: '/colaborador/ordenes' });
+            });
+          });
+        });
+      }
+      
+
+
+      function generarNumeroOrden(ultimoNumero) {
+        const hex = ultimoNumero.split('-')[1];
+        const nuevoHex = (parseInt(hex, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
+        return `ORD-${nuevoHex}`;
+      }
+    } catch (err) {
+      console.error('Error general al procesar el producto costumizado:', err.message);
+      res.status(500).json({ success: false, error: 'Error general al procesar el producto costumizado.' });
+    }
+  }
+);
 
 
 
@@ -917,7 +1178,36 @@ app.post('/colaborador/compras/modificar-estado/:compra_id', authMiddleware, (re
 
 
 
-//########################################## SEGUIMIENTO ##################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 app.get('/seguimiento', async (req, res) => {
   const idCompra = req.query.id;
@@ -931,17 +1221,49 @@ app.get('/seguimiento', async (req, res) => {
 
     const compra = compraResults[0];
 
-    // Obtener el producto
-    const [productoResults] = await db.promise().query('SELECT * FROM Productos WHERE producto_id = ?', [compra.producto_id]);
-    if (productoResults.length === 0) {
+    let producto = {};
+    let detalles = { material: 'No disponible', dimensiones: 'No disponible', acabado: 'No disponible', color: 'No disponible' };
+    let path_imagen = '';
+
+    // Determinar si es un producto normal o costumizado
+    if (compra.producto_id) {
+      // Producto normal
+      const [productoResults] = await db.promise().query('SELECT * FROM Productos WHERE producto_id = ?', [compra.producto_id]);
+      if (productoResults.length === 0) {
+        return res.send('Producto no encontrado');
+      }
+      producto = productoResults[0];
+
+      // Obtener los detalles del producto normal
+      const [detallesResults] = await db.promise().query('SELECT material, dimensiones, acabado, color FROM Productos_detalles WHERE producto_id = ?', [compra.producto_id]);
+      if (detallesResults.length > 0) {
+        detalles = detallesResults[0];
+      }
+
+      // Generar el path de la imagen para productos normales
+      path_imagen = `${CFI}/Products/${compra.producto_id}/a.webp`;
+    } else if (compra.CostumProduct_id) {
+      // Producto costumizado
+      const [productoResults] = await db.promise().query('SELECT * FROM ProductCostum WHERE CostumProduct_id = ?', [compra.CostumProduct_id]);
+      if (productoResults.length === 0) {
+        return res.send('Producto costumizado no encontrado');
+      }
+      producto = productoResults[0];
+
+      // Obtener detalles del producto costumizado
+      detalles = {
+        material: producto.material || 'No disponible',
+        dimensiones: producto.dimensiones || 'No disponible',
+        acabado: producto.acabado || 'No disponible',
+        color: producto.color || 'No disponible',
+      };
+
+      // Generar el path de la imagen para productos costumizados
+      path_imagen = `${CFI}/CustomProducts/${compra.CostumProduct_id}/principal.webp`;
+    } else {
       return res.send('Producto no encontrado');
     }
 
-    const producto = productoResults[0];
-
-    // Obtener los detalles del producto desde la base de datos
-    const [detallesResults] = await db.promise().query('SELECT material, dimensiones, acabado, color FROM Productos_detalles WHERE producto_id = ?', [compra.producto_id]);
-    const detalles = detallesResults.length > 0 ? detallesResults[0] : { material: 'No disponible', dimensiones: 'No disponible', acabado: 'No disponible', color: 'No disponible' };
 
     // Dividir la dirección de envío
     const direccionParts = compra.direccion_envio.split(', ');
@@ -959,33 +1281,28 @@ app.get('/seguimiento', async (req, res) => {
       estado: compra.estado,
       producto: {
         ...producto,
-        path_imagen: `${CFI}/Products/${compra.producto_id}/a.webp`
+        path_imagen, // Aseguramos que el path_imagen correcto es pasado al frontend
       },
-      info: {
-        material: detalles.material,
-        dimensiones: detalles.dimensiones,
-        acabado: detalles.acabado,
-        color: detalles.color
-      },
+      info: detalles,
       direccion: {
         calle: direccionParts[0] || 'No especificado',
         ciudad: direccionParts[1] || 'No especificado',
         estado: direccionParts[2] || 'No especificado',
-        codigoPostal: direccionParts[3] || 'No especificado'
+        codigoPostal: direccionParts[3] || 'No especificado',
       },
-      fechaEstimada // Pasar FechaEstimada al frontend
+      fechaEstimada, // Pasar FechaEstimada al frontend
     });
   } catch (error) {
     console.error(`Error en la ruta /seguimiento: ${error.message}`);
     res.status(500).send('Error interno del servidor');
   }
 });
+  
 
 
 
 
-
-//########################################## COMPRAS 987 ##################################################
+//########################################## COMPRAS ##########################################
 app.get('/compras', (req, res) => {
   const userId = req.session.userId;
 
@@ -1020,11 +1337,15 @@ app.get('/compras', (req, res) => {
         Productos.precio AS producto_precio, 
         Productos.categoria AS producto_categoria, 
         Productos.codigo AS producto_codigo,
-        Productos.producto_id AS producto_id,
         Productos_detalles.material AS producto_material,
         Productos_detalles.dimensiones AS producto_dimensiones,
         Productos_detalles.acabado AS producto_acabado,
-        Productos_detalles.color AS producto_color
+        Productos_detalles.color AS producto_color,
+        ProductCostum.nombre AS costum_nombre,
+        ProductCostum.precio AS costum_precio,
+        ProductCostum.material AS costum_material,
+        ProductCostum.dimensiones AS costum_dimensiones,
+        ProductCostum.acabado AS costum_acabado
       FROM 
         Compras 
       LEFT JOIN 
@@ -1035,6 +1356,10 @@ app.get('/compras', (req, res) => {
         Productos_detalles
       ON
         Compras.producto_id = Productos_detalles.producto_id
+      LEFT JOIN
+        ProductCostum
+      ON
+        Compras.CostumProduct_id = ProductCostum.CostumProduct_id
       WHERE 
         Compras.orden_id IN (?);
     `;
@@ -1057,9 +1382,11 @@ app.get('/compras', (req, res) => {
       // Paso 3: Procesar las compras y renderizar
       const comprasConInfo = compras.map(compra => {
         const direccionParts = compra.direccion_envio.split(', ');
-        return {
-          ...compra,
-          producto: {
+
+        let producto = {};
+        if (compra.producto_id) {
+          // Producto normal
+          producto = {
             nombre: compra.producto_nombre,
             precio: compra.producto_precio,
             categoria: compra.producto_categoria,
@@ -1068,8 +1395,26 @@ app.get('/compras', (req, res) => {
             material: compra.producto_material || 'No disponible',
             dimensiones: compra.producto_dimensiones || 'No disponible',
             acabado: compra.producto_acabado || 'No disponible',
-            color: compra.producto_color || 'No disponible',
-          },
+            color: compra.producto_color || 'No disponible'
+          };
+        } else if (compra.CostumProduct_id) {
+          // Producto costumizado
+          producto = {
+            nombre: compra.costum_nombre,
+            precio: compra.costum_precio,
+            categoria: 'Costumizado',
+            codigo: `COSTUM-${compra.CostumProduct_id}`,
+            path_imagen: `${CFI}/CustomProducts/${compra.CostumProduct_id}/principal.webp`,
+            material: compra.costum_material || 'No disponible',
+            dimensiones: compra.costum_dimensiones || 'No disponible',
+            acabado: compra.costum_acabado || 'No disponible',
+            color: 'No disponible'
+          };
+        }
+
+        return {
+          ...compra,
+          producto,
           direccion: {
             calle: direccionParts[0] || 'N/A',
             ciudad: direccionParts[1] || 'N/A',
@@ -1090,7 +1435,6 @@ app.get('/compras', (req, res) => {
 });
 
 
-//########################################## BUSQUEDA COMPRAS ##################################################
 app.get('/comprasbuscar', (req, res) => {
   const userId = req.session.userId;
 
@@ -1120,12 +1464,15 @@ app.get('/comprasbuscar', (req, res) => {
     LEFT JOIN 
       Productos
       ON Compras.producto_id = Productos.producto_id
+    LEFT JOIN
+      ProductCostum
+      ON Compras.CostumProduct_id = ProductCostum.CostumProduct_id
     WHERE 
       ordenes.usuario_id = ? AND
-      (ordenes.referencia LIKE ? OR Productos.nombre LIKE ?)
+      (ordenes.referencia LIKE ? OR Productos.nombre LIKE ? OR ProductCostum.nombre LIKE ?)
   `;
 
-  const valuesordenes = [userId, `%${searchQuery}%`, `%${searchQuery}%`];
+  const valuesordenes = [userId, `%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`];
 
   db.query(queryordenes, valuesordenes, (error, ordenes) => {
     if (error) {
@@ -1142,24 +1489,38 @@ app.get('/comprasbuscar', (req, res) => {
     // Consulta solo las compras que coinciden con el término buscado
     const queryCompras = `
       SELECT 
-        Compras.*, 
-        Productos.nombre AS producto_nombre, 
-        Productos.precio AS producto_precio, 
-        Productos.categoria AS producto_categoria, 
-        Productos.codigo AS producto_codigo,
-        Productos.producto_id AS producto_id 
+        Compras.*,
+        COALESCE(Productos.nombre, ProductCostum.nombre) AS producto_nombre,
+        COALESCE(Productos.precio, ProductCostum.precio) AS producto_precio,
+        COALESCE(Productos.categoria, 'Costumizado') AS producto_categoria,
+        COALESCE(Productos.codigo, 'N/A') AS producto_codigo,
+        Productos.producto_id,
+        ProductCostum.CostumProduct_id,
+        COALESCE(Productos_detalles.material, ProductCostum.material) AS producto_material,
+        COALESCE(Productos_detalles.dimensiones, ProductCostum.dimensiones) AS producto_dimensiones,
+        COALESCE(Productos_detalles.acabado, ProductCostum.acabado) AS producto_acabado,
+        COALESCE(Productos_detalles.color, ProductCostum.color) AS producto_color
       FROM 
-        Compras 
+        Compras
       LEFT JOIN 
         Productos 
       ON 
-        Compras.producto_id = Productos.producto_id 
+        Compras.producto_id = Productos.producto_id
+      LEFT JOIN
+        Productos_detalles
+      ON
+        Productos.producto_id = Productos_detalles.producto_id
+      LEFT JOIN
+        ProductCostum
+      ON
+        Compras.CostumProduct_id = ProductCostum.CostumProduct_id
       WHERE 
         Compras.orden_id IN (?) AND
-        (Productos.nombre LIKE ?)
+        (Productos.nombre LIKE ? OR ProductCostum.nombre LIKE ?)
     `;
+  
 
-    const valuesCompras = [ordenIds, `%${searchQuery}%`];
+    const valuesCompras = [ordenIds, `%${searchQuery}%`, `%${searchQuery}%`];
 
     db.query(queryCompras, valuesCompras, (error, compras) => {
       if (error) {
@@ -1167,70 +1528,44 @@ app.get('/comprasbuscar', (req, res) => {
         return res.status(500).send('Error interno del servidor');
       }
 
-      const comprasConInfo = [];
-      let pendientes = compras.length;
+      const comprasConInfo = compras.map((compra) => {
+        const direccionParts = compra.direccion_envio.split(', ');
+        const isCostumProduct = compra.CostumProduct_id !== null;
 
-      if (compras.length === 0) {
-        return res.render('compras', {
-          ordenes: ordenes, // Ordenes sin duplicados
-          compras: [],
-          mensaje: 'No se encontraron compras asociadas a las órdenes.',
-          searchQuery
-        });
-      }
+        return {
+          ...compra,
+          producto: {
+            nombre: compra.producto_nombre,
+            precio: compra.producto_precio,
+            categoria: compra.producto_categoria,
+            codigo: compra.producto_codigo,
+            path_imagen: isCostumProduct
+              ? `${CFI}/CustomProducts/${compra.CostumProduct_id}/principal.webp`
+              : `${CFI}/Products/${compra.producto_id}/a.webp`,
+            material: compra.producto_material || 'No disponible',
+            dimensiones: compra.producto_dimensiones || 'No disponible',
+            acabado: compra.producto_acabado || 'No disponible',
+            color: compra.producto_color || 'No disponible',
+          },
+          direccion: {
+            calle: direccionParts[0] || 'N/A',
+            ciudad: direccionParts[1] || 'N/A',
+            estado: direccionParts[2] || 'N/A',
+            codigoPostal: direccionParts[3] || 'N/A',
+          },
+        };
+      });
 
-      compras.forEach((compra) => {
-        const productInfoPath = `${CFI}/Products/${compra.producto_id}/info.txt`;
-
-
-        fs.readFile(productInfoPath, 'utf8', (err, data) => {
-          let info = {};
-          if (!err && data) {
-            const infoLines = data.split('\n');
-            infoLines.forEach((line) => {
-              const [key, value] = line.split(': ');
-              if (key && value) {
-                info[key.trim()] = value.trim();
-              }
-            });
-          }
-
-          const productoId = compra.producto_id || 'default';
-
-          const direccionParts = compra.direccion_envio.split(', ');
-          comprasConInfo.push({
-            ...compra,
-            producto: {
-              nombre: compra.producto_nombre,
-              precio: compra.producto_precio,
-              categoria: compra.producto_categoria,
-              codigo: compra.producto_codigo,
-              path_imagen: `${CFI}/Products/${productoId}/a.webp`,
-
-            },
-            info,
-            direccion: {
-              calle: direccionParts[0] || 'N/A',
-              ciudad: direccionParts[1] || 'N/A',
-              estado: direccionParts[2] || 'N/A',
-              codigoPostal: direccionParts[3] || 'N/A',
-            },
-          });
-
-          pendientes--;
-          if (pendientes === 0) {
-            res.render('compras', {
-              ordenes: ordenes, // Sin duplicados
-              compras: comprasConInfo,
-              mensaje: null,
-              searchQuery,
-            });
-          }
-        });
+      res.render('compras', {
+        ordenes,
+        compras: comprasConInfo,
+        mensaje: null,
+        searchQuery,
       });
     });
   });
 });
+
 
 
 

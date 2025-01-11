@@ -9,6 +9,16 @@
 <body>
     <div class="container">
         <h1>Productos disponibles</h1>
+        <div class="controls">
+            <input type="text" id="busqueda" placeholder="Buscar productos...">
+            <label for="productos-por-pagina">Productos por página:</label>
+            <select id="productos-por-pagina">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+            </select>
+        </div>
         <table id="productos-table">
             <thead>
                 <tr>
@@ -25,6 +35,12 @@
                 <!-- Los productos se cargarán aquí -->
             </tbody>
         </table>
+        <div class="pagination">
+            <button id="prev-page">Anterior</button>
+            <span id="pagina-actual">1</span> / <span id="total-paginas">1</span>
+            <button id="next-page">Siguiente</button>
+        </div>
+        <button class ="btn-rojo-chukum" id="producto-costumizado">Producto Costumizado</button>
         <button id="finalizar-orden">Crear Orden</button>
     </div>
     <script src="/colaborador/compras/productos.js"></script>
