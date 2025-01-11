@@ -73,3 +73,18 @@ button:hover {
 .btn-rojo-chukum:hover {
   background: #B5483E; /* Más oscuro en hover */
 }
+
+
+.btn-azul-chukum {
+  background-color: #007BFF;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.btn-azul-chukum:hover {
+  background-color: #0056b3;
+}

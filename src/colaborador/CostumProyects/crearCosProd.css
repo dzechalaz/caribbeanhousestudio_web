@@ -8,12 +8,12 @@ body {
     height: 100vh;
     margin: 0;
     padding: 0;
-    margin-top: 270px;
+    
 }
 
 /* Container */
 .container {
-    max-width: 400px;
+    max-width: 500px; /* Más ancho para los anexos */
     width: 100%;
     background-color: #FFF8F0;
     padding: 40px;
@@ -25,22 +25,23 @@ body {
 /* Title styles */
 h1 {
     color: #5B4536;
-    font-size: 1.8em;
+    font-size: 2em;
     margin-bottom: 20px;
 }
 
 /* Form group styles */
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px; /* Más espacio entre grupos */
     text-align: left;
 }
 
 label {
     color: #5B4536; /* Texto principal */
     font-weight: bold;
+    font-size: 1.1em;
 }
 
-input, select {
+input, textarea {
     width: 100%;
     padding: 10px;
     margin-top: 5px;
@@ -55,6 +56,24 @@ input::placeholder {
     color: #E5D4C5; /* Placeholder suave */
 }
 
+/* Styles for file inputs */
+input[type="file"] {
+    padding: 5px;
+    font-size: 0.9em;
+    border: none;
+    border-bottom: 1px solid #D99058; /* Naranja Chukum */
+    background-color: #FFF8F0;
+    color: #5B4536;
+}
+
+small {
+    display: block;
+    color: #B86D36;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+/* Button styles */
 button {
     width: 100%;
     padding: 10px;
@@ -86,4 +105,42 @@ button {
 
 .btn-secondary:hover {
     background-color: #B86D36; /* Hover oscuro */
+}
+
+/* Additional styles for file upload sections */
+input[type="file"]:hover {
+    border-color: #B86D36; /* Hover border para inputs de archivo */
+}
+
+textarea {
+    resize: none; /* Deshabilitar redimensionamiento */
+}
+
+
+.btn-rojo-chukum {
+    background: #D65C4F; /* Rojo chukum */
+    color: #FFF8F0;
+    
+   
+  }
+  
+  .btn-rojo-chukum:hover {
+    background: #B5483E; /* Más oscuro en hover */
+  }
+  
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+        max-width: 90%;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    button {
+        font-size: 0.9em;
+    }
 }
