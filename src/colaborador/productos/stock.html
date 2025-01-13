@@ -22,6 +22,7 @@
           <th>Nombre</th>
           <th>Precio</th>
           <th>Categoría</th>
+          <th>Color</th>
           <th>Stock</th>
           <th>Destacado</th> <!-- Nueva columna para los checkboxes -->
         </tr>
@@ -38,6 +39,23 @@
       <button id="eliminar-producto">Eliminar Producto</button>
       <button id="guardar-cambios" style="display: none;">Guardar Cambios</button>
       <button id="volver-menu" class="btn-rojo-chukum">Volver al Menú</button>
+    </div>
+
+    <!-- Modal para mostrar colores alternos -->
+    <div id="modal-colores" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; padding:20px; border:1px solid #ccc; z-index:1000;">
+      <h2>Colores Alternos</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Color</th>
+            <th>Stock</th>
+          </tr>
+        </thead>
+        <tbody id="colores-body">
+          <!-- Aquí se insertarán los colores alternos dinámicamente -->
+        </tbody>
+      </table>
+      <button onclick="cerrarModal()">Cerrar</button>
     </div>
   </div>
 

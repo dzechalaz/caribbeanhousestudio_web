@@ -143,20 +143,73 @@ app.get('/colaborador/productos/stock', authMiddleware, (req, res) => {
 });
 
 // Ruta para obtener los productos y enviar los datos al frontend
+
 app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
-  const query = 'SELECT * FROM Productos'; // Consulta a la base de datos para obtener todos los productos
+  const query = `
+      SELECT 
+          p.producto_id,
+          p.codigo, 
+          p.nombre, 
+          p.precio, 
+          p.categoria, 
+          pd.color AS color_principal, 
+          p.stock AS stock_total, 
+          c.color AS color_alterno, 
+          c.stock AS stock_alterno, 
+          p.destacado 
+      FROM Productos p
+      LEFT JOIN Productos_detalles pd ON p.producto_id = pd.producto_id
+      LEFT JOIN ColoresAlternos c ON p.producto_id = c.producto_id
+      ORDER BY p.codigo, c.color
+  `;
 
   db.query(query, (err, results) => {
-    if (err) {
-      console.error('Error fetching products:', err);
-      return res.status(500).json({ error: 'Error fetching products' });
-    }
+      if (err) {
+          console.error('Error fetching products:', err);
+          return res.status(500).json({ error: 'Error fetching products' });
+      }
 
-    res.json({ productos: results }); // Enviar los productos como respuesta JSON
+      // Transformar los datos para incluir tanto el color principal como los alternos
+      const productos = [];
+      const productosMap = {};
+
+      results.forEach(row => {
+          if (!productosMap[row.codigo]) {
+              // Agregar el producto principal si aún no está en el mapa
+              productosMap[row.codigo] = true;
+              productos.push({
+                  codigo: row.codigo,
+                  nombre: row.nombre,
+                  precio: row.precio,
+                  categoria: row.categoria || 'Sin categoría',
+                  color: row.color_principal || 'Sin color',
+                  stock: row.stock_total || 0,
+                  destacado: row.destacado
+              });
+          }
+
+          if (row.color_alterno) {
+              // Agregar los colores alternos como nuevas filas
+              productos.push({
+                  codigo: row.codigo,
+                  nombre: row.nombre,
+                  precio: row.precio,
+                  categoria: row.categoria || 'Sin categoría',
+                  color: row.color_alterno,
+                  stock: row.stock_alterno || 0,
+                  destacado: row.destacado
+              });
+          }
+      });
+
+      res.json({ productos }); // Enviar los productos como respuesta JSON
   });
 });
 
-//########################################################### eliminar productos  ##################################################
+
+
+
+//########################################################### eliminar productos ##################################################
 const { DeleteObjectCommand, ListObjectsCommand } = require('@aws-sdk/client-s3');
 app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, async (req, res) => {
   const productoCodigo = req.params.codigo;
@@ -178,6 +231,15 @@ app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, async (req
     const deleteCompras = await db.promise().query('DELETE FROM Compras WHERE producto_id = ?', [productId]);
     console.log(`Eliminadas ${deleteCompras[0].affectedRows} filas de Compras`);
 
+    // Eliminar entradas relacionadas en la tabla ColoresAlternos
+    const [coloresAlternos] = await db.promise().query('SELECT color_id FROM ColoresAlternos WHERE producto_id = ?', [productId]);
+    const deleteColoresAlternos = await db.promise().query('DELETE FROM ColoresAlternos WHERE producto_id = ?', [productId]);
+    console.log(`Eliminadas ${deleteColoresAlternos[0].affectedRows} filas de ColoresAlternos`);
+
+    // Eliminar entrada relacionada en la tabla Productos_detalles
+    const deleteDetalles = await db.promise().query('DELETE FROM Productos_detalles WHERE producto_id = ?', [productId]);
+    console.log(`Eliminada la fila correspondiente en Productos_detalles`);
+
     // Eliminar el producto de la base de datos
     const deleteProducto = await db.promise().query('DELETE FROM Productos WHERE codigo = ?', [productoCodigo]);
     if (deleteProducto[0].affectedRows === 0) {
@@ -185,16 +247,33 @@ app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, async (req
     }
     console.log('Producto eliminado correctamente de la base de datos.');
 
-    // Eliminar los archivos relacionados del bucket en R2
-    const folderPath = `Products/${productId}/`;
+    // Eliminar archivos del bucket en Colors/{productId}/{colorId}/
+    for (const { color_id: colorId } of coloresAlternos) {
+      const colorFolderPath = `Colors/${productId}/${colorId}/`;
+      const listColorParams = {
+        Bucket: 'products',
+        Prefix: colorFolderPath,
+      };
+      const listedColorObjects = await s3.send(new ListObjectsCommand(listColorParams));
+      if (listedColorObjects.Contents && listedColorObjects.Contents.length > 0) {
+        for (const object of listedColorObjects.Contents) {
+          const deleteParams = {
+            Bucket: 'products',
+            Key: object.Key,
+          };
+          await s3.send(new DeleteObjectCommand(deleteParams));
+          console.log(`Eliminado del bucket: ${object.Key}`);
+        }
+      }
+    }
 
+    // Eliminar archivos del bucket en Products/{productId}/
+    const folderPath = `Products/${productId}/`;
     const listParams = {
       Bucket: 'products',
       Prefix: folderPath,
     };
-
     const listedObjects = await s3.send(new ListObjectsCommand(listParams));
-
     if (listedObjects.Contents && listedObjects.Contents.length > 0) {
       for (const object of listedObjects.Contents) {
         const deleteParams = {
@@ -206,12 +285,13 @@ app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, async (req
       }
     }
 
-    res.json({ success: true, message: 'Producto y todas sus referencias eliminados correctamente' });
+    res.json({ success: true, message: 'Producto, colores alternos y todas sus referencias eliminados correctamente' });
   } catch (error) {
     console.error('Error al eliminar el producto:', error.message);
     res.status(500).json({ success: false, error: 'Error interno al eliminar el producto' });
   }
 });
+
 
 
 
@@ -275,91 +355,157 @@ app.post('/colaborador/productos/actualizar-destacado', authMiddleware, (req, re
 
 
 
-//################################# CREAR PRODUCTOS ##################################################
+//########################################## CREAR PRODUCTOS ######################################
+// Middleware Multer configurado para manejar colores alternos dinámicamente
 app.post('/colaborador/productos/crear', upload.fields([
   { name: 'imagen_a', maxCount: 1 },
   { name: 'imagen_b', maxCount: 1 },
   { name: 'imagen_c', maxCount: 1 },
-  { name: 'imagen_d', maxCount: 1 }
+  { name: 'imagen_d', maxCount: 1 },
+  // Campos dinámicos para colores alternos
+  { name: 'imagen_color_a[]', maxCount: 10 },
+  { name: 'imagen_color_b[]', maxCount: 10 },
+  { name: 'imagen_color_c[]', maxCount: 10 },
+  { name: 'imagen_color_d[]', maxCount: 10 },
 ]), async (req, res) => {
-  const { nombre, precio, categoria, codigo, stock, material, dimensiones, acabado, color, descripcion1, descripcion2 } = req.body;
+  const {
+    nombre,
+    precio,
+    categoria,
+    codigo,
+    stock,
+    material,
+    dimensiones,
+    acabado,
+    color,
+    color_hex,
+    descripcion1,
+    descripcion2,
+    habilitar_colores_alternos,
+    color_alterno = [],
+    hex_alterno = [],
+    stock_alterno = []
+  } = req.body;
 
-  if (!nombre || !precio || !categoria || !codigo || !stock || !material || !dimensiones || !acabado || !color || !descripcion1 || !descripcion2) {
-    return res.status(400).json({ success: false, error: 'Todos los campos son obligatorios' });
+  // Validación de campos principales
+  const errores = [];
+  if (!nombre) errores.push("Nombre");
+  if (!precio) errores.push("Precio");
+  if (!categoria) errores.push("Categoría");
+  if (!codigo) errores.push("Código");
+  if (!stock) errores.push("Stock");
+  if (!color) errores.push("Color principal");
+  if (!color_hex) errores.push("Hexadecimal principal");
+
+  if (errores.length > 0) {
+    return res.status(400).json({
+      success: false,
+      error: `Por favor, completa los siguientes campos: ${errores.join(", ")}`
+    });
   }
 
   try {
-    // Insertar en la tabla Productos
-    const query = 'INSERT INTO Productos (nombre, precio, categoria, codigo, stock) VALUES (?, ?, ?, ?, ?)';
-    const values = [nombre, precio, categoria, codigo, stock];
+    // Crear el producto principal
+    const productoQuery = `INSERT INTO Productos (nombre, precio, categoria, codigo, stock) VALUES (?, ?, ?, ?, ?)`;
+    const productoValues = [nombre, precio, categoria, codigo, stock];
 
-    db.query(query, values, async (err, results) => {
-      if (err) {
-        console.error('Error al crear producto:', err.message);
-        return res.status(500).json({ success: false, error: 'Error al crear producto' });
+    const [results] = await db.promise().query(productoQuery, productoValues);
+    const productId = results.insertId;
+
+    // Insertar detalles del producto con color_hex
+    const detallesQuery = `
+      INSERT INTO Productos_detalles (producto_id, material, dimensiones, acabado, color, color_hex, descripcion1, descripcion2)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const detallesValues = [
+      productId,
+      material || null,
+      dimensiones || null,
+      acabado || null,
+      color || null,
+      color_hex || null,
+      descripcion1 || null,
+      descripcion2 || null
+    ];
+    await db.promise().query(detallesQuery, detallesValues);
+
+    // Manejo de imágenes principales
+    const productPath = `Products/${productId}/`;
+    const imageNames = { imagen_a: 'a.webp', imagen_b: 'b.webp', imagen_c: 'c.webp', imagen_d: 'd.webp' };
+    for (const [fieldName, fileName] of Object.entries(imageNames)) {
+      const file = req.files[fieldName]?.[0] || null;
+      const imagePath = `${productPath}${fileName}`;
+      await subirImagen(file, imagePath);
+    }
+
+    // Manejo de colores alternos
+    try {
+      const alternoInsertPromises = [];
+      for (let i = 0; i < color_alterno.length; i++) {
+        const colorValue = color_alterno[i];
+        const hexValue = hex_alterno[i];
+        const stockValue = parseInt(stock_alterno[i], 10) || 0;
+
+        if (!colorValue || !hexValue) {
+          console.log(`Color alterno ${i} está incompleto. Ignorando...`);
+          continue;
+        }
+
+        // Insertar color alterno en la base de datos
+        const alternoQuery = `
+          INSERT INTO ColoresAlternos (producto_id, color, color_hex, stock)
+          VALUES (?, ?, ?, ?)
+        `;
+        const [altResults] = await db.promise().query(alternoQuery, [productId, colorValue, hexValue, stockValue]);
+        const colorId = altResults.insertId;
+
+        // Manejo de imágenes para el color alterno
+        const colorPath = `Colors/${productId}/${colorId}/`;
+        const alternoImageNames = {
+          [`imagen_color_a[]`]: 'a.webp',
+          [`imagen_color_b[]`]: 'b.webp',
+          [`imagen_color_c[]`]: 'c.webp',
+          [`imagen_color_d[]`]: 'd.webp',
+        };
+
+        for (const [fieldName, fileName] of Object.entries(alternoImageNames)) {
+          const file = req.files[fieldName]?.[i] || null;
+          const imagePath = `${colorPath}${fileName}`;
+          await subirImagen(file, imagePath);
+        }
       }
 
-      const productId = results.insertId;
-      const productPath = `Products/${productId}/`;
+      console.log("Colores alternos y sus imágenes procesados correctamente.");
+    } catch (altErr) {
+      console.warn("No se pudieron procesar los colores alternos:", altErr.message);
+    }
 
-      // Insertar los detalles del producto en la tabla Productos_detalles
-      const detailsQuery = `
-        INSERT INTO Productos_detalles (producto_id, material, dimensiones, acabado, color, descripcion1, descripcion2)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `;
-      const detailsValues = [productId, material, dimensiones, acabado, color, descripcion1, descripcion2];
-
-      db.query(detailsQuery, detailsValues, async (detailsErr) => {
-        if (detailsErr) {
-          console.error('Error al insertar detalles del producto:', detailsErr.message);
-          return res.status(500).json({ success: false, error: 'Error al insertar detalles del producto' });
-        }
-
-        // Manejo de imágenes
-        const imageNames = { imagen_a: 'a.webp', imagen_b: 'b.webp', imagen_c: 'c.webp', imagen_d: 'd.webp' };
-        const placeholderPath = path.join(__dirname, 'src', 'Templates', 'placeholder.webp');
-
-        for (const [fieldName, fileName] of Object.entries(imageNames)) {
-          const file = req.files[fieldName] ? req.files[fieldName][0] : null;
-          const imagePath = `${productPath}${fileName}`;
-
-          let params;
-          if (file) {
-            // Usar la imagen subida por el usuario
-            params = {
-              Bucket: 'products',
-              Key: imagePath,
-              Body: file.buffer,
-              ContentType: file.mimetype,
-            };
-          } else {
-            // Usar el placeholder si no se subió una imagen
-            const placeholderBuffer = fs.readFileSync(placeholderPath);
-            params = {
-              Bucket: 'products',
-              Key: imagePath,
-              Body: placeholderBuffer,
-              ContentType: 'image/webp',
-            };
-          }
-
-          try {
-            await s3.send(new PutObjectCommand(params));
-            console.log(`Imagen subida correctamente: ${imagePath}`);
-          } catch (uploadError) {
-            console.error(`Error subiendo imagen ${fileName}:`, uploadError.message);
-            return res.status(500).json({ success: false, error: `Error subiendo imagen ${fileName}` });
-          }
-        }
-
-        res.json({ success: true, redirectUrl: '/colaborador/productos/stock' });
-      });
-    });
+    res.json({ success: true, redirectUrl: '/colaborador/productos/stock' });
   } catch (err) {
-    console.error('Error general al procesar el producto:', err.message);
+    console.error('Error general:', err.message);
     res.status(500).json({ success: false, error: 'Error general al procesar el producto' });
   }
 });
+
+// Función para subir imágenes
+async function subirImagen(file, imagePath) {
+  const placeholderPath = path.join(__dirname, 'src', 'Templates', 'placeholder.webp');
+  const params = file
+    ? { Bucket: 'products', Key: imagePath, Body: file.buffer, ContentType: file.mimetype }
+    : { Bucket: 'products', Key: imagePath, Body: fs.readFileSync(placeholderPath), ContentType: 'image/webp' };
+
+  try {
+    await s3.send(new PutObjectCommand(params));
+    console.log(`Imagen subida correctamente: ${imagePath}`);
+  } catch (uploadError) {
+    console.error(`Error subiendo imagen: ${uploadError.message}`);
+  }
+}
+
+
+
+
+
 
 
 //################################# crear codigS ##################################################
@@ -1207,7 +1353,7 @@ app.post(
 
 
 
-
+//###################################### SEGUIMIENTO 
 
 app.get('/seguimiento', async (req, res) => {
   const idCompra = req.query.id;
@@ -1663,7 +1809,7 @@ app.get('/producto', async (req, res) => {
 
 
 app.get('/catalogo', (req, res) => {
-  const productosPorPagina = 12;
+  const productosPorPagina = 15;
   const paginaActual = parseInt(req.query.page) || 1;
   const offset = (paginaActual - 1) * productosPorPagina;
   const categoriaSeleccionada = req.query.categoria || 'Todos'; // Por defecto "Todos"
