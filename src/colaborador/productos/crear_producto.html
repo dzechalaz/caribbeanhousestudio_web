@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -27,14 +25,14 @@
       <div class="form-group">
         <label for="categoria">Categoría:</label>
         <select id="categoria" name="categoria" required>
-            <option value="Decoración">Decoración</option>
-            <option value="Salas">Salas</option>
-            <option value="Mesas">Mesas</option>
-            <option value="Sillas y bancos">Sillas y bancos</option>
-            <option value="Recámara">Recámara</option>
-            <option value="Exterior">Exterior</option>
-            <option value="Almacenaje">Almacenaje</option>
-            <option value="Varios">Varios</option>
+          <option value="Decoración">Decoración</option>
+          <option value="Salas">Salas</option>
+          <option value="Mesas">Mesas</option>
+          <option value="Sillas y bancos">Sillas y bancos</option>
+          <option value="Recámara">Recámara</option>
+          <option value="Exterior">Exterior</option>
+          <option value="Almacenaje">Almacenaje</option>
+          <option value="Varios">Varios</option>
         </select>
       </div>
 
@@ -66,8 +64,14 @@
       </div>
 
       <div class="form-group">
-        <label for="color">Color:</label>
+        <label for="color">Color Principal:</label>
         <input type="text" id="color" name="color" placeholder="Color del producto" required>
+      </div>
+
+      <div class="form-group">
+        <label for="hex">Hexadecimal Principal:</label>
+        <input type="color" id="hex" name="color_hex" style="width: 50px; height: 50px; cursor: pointer; background-color: #FFFFFF;" value="#FFFFFF">
+
       </div>
 
       <!-- Descripciones -->
@@ -81,7 +85,7 @@
         <textarea id="descripcion2" name="descripcion2" rows="4" placeholder="Segunda descripción" required></textarea>
       </div>
 
-      <!-- Subir imágenes -->
+      <!-- Subir imágenes principales -->
       <div class="form-group">
         <label for="imagen_a">Imagen A:</label>
         <input type="file" id="imagen_a" name="imagen_a" accept=".webp">
@@ -99,27 +103,80 @@
         <input type="file" id="imagen_d" name="imagen_d" accept=".webp">
       </div>
 
+      
+      <!-- Colores alternos -->
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="habilitar-colores-alternos"> ¿Agregar colores alternos?
+        </label>
+      </div>
+
+      <div id="colores-alternos-container" style="display: none;">
+        <table id="colores-alternos-table">
+          <thead>
+            <tr>
+              <th>Color</th>
+              <th>Hexadecimal</th>
+              <th>Stock</th>
+              <th>Imágenes</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <input type="text" name="color_alterno[]" placeholder="Nombre del color">
+              </td>
+              <td>
+                <input type="color" name="hex_alterno[]" class="hex-color" style="width: 50px; height: 50px; cursor: pointer; background-color: #FFFFFF;" value="#FFFFFF">
+              </td>
+              <td>
+                <input type="number" name="stock_alterno[]" placeholder="Stock">
+              </td>
+              <td>
+                <div class="imagenes-container">
+                  <div class="imagen-group">
+                    <label for="imagen_color_a[]">Imagen A:</label>
+                    <input type="file" name="imagen_color_a[]" accept=".webp">
+                  </div>
+                  <div class="imagen-group">
+                    <label for="imagen_color_b[]">Imagen B:</label>
+                    <input type="file" name="imagen_color_b[]" accept=".webp">
+                  </div>
+                  <div class="imagen-group">
+                    <label for="imagen_color_c[]">Imagen C:</label>
+                    <input type="file" name="imagen_color_c[]" accept=".webp">
+                  </div>
+                  <div class="imagen-group">
+                    <label for="imagen_color_d[]">Imagen D:</label>
+                    <input type="file" name="imagen_color_d[]" accept=".webp">
+                  </div>
+                </div>
+              </td>
+              <td>
+                <button type="button" class="eliminar-fila">-</button>
+              </td>
+            </tr>
+            
+            
+          </tbody>
+        </table>
+        <button type="button" id="agregar-color">+ Agregar Color</button>
+      </div>
+
+
       <button type="submit" class="btn-primary">Crear Producto</button>
     </form>
   </div>
 
   <script>
     document.getElementById('crear-producto-form').addEventListener('submit', function (event) {
-      event.preventDefault(); // Detener el envío predeterminado del formulario
+      event.preventDefault();
 
       const confirmacion = confirm('¿Estás seguro de que quieres crear este producto?');
 
       if (confirmacion) {
         const formData = new FormData(this);
-
-        // Validar que al menos una imagen haya sido seleccionada
-        const imagenInputs = ['imagen_a', 'imagen_b', 'imagen_c', 'imagen_d'];
-        const hasImages = imagenInputs.some(id => document.getElementById(id).files.length > 0);
-
-        if (!hasImages) {
-          alert('Debes subir al menos 1 imagen.');
-          return;
-        }
 
         fetch('/colaborador/productos/crear', {
           method: 'POST',
@@ -138,14 +195,13 @@
             console.error('Error al crear producto:', error);
             alert('Ocurrió un error al crear el producto. Intenta de nuevo.');
           });
-      } else {
-        alert('La creación del producto fue cancelada.');
       }
     });
+
     document.getElementById('generar-codigo').addEventListener('click', function () {
       const categoria = document.getElementById('categoria').value;
       const codigoInput = document.getElementById('codigo');
-      
+
       if (categoria) {
         fetch(`/colaborador/productos/generar-codigo?categoria=${categoria}`)
           .then(response => response.json())
@@ -157,6 +213,64 @@
         alert('Selecciona una categoría primero');
       }
     });
+
+    document.getElementById('habilitar-colores-alternos').addEventListener('change', function () {
+      const container = document.getElementById('colores-alternos-container');
+      container.style.display = this.checked ? 'block' : 'none';
+    });
+
+    document.getElementById('agregar-color').addEventListener('click', function () {
+      const tableBody = document.querySelector('#colores-alternos-table tbody');
+      const newRow = document.createElement('tr');
+
+      newRow.innerHTML = `
+        <td><input type="text" name="color_alterno[]" placeholder="Nombre del color"></td>
+        <td>
+          <input type="color" name="hex_alterno[]" class="hex-color" style="width: 50px; height: 50px; cursor: pointer; background-color: #FFFFFF;" value="#FFFFFF">
+        </td>
+        <td><input type="number" name="stock_alterno[]" placeholder="Stock"></td>
+        <td>
+          <label>Imagen A: <input type="file" name="imagen_color_a[]" ></label><br>
+          <label>Imagen B: <input type="file" name="imagen_color_b[]" ></label><br>
+          <label>Imagen C: <input type="file" name="imagen_color_c[]" ></label><br>
+          <label>Imagen D: <input type="file" name="imagen_color_d[]" ></label>
+        </td>
+        <td><button type="button" class="eliminar-fila">-</button></td>
+      `;
+
+      tableBody.appendChild(newRow);
+    });
+
+    document.querySelector('#colores-alternos-table').addEventListener('click', function (event) {
+      if (event.target.classList.contains('eliminar-fila')) {
+        event.target.closest('tr').remove();
+      }
+    });
+
+    document.addEventListener('input', function (event) {
+      if (event.target.classList.contains('hex-color')) {
+        event.target.style.backgroundColor = event.target.value;
+      }
+    });
+
+    document.getElementById('hex').addEventListener('input', function () {
+      this.style.backgroundColor = this.value;
+    });
+
+    document.getElementById('habilitar-colores-alternos').addEventListener('change', function () {
+    const container = document.querySelector('.container');
+    if (this.checked) {
+      container.style.maxWidth = '900px'; // Cambia el ancho máximo
+      document.body.style.marginTop = '500px';
+
+    } else {
+      container.style.maxWidth = '400px'; // Regresa al valor original
+      document.body.style.marginTop = '320px';
+
+    }
+  });
+
+
   </script>
 </body>
 </html>

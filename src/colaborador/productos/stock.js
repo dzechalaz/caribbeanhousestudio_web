@@ -2,6 +2,8 @@ $(document).ready(function () {
     let tablaProductos = $('productos-table').DataTable(); // Inicializa DataTables con el #
 
     // Función para cargar los productos desde el backend
+   
+    
     function cargarProductos() {
         fetch('/colaborador/productos/data')
             .then(response => response.json())
@@ -12,12 +14,12 @@ $(document).ready(function () {
                 data.productos.forEach(producto => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        
-                        <td>${producto.codigo}</td>
-                        <td>${producto.nombre}</td>
-                        <td>${producto.precio}</td>
-                        <td>${producto.categoria}</td>
-                        <td contenteditable="true" class="editable-stock" data-codigo="${producto.codigo}">${producto.stock}</td>
+                        <td>${producto.codigo || 'N/A'}</td>
+                        <td>${producto.nombre || 'Sin nombre'}</td>
+                        <td>${parseFloat(producto.precio).toFixed(2) || '0.00'}</td>
+                        <td>${producto.categoria || 'Sin categoría'}</td>
+                        <td>${producto.color || 'Sin color'}</td>
+                        <td>${producto.stock || 0}</td>
                         <td>
                             <input type="checkbox" class="destacado-checkbox" 
                                    data-id="${producto.codigo}" 
@@ -28,13 +30,11 @@ $(document).ready(function () {
                 });
 
                 // Reinicializar DataTables
-                tablaProductos.clear().destroy(); 
-                tablaProductos = $('#productos-table').DataTable(); // Reinicializar DataTables correctamente
+                tablaProductos.clear().destroy();
+                tablaProductos = $('#productos-table').DataTable();
             })
             .catch(error => console.error('Error al cargar productos:', error));
     }
-    
-    
     // Llamar a la función cargarProductos para obtener los datos al cargar la página
     cargarProductos();
 
