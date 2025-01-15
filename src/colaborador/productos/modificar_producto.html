@@ -63,8 +63,13 @@
       </div>
 
       <div class="form-group">
-        <label for="color">Color:</label>
-        <input type="text" id="color" name="color">
+        <label for="color">Color Principal:</label>
+        <input type="text" id="color" name="color" placeholder="Color del producto">
+      </div>
+
+      <div class="form-group">
+        <label for="hex">Hexadecimal Principal:</label>
+        <input type="color" id="hex" name="color_hex" style="width: 50px; height: 50px; cursor: pointer; background-color: #FFFFFF;" value="#FFFFFF">
       </div>
 
       <!-- Descripciones -->
@@ -78,7 +83,7 @@
         <textarea id="descripcion2" name="descripcion2" rows="4"></textarea>
       </div>
 
-      <!-- Subir nuevas imágenes individualmente -->
+      <!-- Subir nuevas imágenes -->
       <div class="form-group">
         <label for="imagenA">Imagen A:</label>
         <input type="file" id="imagenA" name="imagenA" accept=".webp">
@@ -96,14 +101,55 @@
         <input type="file" id="imagenD" name="imagenD" accept=".webp">
       </div>
 
+      <!-- Colores alternos -->
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="habilitar-colores-alternos"> ¿Agregar colores alternos?
+        </label>
+      </div>
+
+      <div id="colores-alternos-container" style="display: none;">
+        <table id="colores-alternos-table">
+          <thead>
+            <tr>
+              <th>Color</th>
+              <th>Hexadecimal</th>
+              <th>Stock</th>
+              <th>Imágenes</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              
+            </tr>
+          </tbody>
+        </table>
+        <button type="button" id="agregar-color">+ Agregar Color</button>
+      </div>
+
       <!-- Botones de Guardar Cambios y Cancelar -->
       <div class="form-actions">
-        <button type="submit" class="btn-primary">Guardar Cambios</button>
+        <button type="submit" class="btn-primary" id="guardar-producto">Guardar Cambios</button>
         <button type="button" class="btn-secondary" id="cancelar-btn">Cancelar</button>
       </div>
     </form>
   </div>
 
   <script src="modificar_producto.js"></script>
+  ><script>
+    document.getElementById('habilitar-colores-alternos').addEventListener('change', function () {
+      const container = document.querySelector('.container');
+      if (this.checked) {
+        container.style.maxWidth = '900px'; // Cambia el ancho máximo
+        document.body.style.marginTop = '500px';
+
+      } else {
+        container.style.maxWidth = '400px'; // Regresa al valor original
+        document.body.style.marginTop = '320px';
+
+      }
+    });
+    </script>
 </body>
 </html>
