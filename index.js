@@ -249,6 +249,7 @@ app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, async (req
     }
     console.log('Producto eliminado correctamente de la base de datos.');
 
+
     // Eliminar archivos del bucket en Colors/{productId}/{colorId}/
     for (const { color_id: colorId } of coloresAlternos) {
       const colorFolderPath = `Colors/${productId}/${colorId}/`;
@@ -555,18 +556,18 @@ app.get('/colaborador/productos/generar-codigo', (req, res) => {
   });
 });
 
-
-
-
-
-
 //################################# MODIFICAR PRODUCTOS ##################################################
-// Ruta para modificar un producto
+// Modificar productos, incluyendo colores alternos
 app.post('/colaborador/productos/modificar/:codigo', upload.fields([
   { name: 'imagenA', maxCount: 1 },
   { name: 'imagenB', maxCount: 1 },
   { name: 'imagenC', maxCount: 1 },
-  { name: 'imagenD', maxCount: 1 }
+  { name: 'imagenD', maxCount: 1 },
+  // Campos dinámicos para colores alternos
+  { name: 'imagen_color_a[]', maxCount: 10 },
+  { name: 'imagen_color_b[]', maxCount: 10 },
+  { name: 'imagen_color_c[]', maxCount: 10 },
+  { name: 'imagen_color_d[]', maxCount: 10 },
 ]), async (req, res) => {
   const {
     nombre,
@@ -577,9 +578,16 @@ app.post('/colaborador/productos/modificar/:codigo', upload.fields([
     dimensiones,
     acabado,
     color,
+    color_hex,
     descripcion1,
-    descripcion2
+    descripcion2,
+    color_id = [],
+    color_alterno = [],
+    hex_alterno = [],
+    stock_alterno = [],
+    eliminar_colores = []
   } = req.body;
+
   const codigoProducto = req.params.codigo;
 
   if (!nombre || !precio || !categoria || !stock) {
@@ -588,138 +596,201 @@ app.post('/colaborador/productos/modificar/:codigo', upload.fields([
 
   try {
     // Obtener el producto_id basado en el código del producto
-    db.query('SELECT producto_id FROM Productos WHERE codigo = ?', [codigoProducto], async (err, result) => {
-      if (err) {
-        console.error('Error al obtener el producto_id:', err);
-        return res.status(500).json({ success: false, error: 'Error al obtener el producto' });
+    const [productoResult] = await db.promise().query('SELECT producto_id FROM Productos WHERE codigo = ?', [codigoProducto]);
+    if (productoResult.length === 0) {
+      return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+    }
+
+    const productoId = productoResult[0].producto_id;
+
+    // Actualizar datos del producto principal
+    const updateProductoQuery = `
+      UPDATE Productos 
+      SET nombre = ?, precio = ?, categoria = ?, stock = ? 
+      WHERE codigo = ?
+    `;
+    await db.promise().query(updateProductoQuery, [nombre, precio, categoria, stock, codigoProducto]);
+
+    // Actualizar detalles del producto
+    const updateDetallesQuery = `
+      INSERT INTO Productos_detalles 
+      (producto_id, material, dimensiones, acabado, color, color_hex, descripcion1, descripcion2)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE 
+        material = VALUES(material),
+        dimensiones = VALUES(dimensiones),
+        acabado = VALUES(acabado),
+        color = VALUES(color),
+        color_hex = VALUES(color_hex),
+        descripcion1 = VALUES(descripcion1),
+        descripcion2 = VALUES(descripcion2)
+    `;
+    await db.promise().query(updateDetallesQuery, [productoId, material, dimensiones, acabado, color, color_hex, descripcion1, descripcion2]);
+
+    // Procesar colores alternos
+        
+    const procesados = new Set();
+    for (let i = 0; i < color_alterno.length; i++) {
+      const colorId = parseInt(color_id[i], 10) || null;
+      const colorValue = color_alterno[i]?.trim();
+      const hexValue = hex_alterno[i]?.trim();
+      const stockValue = parseInt(stock_alterno[i], 10) || 0;
+
+      // Ignorar colores alternos vacíos o duplicados
+      if (!colorValue || !hexValue || procesados.has(`${colorValue}-${hexValue}`)) {
+        continue;
       }
+      procesados.add(`${colorValue}-${hexValue}`);
 
-      if (result.length === 0) {
-        return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+      if (colorId) {
+        // Actualizar color alterno existente
+        await db.promise().query(
+          `UPDATE ColoresAlternos
+          SET color = ?, color_hex = ?, stock = ?
+          WHERE color_id = ? AND producto_id = ?`,
+          [colorValue, hexValue, stockValue, colorId, productoId]
+        );
+      } else {
+        // Insertar nuevo color alterno
+        const [result] = await db.promise().query(
+          `INSERT INTO ColoresAlternos (producto_id, color, color_hex, stock)
+          VALUES (?, ?, ?, ?)`,
+          [productoId, colorValue, hexValue, stockValue]
+        );
       }
+    }
 
-      const productoId = result[0].producto_id;
-      const productPath = `Products/${productoId}/`;
-
-      // Actualizar los datos básicos del producto en la tabla Productos
-      const updateQuery = 'UPDATE Productos SET nombre = ?, precio = ?, categoria = ?, stock = ? WHERE codigo = ?';
-      const values = [nombre, precio, categoria, stock, codigoProducto];
-
-      db.query(updateQuery, values, async (err) => {
-        if (err) {
-          console.error('Error al actualizar el producto:', err);
-          return res.status(500).json({ success: false, error: 'Error al actualizar el producto' });
+        // Eliminar colores alternos según IDs
+        if (eliminar_colores.length > 0) {
+          const deleteQuery = `
+            DELETE FROM ColoresAlternos 
+            WHERE color_id IN (?) AND producto_id = ?
+          `;
+          await db.promise().query(deleteQuery, [eliminar_colores, productoId]);
         }
 
-        // Actualizar los detalles en la tabla Productos_detalles
-        const detailsQuery = `
-          INSERT INTO Productos_detalles (producto_id, material, dimensiones, acabado, color, descripcion1, descripcion2)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-          ON DUPLICATE KEY UPDATE
-            material = VALUES(material),
-            dimensiones = VALUES(dimensiones),
-            acabado = VALUES(acabado),
-            color = VALUES(color),
-            descripcion1 = VALUES(descripcion1),
-            descripcion2 = VALUES(descripcion2)
-        `;
-
-        const detailsValues = [
-          productoId,
-          material,
-          dimensiones,
-          acabado,
-          color,
-          descripcion1,
-          descripcion2
-        ];
-
-        db.query(detailsQuery, detailsValues, async (detailsErr) => {
-          if (detailsErr) {
-            console.error('Error al actualizar los detalles del producto:', detailsErr);
-            return res.status(500).json({ success: false, error: 'Error al actualizar los detalles del producto' });
-          }
-
-          // Manejo de imágenes subidas
-          const uploadedImages = req.files || {};
-          const imageNames = ['imagenA', 'imagenB', 'imagenC', 'imagenD'];
-          const imagePaths = ['a.webp', 'b.webp', 'c.webp', 'd.webp'];
-
-          for (let i = 0; i < imageNames.length; i++) {
-            const imageField = imageNames[i];
-            const imagePath = `${productPath}${imagePaths[i]}`;
-
-            if (uploadedImages[imageField] && uploadedImages[imageField][0]) {
-              // Subir la nueva imagen proporcionada
-              const file = uploadedImages[imageField][0];
-              const params = {
-                Bucket: 'products',
-                Key: imagePath,
-                Body: file.buffer,
-                ContentType: file.mimetype,
-              };
-
-              try {
-                await s3.send(new PutObjectCommand(params));
-                console.log(`Imagen subida correctamente: ${imagePath}`);
-              } catch (uploadError) {
-                console.error(`Error subiendo la imagen ${imagePaths[i]}:`, uploadError.message);
-                return res.status(500).json({ success: false, error: `Error subiendo la imagen ${imagePaths[i]}` });
-              }
-            } else {
-              // Si no se sube una nueva imagen, mantener la existente
-              console.log(`No se proporcionó una nueva imagen para: ${imagePaths[i]}. Manteniendo la existente.`);
-            }
-          }
-
-          res.json({ success: true, message: 'Producto actualizado correctamente.' });
-        });
-      });
+        res.json({ success: true, message: 'Producto y colores alternos actualizados correctamente.' });
+      } catch (err) {
+        console.error('Error al modificar el producto:', err);
+        res.status(500).json({ success: false, error: 'Error al modificar el producto' });
+      }
     });
-  } catch (err) {
-    console.error('Error general al procesar la solicitud:', err.message);
-    res.status(500).json({ success: false, error: 'Error general al procesar la solicitud.' });
+
+
+//################################ Eliminar colores alternos #################################
+
+
+app.delete('/colaborador/colores-alternos/eliminar/:colorId', authMiddleware, async (req, res) => {
+  const colorId = parseInt(req.params.colorId, 10);
+
+  if (!colorId) {
+    return res.status(400).json({ success: false, error: 'ID de color alterno inválido.' });
+  }
+
+  try {
+    // Buscar información del color alterno
+    const [colorResult] = await db.promise().query('SELECT producto_id FROM ColoresAlternos WHERE color_id = ?', [colorId]);
+    if (colorResult.length === 0) {
+      return res.status(404).json({ success: false, error: 'Color alterno no encontrado.' });
+    }
+
+    const productId = colorResult[0].producto_id;
+
+    // Eliminar el color alterno de la base de datos
+    const deleteColorQuery = 'DELETE FROM ColoresAlternos WHERE color_id = ?';
+    const [deleteResult] = await db.promise().query(deleteColorQuery, [colorId]);
+
+    if (deleteResult.affectedRows === 0) {
+      return res.status(404).json({ success: false, error: 'No se pudo eliminar el color alterno.' });
+    }
+    console.log(`Color alterno con ID ${colorId} eliminado de la base de datos.`);
+
+    // Eliminar las imágenes del bucket asociadas al color alterno
+    const colorFolderPath = `Colors/${productId}/${colorId}/`;
+    const listParams = {
+      Bucket: 'products',
+      Prefix: colorFolderPath,
+    };
+
+    const listedObjects = await s3.send(new ListObjectsCommand(listParams));
+    if (listedObjects.Contents && listedObjects.Contents.length > 0) {
+      for (const object of listedObjects.Contents) {
+        const deleteParams = {
+          Bucket: 'products',
+          Key: object.Key,
+        };
+        await s3.send(new DeleteObjectCommand(deleteParams));
+        console.log(`Eliminado del bucket: ${object.Key}`);
+      }
+    }
+
+    res.json({ success: true, message: `Color alterno con ID ${colorId} y sus imágenes asociadas eliminados correctamente.` });
+  } catch (error) {
+    console.error('Error al eliminar el color alterno:', error.message);
+    res.status(500).json({ success: false, error: 'Error interno al eliminar el color alterno.' });
   }
 });
 
 
 //################################# OBTENER PRODUCTO Y DETALLES ##################################################
-// Ruta para obtener datos del producto y sus detalles
-app.get('/colaborador/productos/data/:codigo', (req, res) => {
+// Ruta para obtener datos del producto, sus detalles y colores alternos
+app.get('/colaborador/productos/data/:codigo', async (req, res) => {
   const codigoProducto = req.params.codigo;
 
-  const query = `
-    SELECT 
-      Productos.producto_id, 
-      Productos.nombre, 
-      Productos.precio, 
-      Productos.categoria, 
-      Productos.codigo, 
-      Productos.stock, 
-      Productos.created_at, 
-      Productos_detalles.material, 
-      Productos_detalles.dimensiones, 
-      Productos_detalles.acabado, 
-      Productos_detalles.color, 
-      Productos_detalles.descripcion1, 
-      Productos_detalles.descripcion2
-    FROM Productos
-    LEFT JOIN Productos_detalles ON Productos.producto_id = Productos_detalles.producto_id
-    WHERE Productos.codigo = ?
-  `;
+  try {
+    // Consultar datos del producto principal
+    const [productoResult] = await db.promise().query(`
+      SELECT 
+        p.producto_id, 
+        p.nombre, 
+        p.precio, 
+        p.categoria, 
+        p.codigo, 
+        p.stock, 
+        pd.material, 
+        pd.dimensiones, 
+        pd.acabado, 
+        pd.color AS color_principal, 
+        pd.color_hex AS color_hex_principal, 
+        pd.descripcion1, 
+        pd.descripcion2
+      FROM Productos p
+      LEFT JOIN Productos_detalles pd ON p.producto_id = pd.producto_id
+      WHERE p.codigo = ?
+    `, [codigoProducto]);
 
-  db.query(query, [codigoProducto], (err, result) => {
-    if (err) {
-      console.error('Error al obtener los datos del producto:', err);
-      return res.status(500).json({ success: false, error: 'Error al obtener los datos del producto' });
-    }
-
-    if (result.length === 0) {
+    if (productoResult.length === 0) {
       return res.status(404).json({ success: false, error: 'Producto no encontrado' });
     }
 
-    res.json({ success: true, producto: result[0] });
-  });
+    const producto = productoResult[0];
+
+    // Consultar colores alternos y sus imágenes
+    const [coloresAlternosResult] = await db.promise().query(`
+      SELECT 
+        c.color_id, 
+        c.color, 
+        c.color_hex, 
+        c.stock,
+        CONCAT('Colors/', c.producto_id, '/', c.color_id, '/a.webp') AS imagen_a,
+        CONCAT('Colors/', c.producto_id, '/', c.color_id, '/b.webp') AS imagen_b,
+        CONCAT('Colors/', c.producto_id, '/', c.color_id, '/c.webp') AS imagen_c,
+        CONCAT('Colors/', c.producto_id, '/', c.color_id, '/d.webp') AS imagen_d
+      FROM ColoresAlternos c
+      INNER JOIN Productos p ON c.producto_id = p.producto_id
+      WHERE p.codigo = ? AND c.color IS NOT NULL AND c.color_hex IS NOT NULL
+    `, [codigoProducto]);
+
+    // Filtrar cualquier fila que tenga datos incompletos
+    const coloresAlternos = coloresAlternosResult.filter(color => 
+      color.color && color.color_hex && color.stock !== null
+    );
+
+    res.json({ success: true, producto, coloresAlternos });
+  } catch (err) {
+    console.error('Error al obtener los datos del producto:', err);
+    res.status(500).json({ success: false, error: 'Error al obtener los datos del producto' });
+  }
 });
 
 

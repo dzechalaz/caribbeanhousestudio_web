@@ -1,76 +1,43 @@
--- Usuarios Table
-CREATE TABLE Usuarios (
-    usuario_id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    correo VARCHAR(100) UNIQUE NOT NULL,
-    contrasena VARCHAR(100) NOT NULL
-);
 
--- Compras Table
-CREATE TABLE Compras (
-    compra_id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT NOT NULL,
-    fecha_compra DATE NOT NULL,
-    estado INT NOT NULL DEFAULT 1,  -- 1: Pedido Confirmado, 2: Insumos Listos, 3: Maquila en Proceso, 4: Barniz, 5: Armado, 6: En Camino, 7: Entrega
-    direccion_envio VARCHAR(255) NOT NULL,
-    FOREIGN KEY (usuario_id) REFERENCES Usuarios(usuario_id)
-);
+mysql> DESCRIBE ColoresAlternos;
++-------------+-------------+------+-----+---------+----------------+
+| Field       | Type        | Null | Key | Default | Extra          |
++-------------+-------------+------+-----+---------+----------------+
+| color_id    | int         | NO   | PRI | NULL    | auto_increment |
+| producto_id | int         | NO   | MUL | NULL    |                |
+| color       | varchar(50) | NO   |     | NULL    |                |
+| color_hex   | varchar(7)  | NO   |     | NULL    |                |
+| stock       | int         | NO   |     | 0       |                |
++-------------+-------------+------+-----+---------+----------------+
+5 rows in set (0.11 sec)
 
--- Productos Table
-CREATE TABLE Productos (
-    producto_id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    descripcion TEXT,
-    precio DECIMAL(10, 2) NOT NULL,
-    categoria VARCHAR(100),
-    imagen_url VARCHAR(255)
-);
+mysql> DESCRIBE Productos_detalles; 
++--------------+------+------+-----+---------+-------+
+| Field        | Type | Null | Key | Default | Extra |
++--------------+------+------+-----+---------+-------+
+| producto_id  | int  | NO   | PRI | NULL    |       |
+| material     | text | YES  |     | NULL    |       |
+| dimensiones  | text | YES  |     | NULL    |       |
+| acabado      | text | YES  |     | NULL    |       |
+| color        | text | YES  |     | NULL    |       |
+| descripcion1 | text | YES  |     | NULL    |       |
+| descripcion2 | text | YES  |     | NULL    |       |
+| color_hex    | text | YES  |     | NULL    |       |
++--------------+------+------+-----+---------+-------+
+8 rows in set (0.11 sec)
 
--- Compra_Productos Table
-CREATE TABLE Compra_Productos (
-    compra_producto_id INT AUTO_INCREMENT PRIMARY KEY,
-    compra_id INT NOT NULL,
-    producto_id INT NOT NULL,
-    cantidad INT NOT NULL,
-    FOREIGN KEY (compra_id) REFERENCES Compras(compra_id),
-    FOREIGN KEY (producto_id) REFERENCES Productos(producto_id)
-);
-
--- Carrito Table
-CREATE TABLE Carrito (
-    carrito_id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT NOT NULL,
-    producto_id INT NOT NULL,
-    cantidad INT NOT NULL,
-    FOREIGN KEY (usuario_id) REFERENCES Usuarios(usuario_id),
-    FOREIGN KEY (producto_id) REFERENCES Productos(producto_id)
-);
-
--- Roles Table
-CREATE TABLE Roles (
-    rol_id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL
-);
-
--- Empleados Table
-CREATE TABLE Empleados (
-    empleado_id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    correo VARCHAR(100) UNIQUE NOT NULL,
-    contrasena VARCHAR(100) NOT NULL,
-    rol_id INT NOT NULL,
-    FOREIGN KEY (rol_id) REFERENCES Roles(rol_id)
-);
-
--- Add default roles
-INSERT INTO Roles (nombre) 
-VALUES ('Carpintero'), ('Diseñador'), ('Admin');
-
--- Example to add a new employee
-INSERT INTO Empleados (nombre, correo, contrasena, rol_id) 
-VALUES ('Carlos Martinez', 'carlos@example.com', 'password123', 1);  -- Assigning the role of Carpintero
-
--- Query to retrieve employees and their roles
-SELECT e.nombre, r.nombre AS rol
-FROM Empleados e
-JOIN Roles r ON e.rol_id = r.rol_id;
+mysql> DESCRIBE Productos;          
++-------------+---------------+------+-----+-------------------+-------------------+
+| Field       | Type          | Null | Key | Default           | Extra             |
++-------------+---------------+------+-----+-------------------+-------------------+
+| producto_id | int           | NO   | PRI | NULL              | auto_increment    |
+| nombre      | varchar(100)  | NO   |     | NULL              |                   |
+| precio      | decimal(10,2) | NO   |     | NULL              |                   |
+| categoria   | varchar(100)  | YES  |     | NULL              |                   |
+| codigo      | varchar(10)   | NO   |     | NULL              |                   |
+| stock       | int           | NO   |     | NULL              |                   |
+| created_at  | timestamp     | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
+| destacado   | tinyint(1)    | YES  |     | 0                 |                   |
+| precioOG    | decimal(10,2) | NO   |     | 0.00              |                   |
++-------------+---------------+------+-----+-------------------+-------------------+
+9 rows in set (0.12 sec)

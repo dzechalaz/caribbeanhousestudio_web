@@ -42,6 +42,16 @@ $(document).ready(function () {
     // Llamar a la función cargarProductos para obtener los datos al cargar la página
     cargarProductos();
 
+    $('#productos-table tbody').on('click', 'tr', function () {
+        if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+        } else {
+            tablaProductos.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+        }
+    });
+
+
     // Evento del checkbox para manejar los destacados
     $(document).on('change', '.destacado-checkbox', function () {
         const checkbox = $(this);
@@ -75,10 +85,8 @@ $(document).ready(function () {
             .catch(error => console.error('Error al actualizar destacado:', error));
     });
 
-    // Mostrar el botón "Guardar Cambios" al editar el stock
-    $(document).on('input', '.editable-stock', function () {
-        $('#guardar-cambios').show();
-    });
+    
+
 
       // Evento del botón "Crear Producto"
       $('#crear-producto').click(function () {
@@ -86,18 +94,18 @@ $(document).ready(function () {
     });
 
        // Evento del botón "Modificar Producto"
-   $('#modificar-producto').click(function () {
-    const productoSeleccionado = tablaProductos.row('.selected').data();
+       $('#modificar-producto').click(function () {
+        const productoSeleccionado = tablaProductos.row('.selected').data();
 
-    if (!productoSeleccionado) {
-        alert('Por favor selecciona un producto para modificar');
-        return;
-    }
+        if (!productoSeleccionado) {
+            alert('Por favor selecciona un producto para modificar.');
+            return;
+        }
 
-    // Redirigir a la página de modificación con el código del producto
-    const codigoProducto = productoSeleccionado[0]; // Suponiendo que el código está en la primera columna
-    window.location.href = `/colaborador/productos/modificar?codigo=${codigoProducto}`;
+        const codigoProducto = productoSeleccionado[0]; // Suponiendo que el código está en la primera columna
+        window.location.href = `/colaborador/productos/modificar?codigo=${codigoProducto}`;
     });
+
 
 
     // Evento del botón "Eliminar Producto"
@@ -110,15 +118,16 @@ $(document).ready(function () {
             return;
         }
 
-        const confirmacion = confirm(`¿Estás seguro de que deseas eliminar el producto: ${productoSeleccionado[1]}?`);
+        const confirmacion = confirm(`¿Estás seguro de que deseas eliminar el producto: ${productoSeleccionado[1]}?      SE ELIMINARA TODO EL PRODCUTO JUNTO CON LOS COLORS ALTERNOS`);
         if (confirmacion) {
             fetch(`/colaborador/productos/eliminar/${productoSeleccionado[0]}`, { method: 'DELETE' })
                 .then(response => response.json())
                 .then(result => {
                     if (result.success) {
                         // Remover la fila de la tabla sin recargar la página
-                        tablaProductos.row('.selected').remove().draw(false); // Eliminar fila seleccionada
+                        
                         alert('Producto eliminado correctamente');
+                        location.reload(); // Recargar toda la página
                     } else {
                         alert('Error al eliminar el producto');
                     }
@@ -130,6 +139,8 @@ $(document).ready(function () {
 
     // Seleccionar fila en la tabla (marcarla como seleccionada)
     $('#productos-table tbody').on('click', 'td.editable-stock', function () {
+
+        
         const celda = $(this);
 
         if (celda.find('input').length > 0) return; // Evitar múltiples inputs
@@ -155,6 +166,9 @@ $(document).ready(function () {
     });
 
 });
+
+
+
 
 
 $(document).on('input', '.editable-stock', function () {
