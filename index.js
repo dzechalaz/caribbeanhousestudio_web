@@ -143,7 +143,6 @@ app.get('/colaborador/productos/stock', authMiddleware, (req, res) => {
 });
 
 // Ruta para obtener los productos y enviar los datos al frontend
-
 app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
   const query = `
       SELECT 
@@ -152,15 +151,17 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
           p.nombre, 
           p.precio, 
           p.categoria, 
-          pd.color AS color_principal, 
+          COALESCE(pd.color, 'Sin color') AS color_principal, 
+          COALESCE(pd.color_hex, NULL) AS color_hex_principal, 
           p.stock AS stock_total, 
-          c.color AS color_alterno, 
+          COALESCE(c.color, NULL) AS color_alterno, 
+          COALESCE(c.color_hex, NULL) AS color_hex_alterno, 
           c.stock AS stock_alterno, 
           p.destacado 
       FROM Productos p
       LEFT JOIN Productos_detalles pd ON p.producto_id = pd.producto_id
       LEFT JOIN ColoresAlternos c ON p.producto_id = c.producto_id
-      ORDER BY p.codigo, c.color
+      ORDER BY p.codigo, c.color;
   `;
 
   db.query(query, (err, results) => {
@@ -169,40 +170,41 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
           return res.status(500).json({ error: 'Error fetching products' });
       }
 
-      // Transformar los datos para incluir tanto el color principal como los alternos
       const productos = [];
       const productosMap = {};
 
       results.forEach(row => {
           if (!productosMap[row.codigo]) {
-              // Agregar el producto principal si aún no está en el mapa
+              // Agregar el producto principal solo una vez
               productosMap[row.codigo] = true;
               productos.push({
                   codigo: row.codigo,
                   nombre: row.nombre,
                   precio: row.precio,
                   categoria: row.categoria || 'Sin categoría',
-                  color: row.color_principal || 'Sin color',
+                  color: row.color_principal,
+                  color_hex: row.color_hex_principal,
                   stock: row.stock_total || 0,
                   destacado: row.destacado
               });
           }
 
           if (row.color_alterno) {
-              // Agregar los colores alternos como nuevas filas
+              // Agregar colores alternos como nuevas filas
               productos.push({
                   codigo: row.codigo,
                   nombre: row.nombre,
                   precio: row.precio,
                   categoria: row.categoria || 'Sin categoría',
                   color: row.color_alterno,
+                  color_hex: row.color_hex_alterno,
                   stock: row.stock_alterno || 0,
                   destacado: row.destacado
               });
           }
       });
 
-      res.json({ productos }); // Enviar los productos como respuesta JSON
+      res.json({ productos });
   });
 });
 

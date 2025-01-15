@@ -18,19 +18,23 @@ $(document).ready(function () {
                         <td>${producto.nombre || 'Sin nombre'}</td>
                         <td>${parseFloat(producto.precio).toFixed(2) || '0.00'}</td>
                         <td>${producto.categoria || 'Sin categoría'}</td>
-                        <td>${producto.color || 'Sin color'}</td>
-                        <td>${producto.stock || 0}</td>
+                        <td style="background-color: ${producto.color_hex || 'transparent'};">
+                            ${producto.color || 'Sin color'}
+                        </td>
+                        <td class="editable-stock" contenteditable="true" data-codigo="${producto.codigo}">
+                            ${producto.stock || 0}
+                        </td>
                         <td>
                             <input type="checkbox" class="destacado-checkbox" 
-                                   data-id="${producto.codigo}" 
-                                   ${producto.destacado === 1 ? 'checked' : ''}>
+                                data-id="${producto.codigo}" 
+                                ${producto.destacado === 1 ? 'checked' : ''}>
                         </td>
                     `;
                     productosBody.appendChild(row);
                 });
 
                 // Reinicializar DataTables
-                tablaProductos.clear().destroy();
+                tablaProductos.destroy();
                 tablaProductos = $('#productos-table').DataTable();
             })
             .catch(error => console.error('Error al cargar productos:', error));
@@ -39,29 +43,28 @@ $(document).ready(function () {
     cargarProductos();
 
     // Evento del checkbox para manejar los destacados
-        $(document).on('change', '.destacado-checkbox', function () {
-            const checkbox = $(this);
-            const codigoProducto = checkbox.data('id');
-            const destacado = checkbox.is(':checked') ? 1 : 0;
+    $(document).on('change', '.destacado-checkbox', function () {
+        const checkbox = $(this);
+        const codigoProducto = checkbox.data('id');
+        const destacado = checkbox.is(':checked') ? 1 : 0;
 
-            // Contar cuántos productos están seleccionados como destacados
-            const destacadosSeleccionados = $('.destacado-checkbox:checked').length;
+        // Contar cuántos productos están seleccionados como destacados
+        const destacadosSeleccionados = $('.destacado-checkbox:checked').length;
 
-            // Si hay más de 6 destacados, revertir el cambio y mostrar un mensaje
-            if (destacadosSeleccionados > 6) {
-                alert('Solo puedes seleccionar hasta 6 productos destacados.');
-                checkbox.prop('checked', !checkbox.is(':checked')); // Revertir el cambio
-                return;
-            }
+        if (destacadosSeleccionados > 6) {
+            alert('Solo puedes seleccionar hasta 6 productos destacados.');
+            checkbox.prop('checked', !checkbox.is(':checked')); // Revertir el cambio
+            return;
+        }
 
-            // Enviar la actualización al servidor
-            fetch('/colaborador/productos/actualizar-destacado', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ codigo: codigoProducto, destacado }),
-            })
+        // Enviar la actualización al servidor
+        fetch('/colaborador/productos/actualizar-destacado', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ codigo: codigoProducto, destacado }),
+        })
             .then(response => response.json())
             .then(data => {
                 if (!data.success) {
@@ -69,7 +72,13 @@ $(document).ready(function () {
                     checkbox.prop('checked', !checkbox.is(':checked')); // Revertir el cambio en caso de error
                 }
             })
-        });
+            .catch(error => console.error('Error al actualizar destacado:', error));
+    });
+
+    // Mostrar el botón "Guardar Cambios" al editar el stock
+    $(document).on('input', '.editable-stock', function () {
+        $('#guardar-cambios').show();
+    });
 
       // Evento del botón "Crear Producto"
       $('#crear-producto').click(function () {
@@ -120,14 +129,31 @@ $(document).ready(function () {
 
 
     // Seleccionar fila en la tabla (marcarla como seleccionada)
-    $('#productos-table tbody').on('click', 'tr', function () {
-        if ($(this).hasClass('selected')) {
-            $(this).removeClass('selected');
-        } else {
-            tablaProductos.$('tr.selected').removeClass('selected');
-            $(this).addClass('selected');
-        }
+    $('#productos-table tbody').on('click', 'td.editable-stock', function () {
+        const celda = $(this);
+
+        if (celda.find('input').length > 0) return; // Evitar múltiples inputs
+
+        const valorActual = celda.text().trim();
+        celda.html(`<input type="number" class="stock-input" value="${valorActual}" style="width: 100%;">`);
+
+        celda.find('input').on('blur', function () {
+            const nuevoValor = $(this).val().trim();
+            celda.text(nuevoValor); // Actualizar la celda
+
+            const codigoProducto = celda.data('codigo');
+
+            // Enviar el cambio al backend
+            fetch('/colaborador/productos/actualizar-stock', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ codigo: codigoProducto, stock: nuevoValor }),
+            })
+                .then(response => response.json())
+                
+        });
     });
+
 });
 
 
@@ -136,17 +162,22 @@ $(document).on('input', '.editable-stock', function () {
     $('#guardar-cambios').show();
 });
 
-// Evento del botón "Guardar Cambios"
 $('#guardar-cambios').click(function () {
-    // Recolectar todos los cambios en la columna de stock
-    let cambios = [];
+    const cambios = [];
     $('.editable-stock').each(function () {
-        const nuevoStock = $(this).text().trim();
         const codigoProducto = $(this).data('codigo');
-        cambios.push({ codigo: codigoProducto, stock: nuevoStock });
+        const nuevoStock = $(this).text().trim();
+        if (codigoProducto && nuevoStock !== "") {
+            cambios.push({ codigo: codigoProducto, stock: parseInt(nuevoStock, 10) });
+        }
     });
 
-    // Enviar los cambios al servidor
+    if (cambios.length === 0) {
+        alert('No hay cambios para guardar.');
+        return;
+    }
+
+    // Enviar los cambios al backend
     fetch('/colaborador/productos/actualizar-stock', {
         method: 'POST',
         headers: {
@@ -154,14 +185,14 @@ $('#guardar-cambios').click(function () {
         },
         body: JSON.stringify({ productos: cambios }),
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Stock actualizado con éxito');
-            $('#guardar-cambios').hide(); // Ocultar el botón después de guardar
-        } else {
-            alert('Error al actualizar el stock');
-        }
-    })
-    .catch(error => console.error('Error al actualizar el stock:', error));
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Stock actualizado con éxito.');
+                $('#guardar-cambios').hide(); // Ocultar el botón después de guardar
+            } else {
+                alert(`Error al actualizar el stock: ${data.error}`);
+            }
+        })
+        .catch(error => console.error('Error al actualizar el stock:', error));
 });
