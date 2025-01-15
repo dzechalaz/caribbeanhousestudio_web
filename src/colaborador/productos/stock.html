@@ -23,8 +23,8 @@
           <th>Precio</th>
           <th>Categoría</th>
           <th>Color</th>
-          <th>Stock</th>
-          <th>Destacado</th> <!-- Nueva columna para los checkboxes -->
+          <th>Stock</th> <!-- Columna editable -->
+          <th>Destacado</th>
         </tr>
       </thead>
       <tbody id="productos-body">
@@ -40,28 +40,12 @@
       <button id="guardar-cambios" style="display: none;">Guardar Cambios</button>
       <button id="volver-menu" class="btn-rojo-chukum">Volver al Menú</button>
     </div>
-
-    <!-- Modal para mostrar colores alternos -->
-    <div id="modal-colores" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; padding:20px; border:1px solid #ccc; z-index:1000;">
-      <h2>Colores Alternos</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Color</th>
-            <th>Stock</th>
-          </tr>
-        </thead>
-        <tbody id="colores-body">
-          <!-- Aquí se insertarán los colores alternos dinámicamente -->
-        </tbody>
-      </table>
-      <button onclick="cerrarModal()">Cerrar</button>
-    </div>
   </div>
 
   <!-- Cargar el script de gestión de productos -->
   <script src="stock.js"></script>
   <script>
+    // Evento para volver al menú principal
     document.getElementById('volver-menu').addEventListener('click', () => {
       window.location.href = '/colaborador/menu';
     });
