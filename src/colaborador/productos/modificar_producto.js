@@ -86,8 +86,10 @@ document.addEventListener('DOMContentLoaded', function () {
         <label>Imagen B: <input type="file" name="imagen_color_b[]" ></label><br>
         <label>Imagen C: <input type="file" name="imagen_color_c[]" ></label><br>
         <label>Imagen D: <input type="file" name="imagen_color_d[]" ></label>
+
       </td>
       <td><button type="button" class="eliminar-fila">Eliminar</button></td>
+       
     `;
 
     fila.querySelector('.eliminar-fila').addEventListener('click', function () {
