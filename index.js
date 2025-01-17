@@ -557,7 +557,6 @@ app.get('/colaborador/productos/generar-codigo', (req, res) => {
 });
 
 //################################# MODIFICAR PRODUCTOS ##################################################
-// Modificar productos, incluyendo colores alternos
 app.post('/colaborador/productos/modificar/:codigo', upload.fields([
   { name: 'imagenA', maxCount: 1 },
   { name: 'imagenB', maxCount: 1 },
@@ -627,8 +626,21 @@ app.post('/colaborador/productos/modificar/:codigo', upload.fields([
     `;
     await db.promise().query(updateDetallesQuery, [productoId, material, dimensiones, acabado, color, color_hex, descripcion1, descripcion2]);
 
+    // Manejo de imágenes principales
+    const productPath = `Products/${productoId}/`;
+    const imageNames = { imagenA: 'a.webp', imagenB: 'b.webp', imagenC: 'c.webp', imagenD: 'd.webp' };
+
+    for (const [fieldName, fileName] of Object.entries(imageNames)) {
+      const file = req.files[fieldName]?.[0] || null;
+
+      if (file) {
+        // Solo subir la imagen si existe un archivo cargado
+        const imagePath = `${productPath}${fileName}`;
+        await subirImagen(file, imagePath);
+      }
+    }
+
     // Procesar colores alternos
-        
     const procesados = new Set();
     for (let i = 0; i < color_alterno.length; i++) {
       const colorId = parseInt(color_id[i], 10) || null;
@@ -636,10 +648,7 @@ app.post('/colaborador/productos/modificar/:codigo', upload.fields([
       const hexValue = hex_alterno[i]?.trim();
       const stockValue = parseInt(stock_alterno[i], 10) || 0;
 
-      // Ignorar colores alternos vacíos o duplicados
-      if (!colorValue || !hexValue || procesados.has(`${colorValue}-${hexValue}`)) {
-        continue;
-      }
+      if (!colorValue || !hexValue || procesados.has(`${colorValue}-${hexValue}`)) continue;
       procesados.add(`${colorValue}-${hexValue}`);
 
       if (colorId) {
@@ -650,6 +659,25 @@ app.post('/colaborador/productos/modificar/:codigo', upload.fields([
           WHERE color_id = ? AND producto_id = ?`,
           [colorValue, hexValue, stockValue, colorId, productoId]
         );
+
+        // Manejo de imágenes para el color alterno
+        const colorPath = `Colors/${productoId}/${colorId}/`;
+        const alternoImageNames = {
+          [`imagen_color_a[]`]: 'a.webp',
+          [`imagen_color_b[]`]: 'b.webp',
+          [`imagen_color_c[]`]: 'c.webp',
+          [`imagen_color_d[]`]: 'd.webp',
+        };
+
+        for (const [fieldName, fileName] of Object.entries(alternoImageNames)) {
+          const file = req.files[fieldName]?.[i] || null;
+
+          if (file) {
+            // Solo subir la imagen si existe un archivo cargado
+            const imagePath = `${colorPath}${fileName}`;
+            await subirImagen(file, imagePath);
+          }
+        }
       } else {
         // Insertar nuevo color alterno
         const [result] = await db.promise().query(
@@ -657,24 +685,46 @@ app.post('/colaborador/productos/modificar/:codigo', upload.fields([
           VALUES (?, ?, ?, ?)`,
           [productoId, colorValue, hexValue, stockValue]
         );
+
+        const newColorId = result.insertId;
+
+        // Manejo de imágenes para el nuevo color alterno
+        const colorPath = `Colors/${productoId}/${newColorId}/`;
+        const alternoImageNames = {
+          [`imagen_color_a[]`]: 'a.webp',
+          [`imagen_color_b[]`]: 'b.webp',
+          [`imagen_color_c[]`]: 'c.webp',
+          [`imagen_color_d[]`]: 'd.webp',
+        };
+
+        for (const [fieldName, fileName] of Object.entries(alternoImageNames)) {
+          const file = req.files[fieldName]?.[i] || null;
+
+          if (file) {
+            // Solo subir la imagen si existe un archivo cargado
+            const imagePath = `${colorPath}${fileName}`;
+            await subirImagen(file, imagePath);
+          }
+        }
       }
     }
 
-        // Eliminar colores alternos según IDs
-        if (eliminar_colores.length > 0) {
-          const deleteQuery = `
-            DELETE FROM ColoresAlternos 
-            WHERE color_id IN (?) AND producto_id = ?
-          `;
-          await db.promise().query(deleteQuery, [eliminar_colores, productoId]);
-        }
+    // Eliminar colores alternos según IDs
+    if (eliminar_colores.length > 0) {
+      const deleteQuery = `
+        DELETE FROM ColoresAlternos 
+        WHERE color_id IN (?) AND producto_id = ?
+      `;
+      await db.promise().query(deleteQuery, [eliminar_colores, productoId]);
+    }
 
-        res.json({ success: true, message: 'Producto y colores alternos actualizados correctamente.' });
-      } catch (err) {
-        console.error('Error al modificar el producto:', err);
-        res.status(500).json({ success: false, error: 'Error al modificar el producto' });
-      }
-    });
+    res.json({ success: true, message: 'Producto y colores alternos actualizados correctamente.' });
+  } catch (err) {
+    console.error('Error al modificar el producto:', err);
+    res.status(500).json({ success: false, error: 'Error al modificar el producto' });
+  }
+});
+
 
 
 //################################ Eliminar colores alternos #################################
