@@ -329,10 +329,10 @@
   position: absolute;
   left: 0px;
   top: 0px;
-
+  object-fit: cover;
   width: 600px;
   height: 600px;
-  object-fit: cover;
+  
   opacity: 1;
   
 }
@@ -468,20 +468,10 @@
 
 
 
-.proximamente-icon {
-  position: absolute;
-  bottom: 0;
-  left: calc(50% + 137px);
-  width: 270px;
-  height: 117px;
-  object-fit: cover;
-  mix-blend-mode: multiply;
-}
-
 .descripcionbasica {
   position: absolute;
   top: calc(50% - 270px);
-  line-height: 35px;
+  line-height: 30px;
   text-align: left;
   display: inline-block;
   width: 461px;
@@ -718,3 +708,56 @@
   margin: 0 auto; /* Para centrar horizontalmente */
   mix-blend-mode: multiply;
 }
+
+
+
+
+/*PALETA DE COLORES*/
+
+
+.color-palette {
+  margin: 20px 0;
+  font-family: 'Josefin Sans', sans-serif;
+  position: relative;
+  max-width: 180px;
+  
+  position: absolute;
+  top: 330px;
+  right: 440px;
+}
+
+
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 2fr);
+  gap: 5px;
+  max-width: 100%;
+}
+
+.color-box {
+  width: 30px;
+  height: 30px;
+  border-radius: 5px;
+  border: 2px solid #ddd;
+  cursor: pointer;
+  position: relative;
+}
+
+.color-box:hover {
+  border-color: #333;
+}
+
+.color-box::after {
+  content: attr(title);
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 12px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  display: none;
+}
+
