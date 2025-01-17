@@ -69,7 +69,7 @@ if (producto) {
           id="mainImage"
           class="imagenprincipal-icon"
           alt=""
-          src="<%= CFI %>/Products/<%= producto.producto_id %>/a.webp"
+          src=""
           data-animate-on-scroll
         />
 
@@ -83,39 +83,46 @@ if (producto) {
         </div>
        
 
-        <div class="imagenes">
+        <div class="imagenes" id="imagenes-container">
           <div class="a">
-            <img src="<%= CFI %>/Products/<%= producto.producto_id %>/a.webp" alt="Imagen A" onclick="changeMainImage('a.webp')">
+            <img id="imagen-a" alt="Imagen A" src="" onclick="changeMainImage('a.webp')">
           </div>
           <div class="b">
-            <img src="<%= CFI %>/Products/<%= producto.producto_id %>/b.webp" alt="Imagen B" onclick="changeMainImage('b.webp')">
+            <img id="imagen-b" alt="Imagen B" src="" onclick="changeMainImage('b.webp')">
           </div>
           <div class="c">
-            <img src="<%= CFI %>/Products/<%= producto.producto_id %>/c.webp" alt="Imagen C" onclick="changeMainImage('c.webp')">
+            <img id="imagen-c" alt="Imagen C" src="" onclick="changeMainImage('c.webp')">
           </div>
           <div class="d">
-            <img src="<%= CFI %>/Products/<%= producto.producto_id %>/d.webp" alt="Imagen D" onclick="changeMainImage('d.webp')">
+            <img id="imagen-d" alt="Imagen D" src="" onclick="changeMainImage('d.webp')">
           </div>
         </div>
-        
-        <img
-          class="proximamente-icon"
-          alt=""
-          src="/public/proximamente@2x.png"
-        />
-
+   
+      
         <div class="producto-info">
           <div class="nombreproducto"><%= producto.nombre.toUpperCase() %></div>
-          <div class="precio">$ <%= producto.precio %></div>
+          <div class="precio">$ <%= new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(producto.precio) %></div>
+
+
         </div>
         <div class="descripcionbasica">
             <%= descripcion1 %> <!-- Mostramos la Descripción 1 aquí -->
         </div>
+
+        
+        <!-- Paleta de colores -->
+        <div class="color-palette">
+          <div class="color-grid" id="color-grid"></div>
+        </div>
+        
+
+
         <div class="caracteristicas">
             <p class="material-tela">
               <b>Color: </b>
-              <span class="tela"><%= color %></span> <!-- Color desde info.txt -->
+              <span id="color-name" class="tela"><%= color %></span> 
             </p>
+            
             <p class="material-tela">
                 <b>Material:</b>
                 <span class="tela"> <%= material %></span> <!-- Material desde info.txt -->
@@ -148,6 +155,88 @@ if (producto) {
     
 
     <script>
+      
+      //cambiar colores y imagenes
+      document.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        const productoId = params.get('id');
+        const colorGrid = document.getElementById('color-grid');
+        const colorNameElement = document.getElementById('color-name');
+        const mainImage = document.getElementById('mainImage');
+        const imageIds = ['imagen-a', 'imagen-b', 'imagen-c', 'imagen-d'];
+
+        if (!productoId) {
+          console.error('No se proporcionó un ID de producto.');
+          return;
+        }
+
+        // Cargar colores y rutas desde el backend
+        fetch(`/colores?id=${productoId}`)
+          .then(response => response.json())
+          .then(data => {
+            // Verificar que colores exista y sea un array
+            if (!data.colores || !Array.isArray(data.colores)) {
+              console.error('La respuesta del servidor no tiene el formato esperado.');
+              return;
+            }
+
+            const colores = data.colores;
+
+            // Crear la paleta de colores
+            colorGrid.innerHTML = ''; // Limpia el grid
+            colores.forEach(color => {
+              const colorBox = document.createElement('div');
+              colorBox.className = 'color-box';
+              colorBox.style.backgroundColor = color.color_hex;
+
+              // Evento para cambiar imágenes y texto del color
+              colorBox.onclick = () => {
+                const rutaImagenes = color.ruta_imagenes;
+
+                // Actualizar las imágenes principales y miniaturas
+                mainImage.src = `${rutaImagenes}/a.webp`;
+                imageIds.forEach((id, index) => {
+                  document.getElementById(id).src = `${rutaImagenes}/${String.fromCharCode(97 + index)}.webp`;
+                });
+
+                // Actualizar el texto del color
+                colorNameElement.textContent = color.color;
+              };
+
+              colorGrid.appendChild(colorBox);
+            });
+
+            // Simular un clic en el color principal para cargarlo por defecto
+            if (colores.length > 0) {
+              colorGrid.firstChild.click();
+            }
+          })
+          .catch(error => console.error('Error al cargar los colores:', error));
+      });
+
+
+      const params = new URLSearchParams(window.location.search);
+      const productoId = params.get('id');
+
+      // Cargar colores desde el backend
+      fetch(`/colores?id=${productoId}`)
+        .then(response => response.json())
+        .then(colores => {
+          const colorGrid = document.getElementById('color-grid');
+          colorGrid.innerHTML = '';
+
+          // Crear cuadros para cada color
+          colores.forEach(color => {
+            const colorBox = document.createElement('div');
+            colorBox.className = 'color-box';
+            colorBox.style.backgroundColor = color.color_hex;
+            colorGrid.appendChild(colorBox);
+          });
+        })
+        .catch(error => console.error('Error al cargar los colores:', error));
+
+
+
       function changeMainImage(imageName) {
         document.getElementById('mainImage').src = "<%= CFI %>/Products/<%= producto.producto_id %>/" + imageName;
     }

@@ -1874,9 +1874,53 @@ app.get('/producto', async (req, res) => {
     res.status(500).send('Error interno del servidor');
   }
 });
+app.get('/colores', async (req, res) => {
+  const productoId = req.query.id;
 
+  try {
+    if (!productoId) {
+      return res.status(400).json({ error: 'Falta el parámetro "id".' });
+    }
 
+   
 
+    // Buscar el color principal
+    const [detallesResult] = await db.promise().query(
+      'SELECT color_hex, color FROM Productos_detalles WHERE producto_id = ?',
+      [productoId]
+    );
+
+    if (detallesResult.length === 0) {
+      return res.status(404).json({ error: 'Producto no encontrado en detalles.' });
+    }
+
+    const colorPrincipal = {
+      color_id: null,
+      color_hex: detallesResult[0].color_hex,
+      color: detallesResult[0].color || "Color Principal",
+      ruta_imagenes: `${CFI}/Products/${productoId}`
+    };
+
+    // Buscar colores alternos
+    const [coloresAlternosResult] = await db.promise().query(
+      'SELECT color_id, color_hex, color FROM ColoresAlternos WHERE producto_id = ?',
+      [productoId]
+    );
+
+    const coloresAlternos = coloresAlternosResult.map(color => ({
+      color_id: color.color_id,
+      color_hex: color.color_hex,
+      color: color.color || "Color Alterno",
+      ruta_imagenes: `${CFI}/Colors/${productoId}/${color.color_id}`
+    }));
+
+    // Responder con el JSON completo
+    res.json({ colores: [colorPrincipal, ...coloresAlternos] });
+  } catch (err) {
+    console.error('Error en el servidor:', err);
+    res.status(500).json({ error: 'Error interno del servidor.' });
+  }
+});
 
 
 
