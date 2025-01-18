@@ -1479,6 +1479,14 @@ app.post(
 //###################################### SEGUIMIENTO 
 
 app.get('/seguimiento', async (req, res) => {
+
+  const userId = req.session.userId;
+
+  // Verificar que el usuario esté autenticado
+  if (!userId) {
+    return res.redirect('/login');
+  }
+
   const idCompra = req.query.id;
 
   try {
@@ -2521,6 +2529,18 @@ app.get('/api/estadisticas', async (req, res) => {
   }
 });
 
+
+app.get('/perfil', (req, res) => {
+
+  const userId = req.session.userId;
+
+  // Verificar que el usuario esté autenticado
+  if (!userId) {
+    return res.redirect('/login');
+  }
+
+  res.render('perfil');
+});
 
 
 app.listen(PORT, () => {

@@ -9,7 +9,7 @@
 }
 .imagenportada-icon {
   position: fixed;
-  top: 87px;
+  top: 80px;
   height: 997px;
 }
 .fondo-icon1 {
@@ -532,4 +532,5 @@
   text-align: left;
   font-size: var(--font-size-xl);
   font-family: var(--font-montserrat);
+  
 }

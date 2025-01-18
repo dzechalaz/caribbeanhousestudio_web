@@ -1,0 +1,122 @@
+body {
+    font-family: 'Montserrat', sans-serif; /* Fuente Montserrat */
+    
+   
+}
+.container{
+    background-image: url('./public/080bef28e2d2463cae04d69b5960f9f82@2x.png');
+    background-size: cover; /* La imagen cubrirá todo el fondo */
+    background-repeat: no-repeat; /* Evita que la imagen se repita */
+    height: calc(100vh + 250px);
+    background-color: #F8E8D3; /* Fondo cálido estilo Shukum */ 
+
+}
+
+  .profile-container {
+    position: relative;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    font-family: 'Montserrat', sans-serif;
+    background-color: #ddb98cb2; /* Color café claro tipo chukum */
+    border-radius: 15px; /* Bordes redondeados */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para darle un efecto elevado */
+     /* Borde ligeramente más oscuro para contraste */
+    top: 110px;
+    
+  }
+  
+  h2 {
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.5rem;
+  }
+  
+  form label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+    color: #555;
+  }
+  
+  form input {
+    width: 50%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  form button {
+    margin-right: 10px;
+    padding: 10px 20px;
+    border: none;
+    background-color: #1abc9c;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  form button:hover {
+    background-color: #16a085;
+  }
+  
+  .address-section, .payment-section {
+    margin-top: 40px;
+  }
+  
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .address-item, .payment-item {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+  }
+  
+  button.edit-address, button.delete-address, button.delete-payment {
+    margin-top: 10px;
+    padding: 5px 10px;
+    border: none;
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+
+  button.logout{
+    margin-top: 10px;
+    padding: 5px 10px;
+    border: none;
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  
+  button.edit-address:hover, button.delete-address:hover, button.delete-payment:hover {
+    background-color: #c0392b;
+  }
+  
+  button#add-address, button#add-payment {
+    margin-top: 15px;
+    padding: 10px 20px;
+    border: none;
+    background-color: #1abc9c;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  button#add-address:hover, button#add-payment:hover {
+    background-color: #16a085;
+  }
+  
