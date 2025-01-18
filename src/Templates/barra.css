@@ -124,33 +124,11 @@
 }
 
 
-  /* Estilo de los elementos del menú */
-  .inicio5,
-  .catlogo5,
-  .blog5,
-  .nuestra-historia6,
-  .seguimiento7 {
-      position: relative; /* No necesita posición absoluta, ya que se usa flexbox */
-      cursor: pointer;
-      font-size: 1rem; /* Ajusta el tamaño según tu preferencia */
-      color: var(--color-darkslategray-100);
-      font-weight: 500; /* Para mantener la consistencia en el peso de la fuente */
-  }
 
-
-
-.login5 {
-    position: absolute;
-    top: calc(50% - 6.5px);
-    left: calc(50% - 56px);
-    text-transform: uppercase;
-    font-weight: 600;
-    color: var(--color-white); /* Agregué color blanco */
-    cursor: pointer; /* Cambia el cursor a manita */
-}
 
 .login-wrapper3 {
     position: absolute;
+    
     top: calc(50% - 9px);
     right: 0px;
     background-color: var(--color-darkslategray-100);
@@ -162,21 +140,14 @@
     cursor: pointer; /* Cambia el cursor a manita */
 }
 
+.login5{
+  position: relative;
+  font-size: 19px;
+  color: var(--color-white);
+  top: 9px;
 
-/* Estilo para bienvenido-wrapper */
-.bienvenido-wrapper {
-  display: inline-block;
-  margin-right: 250px; /* Separación entre el texto de Bienvenido y el botón */
-  font-size: var(--font-size-lg);
-  color: #3A6EA5;
-  max-width: 150px; /* Ajusta esto según el espacio disponible */
-  white-space: nowrap; /* Evita el salto de línea */
-  overflow: hidden; /* Oculta el desbordamiento */
-  text-overflow: ellipsis; /* Muestra "..." si el texto es demasiado largo */
-  vertical-align: right; /* Alinea verticalmente con el botón */
-
-  z-index: 3; /* Asegura que esté sobre otros elementos */
 }
+
 
 .session-container {
   display: flex;
@@ -274,5 +245,32 @@
       }
   }
 
+  .cart-container {
+    color:#3A6EA5;
+    display: flex;
+    justify-content: center; /* Centra horizontalmente si es necesario */
+    align-items: center; /* Centra verticalmente si es necesario */
+    left: 100px;
+  }
   
+  .carrito-container {
+    display: flex;
+    align-items: center; /* Asegura que el texto y el ícono estén alineados verticalmente */
+    gap: 8px; /* Espacio entre el ícono y el texto */
+    cursor: pointer;
+    
+  }
+  
+  .cart-icon {
+    width: 24px; /* Tamaño del ícono */
+    height: auto; /* Mantiene la proporción */
+  }
+  .cart-text{
+    
+    text-align: center;
+    font-size: var(--font-size-base);
+    color: #3A6EA5;
+    font-family: var(--font-josefin-sans);
+    
+  }
   
