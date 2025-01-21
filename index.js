@@ -1029,10 +1029,38 @@ app.get('/colaborador/compras/descargar-anexos/:CostumProduct_id', authMiddlewar
   archive.finalize();
 });
 
-//####################################### crear compra #####################################ds
-// Endpoint para renderizar la página de crear orden
 
-// Endpoint para renderizar el formulario de dirección
+//####################################### crear compra #####################################ds
+
+// Endpoint para verificar si el correo ya existe en la base de datos
+app.post('/colaborador/ordenes/verificar-correo', authMiddleware, (req, res) => {
+  const { correo } = req.body;
+
+  if (!correo) {
+      return res.status(400).json({ success: false, error: 'El correo es obligatorio.' });
+  }
+
+  db.query('SELECT usuario_id, nombre, telefono FROM Usuarios WHERE correo = ?', [correo], (err, results) => {
+      if (err) {
+          console.error('Error al verificar el correo:', err);
+          return res.status(500).json({ success: false, error: 'Error interno del servidor al verificar el correo.' });
+      }
+
+      if (results.length > 0) {
+          const usuario = results[0];
+          res.json({
+              success: true,
+              registrado: true,
+              datos: { nombre: usuario.nombre, telefono: usuario.telefono },
+          });
+      } else {
+          res.json({ success: true, registrado: false });
+      }
+  });
+});
+
+
+// Endpoint para renderizar la página de crear orden
 app.get('/colaborador/ordenes/crear', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/compras/crear_orden.html'));
 });
@@ -1060,7 +1088,8 @@ app.get('/colaborador/ordenes/productos', authMiddleware, (req, res) => {
 
 // Endpoint para manejar la creación final de la orden
 // Endpoint para manejar la creación final de la orden
-app.post('/colaborador/ordenes/finalizar', authMiddleware, (req, res) => {
+// Endpoint para manejar la creación final de la orden
+app.post('/colaborador/ordenes/finalizar', authMiddleware, async (req, res) => {
   const { productos } = req.body;
 
   if (!req.session.ordenTemporal) {
@@ -1073,162 +1102,114 @@ app.post('/colaborador/ordenes/finalizar', authMiddleware, (req, res) => {
 
   const { direccion, correo, nombre, telefono, referencia } = req.session.ordenTemporal;
 
-  // Crear usuario si no existe
-  db.query('SELECT usuario_id FROM Usuarios WHERE correo = ?', [correo], (err, results) => {
-    if (err) {
-      console.error('Error al verificar cliente:', err);
-      return res.status(500).json({ success: false, error: 'Error interno del servidor.' });
-    }
+  try {
+    const [usuarioResult] = await db.promise().query(
+      'SELECT usuario_id FROM Usuarios WHERE correo = ?',
+      [correo]
+    );
 
-    const usuarioId = results.length > 0 ? results[0].usuario_id : null;
+    let usuarioId = usuarioResult.length > 0 ? usuarioResult[0].usuario_id : null;
 
     if (!usuarioId) {
-      db.query('INSERT INTO Usuarios (nombre, correo, telefono, password) VALUES (?, ?, ?, ?)', 
-        [nombre, correo, telefono, ''], 
-        (err, result) => {
-          if (err) {
-            console.error('Error al crear cliente:', err);
-            return res.status(500).json({ success: false, error: 'Error al registrar el cliente.' });
-          }
-          crearOrden(result.insertId);
-        }
+      const [nuevoUsuario] = await db.promise().query(
+        'INSERT INTO Usuarios (nombre, correo, telefono, password) VALUES (?, ?, ?, ?)',
+        [nombre, correo, telefono, '']
       );
-    } else {
-      crearOrden(usuarioId);
+      usuarioId = nuevoUsuario.insertId;
     }
 
-    function crearOrden(usuarioId) {
-      const queryUltimoNumero = 'SELECT numero_orden FROM ordenes ORDER BY orden_id DESC LIMIT 1';
-    
-      db.query(queryUltimoNumero, (err, result) => {
-        if (err) {
-          console.error('Error al obtener el último número de orden:', err);
-          return res.status(500).json({ success: false, error: 'Error interno del servidor.' });
-        }
-    
-        const ultimoNumero = result.length > 0 ? result[0].numero_orden : 'ORD-0000';
-        const nuevoNumeroOrden = generarNumeroOrden(ultimoNumero);
-    
-        const queryOrden = 'INSERT INTO ordenes (numero_orden, usuario_id, referencia, fecha_orden) VALUES (?, ?, ?, NOW())';
+    const [ultimoNumero] = await db.promise().query(
+      'SELECT numero_orden FROM ordenes ORDER BY orden_id DESC LIMIT 1'
+    );
+    const nuevoNumeroOrden = generarNumeroOrden(
+      ultimoNumero.length > 0 ? ultimoNumero[0].numero_orden : 'ORD-0000'
+    );
 
-        
-        db.query(queryOrden, [nuevoNumeroOrden, usuarioId, referencia], (err, result) => {
-          if (err) {
-            console.error('Error al crear orden:', err);
-            return res.status(500).json({ success: false, error: 'Error al crear la orden.' });
-          }
-    
-          const ordenId = result.insertId;
-    
-          const compras = productos.map(producto => [
-            producto.producto_id,
-            usuarioId,
-            new Date(),
-            0,
-            `${direccion.calle}, ${direccion.ciudad}, ${direccion.estado}, ${direccion.codigoPostal}`,
-            producto.cantidad,
-            ordenId
-          ]);
-    
-          const queryCompras = 'INSERT INTO Compras (producto_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad, orden_id) VALUES ?';
-    
-          db.query(queryCompras, [compras], (err) => {
-            if (err) {
-              console.error('Error al registrar las compras:', err);
-              return res.status(500).json({ success: false, error: 'Error al registrar las compras.' });
-            }
-    
-            // Registrar las compras en la tabla de Registros
-            registrarEnRegistros(productos, res);
+    const [nuevaOrden] = await db.promise().query(
+      'INSERT INTO ordenes (numero_orden, usuario_id, referencia, fecha_orden) VALUES (?, ?, ?, NOW())',
+      [nuevoNumeroOrden, usuarioId, referencia]
+    );
+    const ordenId = nuevaOrden.insertId;
 
-            // Actualizar el stock después de registrar las compras
-            actualizarStock(productos, res);
-    
-            // Limpiar la sesión temporal
-            req.session.ordenTemporal = null;
-            res.json({ success: true, message: 'Orden creada exitosamente.' });
-          });
-        });
-      });
-    }
+    const compras = [];
+    const registros = [];
 
-    // Función para registrar en la tabla de Registros
-    function registrarEnRegistros(productos, res) {
-      const registros = productos.map(producto => [
-        producto.producto_id,
-        'compra', // Evento de compra
-        new Date(), // Fecha actual
-        producto.precio
+    for (const producto of productos) {
+      const { codigo, cantidad } = producto;
+
+      // Obtener el product_id y precio basado en el código
+      const [productoData] = await db.promise().query(
+        `SELECT producto_id, precio FROM Productos WHERE codigo = ?`,
+        [codigo]
+      );
+
+      if (productoData.length === 0) {
+        return res.status(400).json({ success: false, error: `El producto con código ${codigo} no existe.` });
+      }
+
+      const { producto_id, precio } = productoData[0];
+
+      // Agregar a la tabla Compras
+      compras.push([
+        producto_id,
+        usuarioId,
+        new Date(),
+        1, // Estado por defecto
+        direccion,
+        cantidad,
+        ordenId,
       ]);
 
-      const queryRegistros = 'INSERT INTO Registros (product_id, evento, fecha, precio) VALUES ?';
+      // Agregar a la tabla Registros
+      registros.push([
+        producto_id,
+        'compra',
+        new Date(),
+        precio,
+      ]);
 
-      db.query(queryRegistros, [registros], (err) => {
-        if (err) {
-          console.error('Error al registrar en la tabla de Registros:', err);
-          return res.status(500).json({ success: false, error: 'Error al registrar las compras en Registros.' });
-        }
-      });
-    }
-
-    // Función para actualizar el stock
-    function actualizarStock(productos, res) {
-      productos.forEach(producto => {
-        const queryActualizarStock = `
-          UPDATE Productos 
-          SET stock = stock - ? 
-          WHERE producto_id = ? AND stock > 0
-        `;
-    
-        db.query(queryActualizarStock, [producto.cantidad, producto.producto_id], (err, result) => {
-          if (err) {
-            console.error(`Error al actualizar stock del producto ${producto.producto_id}:`, err);
-            return res.status(500).json({ success: false, error: 'Error al actualizar el stock de los productos.' });
-          }
-    
-          if (result.affectedRows === 0) {
-            // Si el stock es 0, simplemente no se resta
-            console.warn(`El producto con ID ${producto.producto_id} no tiene stock, pero se fabricará automáticamente.`);
-          }
-        });
-      });
-    }
-    
-
-    function generarNumeroOrden(ultimoNumero) {
-      const hex = ultimoNumero.split('-')[1]; // Extraer la parte hexadecimal
-      const nuevoHex = (parseInt(hex, 16) + 1).toString(16).toUpperCase().padStart(4, '0'); // Incrementar y convertir a hexadecimal
-      return `ORD-${nuevoHex}`;
-    }
-  });
-});
-
-// Endpoint para verificar si el correo ya existe en la base de datos
-app.post('/colaborador/ordenes/verificar-correo', authMiddleware, (req, res) => {
-  const { correo } = req.body;
-
-  if (!correo) {
-      return res.status(400).json({ success: false, error: 'El correo es obligatorio.' });
-  }
-
-  db.query('SELECT usuario_id, nombre, telefono FROM Usuarios WHERE correo = ?', [correo], (err, results) => {
-      if (err) {
-          console.error('Error al verificar el correo:', err);
-          return res.status(500).json({ success: false, error: 'Error interno del servidor.' });
-      }
-
-      if (results.length > 0) {
-          const usuario = results[0];
-          res.json({
-              success: true,
-              registrado: true,
-              datos: { nombre: usuario.nombre, telefono: usuario.telefono },
-          });
+      // Actualizar el stock
+      if (producto.color_id) {
+        // Si es un color alterno
+        await db.promise().query(
+          `UPDATE ColoresAlternos SET stock = stock - ? WHERE color_id = ? AND stock > 0`,
+          [cantidad, producto.color_id]
+        );
       } else {
-          res.json({ success: true, registrado: false });
+        // Si es el producto principal
+        await db.promise().query(
+          `UPDATE Productos SET stock = stock - ? WHERE producto_id = ? AND stock > 0`,
+          [cantidad, producto_id]
+        );
       }
-  });
+    }
+
+    // Insertar las compras
+    await db.promise().query(
+      'INSERT INTO Compras (producto_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad, orden_id) VALUES ?',
+      [compras]
+    );
+
+    // Insertar en registros
+    await db.promise().query(
+      'INSERT INTO Registros (product_id, evento, fecha, precio) VALUES ?',
+      [registros]
+    );
+
+    req.session.ordenTemporal = null;
+    res.json({ success: true, message: 'Orden creada exitosamente.' });
+  } catch (err) {
+    console.error('Error al procesar la orden:', err);
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
+  }
 });
+
+function generarNumeroOrden(ultimoNumero) {
+  const hex = ultimoNumero.split('-')[1];
+  const nuevoHex = (parseInt(hex, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
+  return `ORD-${nuevoHex}`;
+}
+
 
 //####################################### Modificar estado #####################################
 
@@ -2563,46 +2544,102 @@ app.post("/pedido-custom", upload.array("images"), async (req, res) => {
   }
 });
 
-//#######################ESTADISTICAS################################
+
+//###################### ESTADISTICAS ######################
 app.get('/api/estadisticas', async (req, res) => {
   try {
+    // Obtener el parámetro de límite, por defecto será 5
+    const limite = parseInt(req.query.limite) || 5;
+
     // Obtener visitas generales por día
     const [visitasPorDia] = await db.promise().query(`
-      SELECT fecha, SUM(cantidad) AS total
+      SELECT DATE(fecha) AS fecha, SUM(cantidad) AS total
       FROM Visitas
-      GROUP BY fecha
+      GROUP BY DATE(fecha)
       ORDER BY fecha ASC
     `);
 
-    // Top 5 productos más vendidos (ya existente)
+    // Top productos más vendidos
     const [topVendidos] = await db.promise().query(`
-      SELECT p.nombre, COUNT(r.product_id) as totalVentas
-      FROM Registros r
-      JOIN Productos p ON r.product_id = p.producto_id
-      WHERE r.evento = "compra"
-      GROUP BY r.product_id
+      SELECT Productos.nombre, COUNT(Registros.product_id) AS totalVentas
+      FROM Registros
+      JOIN Productos ON Registros.product_id = Productos.producto_id
+      WHERE Registros.evento = "compra"
+      GROUP BY Registros.product_id
       ORDER BY totalVentas DESC
-      LIMIT 5
-    `);
+      LIMIT ?
+    `, [limite]);
 
-    // Top 5 productos más visitados (ya existente)
+    // Top productos más visitados
     const [topVisitados] = await db.promise().query(`
-      SELECT p.nombre, COUNT(r.product_id) as totalVisitas
-      FROM Registros r
-      JOIN Productos p ON r.product_id = p.producto_id
-      WHERE r.evento = "visita" AND r.product_id IS NOT NULL
-      GROUP BY r.product_id
+      SELECT Productos.nombre, COUNT(Registros.product_id) AS totalVisitas
+      FROM Registros
+      JOIN Productos ON Registros.product_id = Productos.producto_id
+      WHERE Registros.evento = "visita" AND Registros.product_id IS NOT NULL
+      GROUP BY Registros.product_id
       ORDER BY totalVisitas DESC
-      LIMIT 5
-    `);
+      LIMIT ?
+    `, [limite]);
 
-    res.json({ visitasPorDia, topVendidos, topVisitados });
+    // Categorías más compradas
+    const [categoriasCompradas] = await db.promise().query(`
+      SELECT Productos.categoria, COUNT(Registros.product_id) AS totalCompras
+      FROM Registros
+      JOIN Productos ON Registros.product_id = Productos.producto_id
+      WHERE Registros.evento = "compra"
+      GROUP BY Productos.categoria
+      ORDER BY totalCompras DESC
+      LIMIT ?
+    `, [limite]);
+
+    res.json({
+      visitasPorDia,
+      topVendidos,
+      topVisitados,
+      categoriasCompradas,
+    });
   } catch (err) {
     console.error('Error al obtener estadísticas:', err);
     res.status(500).send('Error interno del servidor');
   }
 });
 
+
+
+//################################### Clientes 
+
+
+app.get('/colaborador/clientes', (req, res) => {
+  // Renderiza el archivo HTML
+  res.sendFile(path.join(__dirname, 'src/colaborador/clientes.html'));
+});
+
+app.get('/api/colaborador/clientes', (req, res) => {
+  // Ruta para enviar los datos en formato JSON
+  const query = `
+      SELECT 
+          u.nombre,
+          u.correo,
+          u.telefono,
+          COUNT(c.usuario_id) AS numero_compras
+      FROM 
+          Usuarios u
+      LEFT JOIN 
+          Compras c
+      ON 
+          u.usuario_id = c.usuario_id
+      GROUP BY 
+          u.usuario_id;
+  `;
+
+  db.query(query, (err, results) => {
+      if (err) {
+          console.error('Error ejecutando la consulta:', err);
+          return res.status(500).json({ error: 'Error al obtener los datos de los clientes' });
+      }
+      res.json(results);
+  });
+});
 
 app.get('/perfil', (req, res) => {
 
@@ -2616,6 +2653,71 @@ app.get('/perfil', (req, res) => {
   res.render('perfil');
 });
 
+
+//################################### grafica dibujar ######################
+
+app.get('/colaborador/grafica', (req, res) => {
+  res.sendFile(path.join(__dirname, 'src/colaborador/graficaDraw.html'));
+});
+// Obtener los registros de un producto// Obtener los registros del producto con product_id = 52
+app.get('/api/registros/52', async (req, res) => {
+  try {
+    const [registros] = await db.promise().query(
+      `SELECT fecha, precio 
+       FROM Registros 
+       WHERE product_id = 52 
+       ORDER BY fecha ASC`
+    );
+
+    res.json({ success: true, registros });
+  } catch (error) {
+    console.error('Error al obtener los registros para product_id 52:', error);
+    res.status(500).json({ success: false, error: 'Error al obtener los registros.' });
+  }
+});
+
+// Guardar registros nuevos o actualizados para el producto con product_id = 52
+app.post('/api/registros/52', async (req, res) => {
+  const { registros } = req.body;
+
+  if (!Array.isArray(registros) || registros.length === 0) {
+    return res.status(400).json({ success: false, error: 'Debe enviar al menos un registro.' });
+  }
+
+  try {
+    // Validar que cada registro tenga los campos requeridos
+    const registrosValidos = registros.filter(
+      (registro) => registro.fecha && registro.precio && !isNaN(registro.precio)
+    );
+
+    if (registrosValidos.length !== registros.length) {
+      return res.status(400).json({ success: false, error: 'Algunos registros no son válidos.' });
+    }
+
+    // Borrar los registros anteriores para este product_id
+    await db.promise().query(
+      `DELETE FROM Registros WHERE product_id = 52 AND evento = "compra"`
+    );
+
+    // Insertar los nuevos registros
+    const valores = registrosValidos.map((registro) => [
+      52, // Product ID fijo
+      'compra',
+      new Date(registro.fecha),
+      parseFloat(registro.precio),
+    ]);
+
+    await db.promise().query(
+      `INSERT INTO Registros (product_id, evento, fecha, precio) VALUES ?`,
+      [valores]
+    );
+
+    res.json({ success: true, message: 'Registros guardados correctamente para product_id 52.' });
+  } catch (error) {
+    console.error('Error al guardar los registros para product_id 52:', error);
+    res.status(500).json({ success: false, error: 'Error al guardar los registros.' });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);

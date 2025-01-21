@@ -107,3 +107,44 @@ body {
     flex-direction: column;
   }
   
+
+  .limite-selector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 20px auto;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .limite-selector label {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #D65C4F; /* Color chukum */
+    margin-bottom: 10px;
+  }
+  
+  .limite-selector select {
+    font-size: 1.2rem;
+    padding: 10px 15px;
+    border: 2px solid #D65C4F; /* Borde color chukum */
+    border-radius: 5px;
+    background-color: #FFF5F0; /* Fondo suave */
+    color: #333;
+    outline: none;
+    cursor: pointer;
+    width: 200px;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .limite-selector select:hover {
+    background-color: #D65C4F; /* Fondo al pasar el mouse */
+    color: white; /* Texto blanco */
+  }
+  
+  .limite-selector select:focus {
+    border-color: #AA4A3A; /* Color más oscuro al enfocar */
+    box-shadow: 0 0 5px #AA4A3A;
+  }
+  

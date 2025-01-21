@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes</title>
+    <link rel="stylesheet" href="/colaborador/clientes.css">
+   
+</head>
+<body>
+    <div class="container">
+        <h1>Lista de Clientes</h1>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Buscar por nombre o correo...">
+        </div>
+
+        <div class="filter-container">
+            <label for="filterColumn">Filtrar por columna:</label>
+            <select id="filterColumn">
+                <option value="">Todos</option>
+                <option value="nombre">Nombre</option>
+                <option value="correo">Correo</option>
+                <option value="telefono">Teléfono</option>
+                <option value="numero_compras">Número de Compras</option>
+            </select>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Teléfono</th>
+                    <th>Número de Compras</th>
+                </tr>
+            </thead>
+            <tbody id="clientesTable">
+                <!-- Las filas serán generadas dinámicamente -->
+            </tbody>
+        </table>
+
+        <div class="buttons">
+            <a href="/colaborador/menu" class="button">Volver al Menú</a>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales para almacenar datos
+        let clientesData = [];
+
+        // Función para filtrar y mostrar datos en la tabla
+        function renderTable(data) {
+            const tableBody = document.getElementById('clientesTable');
+            tableBody.innerHTML = '';
+            data.forEach(cliente => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${cliente.nombre}</td>
+                    <td>${cliente.correo}</td>
+                    <td>${cliente.telefono || 'N/A'}</td>
+                    <td>${cliente.numero_compras}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Llamada al endpoint para obtener los datos de los clientes
+        fetch('/api/colaborador/clientes')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP error! Status: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                clientesData = data;
+                renderTable(clientesData);
+            })
+            .catch(error => {
+                console.error('Error al cargar los datos:', error);
+                alert('Hubo un problema al cargar los datos de los clientes.');
+            });
+
+        // Función para buscar y filtrar datos
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filteredData = clientesData.filter(cliente => 
+                cliente.nombre.toLowerCase().includes(query) || 
+                cliente.correo.toLowerCase().includes(query)
+            );
+            renderTable(filteredData);
+        });
+
+        // Función para filtrar por columna
+        document.getElementById('filterColumn').addEventListener('change', (e) => {
+            const column = e.target.value;
+            let filteredData = clientesData;
+
+            if (column === 'nombre') {
+                filteredData = clientesData.sort((a, b) => a.nombre.localeCompare(b.nombre));
+            } else if (column === 'correo') {
+                filteredData = clientesData.sort((a, b) => a.correo.localeCompare(b.correo));
+            } else if (column === 'telefono') {
+                filteredData = clientesData.sort((a, b) => (a.telefono || '').localeCompare(b.telefono || ''));
+            } else if (column === 'numero_compras') {
+                filteredData = clientesData.sort((a, b) => b.numero_compras - a.numero_compras);
+            }
+
+            renderTable(filteredData);
+        });
+    </script>
+</body>
+</html>

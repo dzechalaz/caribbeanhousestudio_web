@@ -23,10 +23,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td><input type="checkbox" class="producto-checkbox"></td>
-                <td>${producto.producto_id}</td>
                 <td>${producto.codigo}</td>
                 <td>${producto.nombre}</td>
-                <td>${producto.precio}</td>
+                <td>${parseFloat(producto.precio).toFixed(2)}</td>
+                <td>${producto.categoria || 'Sin categoría'}</td>
+                <td style="background-color: ${producto.color_hex || 'transparent'};">
+                    ${producto.color || 'Principal'}
+                </td>
                 <td>${producto.stock}</td>
                 <td><input type="number" class="cantidad-input" min="1" max="${producto.stock}" value="1" disabled></td>
             `;
@@ -56,9 +59,9 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('#productos-body tr').forEach(row => {
             const checkbox = row.querySelector('.producto-checkbox');
             if (checkbox && checkbox.checked) {
-                const productoId = row.cells[1].innerText;
-                const cantidad = row.querySelector('.cantidad-input').value;
-                seleccionados.push({ producto_id: productoId, cantidad: parseInt(cantidad) });
+                const codigoProducto = row.cells[1].innerText;
+                const cantidad = parseInt(row.querySelector('.cantidad-input').value);
+                seleccionados.push({ codigo: codigoProducto, cantidad });
             }
         });
 
@@ -84,20 +87,13 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(error => console.error('Error:', error));
     });
 
-    // Manejar la barra de búsqueda
+    // Manejo de la barra de búsqueda
     document.getElementById('busqueda').addEventListener('input', function (e) {
         paginaActual = 1;
         cargarProductos(e.target.value);
     });
 
-    // Manejar el cambio de productos por página
-    document.getElementById('productos-por-pagina').addEventListener('change', function (e) {
-        productosPorPagina = parseInt(e.target.value);
-        paginaActual = 1;
-        cargarProductos();
-    });
-
-    // Manejar paginación
+    // Manejo de la paginación
     document.getElementById('prev-page').addEventListener('click', function () {
         if (paginaActual > 1) {
             paginaActual--;
@@ -112,9 +108,4 @@ document.addEventListener('DOMContentLoaded', function () {
             cargarProductos();
         }
     });
-
-    document.getElementById('producto-costumizado').addEventListener('click', function () {
-        window.location.href = '/colaborador/costumProductCrear';
-      });
-      
 });

@@ -1,5 +1,5 @@
-  /* General body styles */
-  body {
+/* General body styles */
+body {
     font-family: 'Arial', sans-serif;
     background-color: #F4EDE0; /* Fondo cálido estilo Chukum */
     padding: 20px;
@@ -7,7 +7,7 @@
     display: flex;
     justify-content: center;
   }
-
+  
   /* Container */
   .container {
     max-width: 1800px;
@@ -20,24 +20,63 @@
     justify-content: center;
     align-items: center;
   }
-
+  
   /* Title styles */
   h1 {
     color: #5B4536; /* Texto principal */
     text-align: center;
     margin-bottom: 30px;
   }
-
+  
+  /* Search bar styles */
+  .search-container {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .search-container input {
+    padding: 10px;
+    width: 50%;
+    max-width: 400px;
+    border: 1px solid #E5D4C5;
+    border-radius: 5px;
+    font-size: 16px;
+    color: #5B4536;
+  }
+  
+  /* Filter dropdown styles */
+  .filter-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+  }
+  
+  .filter-container label {
+    font-size: 16px;
+    margin-right: 10px;
+    color: #5B4536;
+  }
+  
+  .filter-container select {
+    padding: 10px;
+    border: 1px solid #E5D4C5;
+    border-radius: 5px;
+    font-size: 16px;
+    color: #5B4536;
+    background-color: #FFF8F0;
+  }
+  
   /* Table styles */
   table {
-    margin: 20px;
+    margin: 20px auto;
     border-collapse: collapse;
     background-color: #FFF8F0;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border-radius: 12px;
     overflow: hidden;
+    width: 100%;
   }
-
+  
   table th,
   table td {
     padding: 12px 15px;
@@ -45,18 +84,20 @@
     border-bottom: 1px solid #E5D4C5;
     color: #5B4536;
   }
-
+  
   /* Header (th) styles */
   table th {
     background-color: #D99058; /* Naranja estilo Chukum */
     color: #FFF8F0;
+    text-transform: uppercase;
+    font-weight: bold;
   }
-
+  
   /* Row hover effect */
   table tr:hover {
     background-color: #F4E0CF; /* Suave resaltado */
   }
-
+  
   /* Button styles */
   button, a.button {
     background-color: #8EAA6D; /* Verde Chukum */
@@ -68,89 +109,34 @@
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.3s ease;
+    text-decoration: none;
   }
-
+  
   button:hover, a.button:hover {
     background-color: #6E8E51; /* Hover verde oscuro */
   }
-
+  
   button:focus, a.button:focus {
     outline: none;
   }
-
-  .buttons {
-    text-align: center;
+  
+  /* Responsive adjustments */
+  @media (max-width: 1200px) {
+    .container {
+      min-width: 90%;
+    }
+  
+    .search-container input {
+      width: 80%;
+    }
+  
+    .filter-container {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .filter-container select {
+      margin-top: 10px;
+    }
   }
-
-  /* Ajustes adicionales para mantener la tabla centrada */
-  .dataTables_wrapper {
-    margin: 0 auto;
-  }
-
-  .btn-rojo-chukum {
-    background: #D65C4F; /* Rojo chukum */
-    color: #FFF8F0;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    font-weight: bold;
-  }
-
-  .btn-rojo-chukum:hover {
-    background: #B5483E; /* Más oscuro en hover */
-  }
-
-
-  /*######################## Productos al crear orden ###################*/
-
-
-  /* Controles de búsqueda y selección */
-  .controls {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    margin-bottom: 15px;
-    gap: 10px;
-  }
-
-  .controls input[type="text"] {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 60%;
-    max-width: 300px;
-    flex-grow: 1;
-    
-  }
-
-  .controls select {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-
-  /* Paginación */
-  .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-  }
-
-  .pagination button {
-    background-color: #8ecae6;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-size: 14px;
-  }
-
-  .pagination button:hover {
-    background-color: #219ebc;
-  }
+  

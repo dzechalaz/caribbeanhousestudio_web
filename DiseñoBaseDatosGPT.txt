@@ -41,3 +41,30 @@ mysql> DESCRIBE Productos;
 | precioOG    | decimal(10,2) | NO   |     | 0.00              |                   |
 +-------------+---------------+------+-----+-------------------+-------------------+
 9 rows in set (0.12 sec)
+
+
+Descripción de la tabla 'Registros':
+('id', 'int', 'NO', 'PRI', None, 'auto_increment')
+('product_id', 'int', 'NO', 'MUL', None, '')
+('evento', "enum('visita','compra')", 'NO', '', None, '')
+('fecha', 'datetime', 'NO', '', None, '')
+('precio', 'decimal(10,2)', 'YES', '', None, '')
+
+Descripción de la tabla 'Compras':
+('compra_id', 'int', 'NO', 'PRI', None, 'auto_increment')
+('producto_id', 'int', 'YES', 'MUL', None, '')
+('usuario_id', 'int', 'NO', 'MUL', None, '')
+('fecha_compra', 'date', 'NO', '', None, '')
+('estado', 'int', 'NO', '', '1', '')
+('direccion_envio', 'varchar(255)', 'NO', '', None, '')
+('cantidad', 'int', 'NO', '', '1', '')
+('orden_id', 'int', 'YES', 'MUL', None, '')
+('FechaEstimada', 'date', 'YES', '', None, '')
+('CostumProduct_id', 'int', 'YES', '', None, '')
+
+Descripción de la tabla 'ordenes':
+('orden_id', 'int', 'NO', 'PRI', None, 'auto_increment')
+('numero_orden', 'varchar(50)', 'NO', 'UNI', None, '')
+('usuario_id', 'int', 'NO', 'MUL', None, '')
+('referencia', 'varchar(255)', 'YES', '', None, '')
+('fecha_orden', 'datetime', 'NO', '', 'CURRENT_TIMESTAMP', 'DEFAULT_GENERATED')

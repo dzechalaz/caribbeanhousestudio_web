@@ -1,12 +1,29 @@
 document.addEventListener('DOMContentLoaded', async () => {
+  const limiteSelector = document.getElementById('limite');
+  let visitasChartInstance = null; // Variable para almacenar la instancia del gráfico
+
+  const cargarEstadisticas = async (limite = 5) => {
     try {
-      // Fetch data from API
-      const response = await fetch('/api/estadisticas');
+      // Fetch data from API con el límite seleccionado
+      const response = await fetch(`/api/estadisticas?limite=${limite}`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
-  
-      // Gráfica de visitas por día
+
+      // Verificar si se recibió la estructura de datos esperada
+      console.log('Datos recibidos:', data);
+
+      // Destruir el gráfico anterior, si existe
+      if (visitasChartInstance) {
+        visitasChartInstance.destroy();
+      }
+
+      // Crear el gráfico de visitas por día
       const visitasCtx = document.getElementById('visitasChart').getContext('2d');
-      new Chart(visitasCtx, {
+      visitasChartInstance = new Chart(visitasCtx, {
         type: 'line',
         data: {
           labels: data.visitasPorDia.map(item => {
@@ -43,32 +60,71 @@ document.addEventListener('DOMContentLoaded', async () => {
           },
         },
       });
-  
-      // Rellenar Top 5 Más Vendidos
+
+      // Rellenar Top Más Vendidos
       const topVendidosTable = document.getElementById('topVendidos');
-      topVendidosTable.innerHTML = ''; // Clear existing rows
-      data.topVendidos.forEach(producto => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${producto.nombre}</td>
-          <td>${producto.totalVentas}</td>
-        `;
-        topVendidosTable.appendChild(row);
-      });
-  
-      // Rellenar Top 5 Más Visitados
+      topVendidosTable.innerHTML = '';
+      if (data.topVendidos && data.topVendidos.length > 0) {
+        data.topVendidos.forEach(producto => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${producto.nombre}</td>
+            <td>${producto.totalVentas}</td>
+          `;
+          topVendidosTable.appendChild(row);
+        });
+      } else {
+        topVendidosTable.innerHTML = '<tr><td colspan="2">No hay datos disponibles</td></tr>';
+      }
+
+      // Rellenar Top Más Visitados
       const topVisitadosTable = document.getElementById('topVisitados');
-      topVisitadosTable.innerHTML = ''; // Clear existing rows
-      data.topVisitados.forEach(producto => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${producto.nombre}</td>
-          <td>${producto.totalVisitas}</td>
-        `;
-        topVisitadosTable.appendChild(row);
-      });
+      topVisitadosTable.innerHTML = '';
+      if (data.topVisitados && data.topVisitados.length > 0) {
+        data.topVisitados.forEach(producto => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${producto.nombre}</td>
+            <td>${producto.totalVisitas}</td>
+          `;
+          topVisitadosTable.appendChild(row);
+        });
+      } else {
+        topVisitadosTable.innerHTML = '<tr><td colspan="2">No hay datos disponibles</td></tr>';
+      }
+
+      // Rellenar Categorías Más Compradas
+      const categoriasTable = document.getElementById('categoriasCompradas');
+      categoriasTable.innerHTML = '';
+      if (data.categoriasCompradas && data.categoriasCompradas.length > 0) {
+        data.categoriasCompradas.forEach(categoria => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${categoria.categoria}</td>
+            <td>${categoria.totalCompras}</td>
+          `;
+          categoriasTable.appendChild(row);
+        });
+      } else {
+        categoriasTable.innerHTML = '<tr><td colspan="2">No hay datos disponibles</td></tr>';
+      }
     } catch (error) {
       console.error('Error al cargar las estadísticas:', error);
+
+      // Mostrar mensaje de error en las tablas
+      const errorRow = '<tr><td colspan="2">Error al cargar datos</td></tr>';
+      document.getElementById('topVendidos').innerHTML = errorRow;
+      document.getElementById('topVisitados').innerHTML = errorRow;
+      document.getElementById('categoriasCompradas').innerHTML = errorRow;
     }
+  };
+
+  // Cargar estadísticas iniciales con límite 5
+  await cargarEstadisticas(5);
+
+  // Cambiar estadísticas dinámicamente al seleccionar un nuevo límite
+  limiteSelector.addEventListener('change', async () => {
+    const nuevoLimite = parseInt(limiteSelector.value, 10);
+    await cargarEstadisticas(nuevoLimite);
   });
-  
+});
