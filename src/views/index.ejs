@@ -194,6 +194,47 @@
 
 
     <script>
+
+
+      async function cargarAnuncio() {
+        try {
+          const response = await fetch('/anuncio');
+          const data = await response.json();
+      
+          if (data.success && data.url) {
+            const anuncioDiv = document.createElement('div');
+            anuncioDiv.style.position = 'fixed';
+            anuncioDiv.style.top = '0';
+            anuncioDiv.style.left = '0';
+            anuncioDiv.style.width = '100vw';
+            anuncioDiv.style.height = '100vh';
+            anuncioDiv.style.background = 'rgba(0, 0, 0, 0.5)';
+            anuncioDiv.style.display = 'flex';
+            anuncioDiv.style.justifyContent = 'center';
+            anuncioDiv.style.alignItems = 'center';
+            anuncioDiv.style.zIndex = '1000';
+      
+            const img = document.createElement('img');
+            img.src = data.url;
+            img.style.maxWidth = '50%';
+            img.style.maxHeight = '50%';
+      
+            anuncioDiv.appendChild(img);
+            anuncioDiv.onclick = () => anuncioDiv.remove();
+            document.body.appendChild(anuncioDiv);
+          } else {
+            console.log('Anuncio no habilitado o no disponible.');
+          }
+        } catch (error) {
+          console.error('Error al cargar el anuncio:', error);
+        }
+      }
+      
+    
+      // Llamar la función al cargar la página
+      cargarAnuncio();
+
+
           document.addEventListener('DOMContentLoaded', async () => {
           const productos = document.querySelectorAll('.product-card');
           const chartContainer = document.getElementById('price-chart-container');

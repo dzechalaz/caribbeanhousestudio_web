@@ -133,6 +133,82 @@ app.get('/colaborador/productos/crear', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/productos/crear_producto.html'));
 });
 
+// Endpoint para /colaborador/anuncios (renderización del HTML)
+app.get('/colaborador/anuncios', authMiddleware, (req, res) => {
+  const timestamp = Date.now();
+  const anuncioPath = `https://pub-9eb3385798dc4bcba46fb69f616dc1a0.r2.dev/Anuncios/anuncio.webp?t=${timestamp}`;
+
+  // Leer el archivo HTML y reemplazar un marcador con la URL del anuncio
+  const fs = require('fs');
+  const htmlPath = path.join(__dirname, 'src/colaborador/anuncios.html');
+  fs.readFile(htmlPath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error al leer el archivo HTML:', err);
+      return res.status(500).send('Error interno del servidor');
+    }
+
+    // Reemplazar el marcador {{anuncioPath}} con la URL dinámica
+    const htmlConAnuncio = data.replace('{{anuncioPath}}', anuncioPath);
+    res.send(htmlConAnuncio);
+  });
+});
+
+// Endpoint para procesar la subida de la imagen
+// Endpoint para subir la imagen al bucket sin procesarla
+app.post('/colaborador/anuncios/upload', authMiddleware, upload.single('imagen'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).send('No se ha subido ninguna imagen.');
+    }
+
+    const activo = req.body.activo === 'true'; // Estado del checkbox
+
+    // Actualizar el estado global
+    anuncioHabilitado = activo;
+
+    // Subir la imagen al bucket
+    const fileName = 'anuncio.webp';
+    const productPath = `Anuncios/`;
+    const filePath = `${productPath}${fileName}`;
+
+    const params = {
+      Bucket: 'products', // El bucket configurado
+      Key: filePath,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype,
+    };
+
+    await s3.send(new PutObjectCommand(params));
+    console.log(`Imagen subida correctamente: ${filePath}`);
+
+    // Construir la URL pública
+    const imageUrl = `${CFI}/${filePath}`;
+    res.status(200).json({ success: true, message: 'Imagen subida con éxito.', url: imageUrl, habilitado: anuncioHabilitado });
+  } catch (error) {
+    console.error('Error al procesar la imagen:', error);
+    res.status(500).send('Error al procesar la imagen.');
+  }
+});
+
+
+
+// Estado global para habilitar o deshabilitar el anuncio
+let anuncioHabilitado = false; // Por defecto deshabilitado
+
+app.get('/anuncio', async (req, res) => {
+  try {
+    if (!anuncioHabilitado) {
+      return res.json({ success: false, message: 'El anuncio no está habilitado.' });
+    }
+
+    const timestamp = Date.now();
+    const anuncioPath = `https://pub-9eb3385798dc4bcba46fb69f616dc1a0.r2.dev/Anuncios/anuncio.webp?t=${timestamp}`;
+    res.json({ success: true, url: anuncioPath });
+  } catch (error) {
+    console.error('Error al cargar el anuncio:', error);
+    res.status(500).json({ success: false, message: 'Error al cargar el anuncio.' });
+  }
+});
 
 
 
@@ -2376,8 +2452,6 @@ app.get('/producto-historial/:id', async (req, res) => {
     res.status(500).send('Error interno del servidor');
   }
 });
-
-
 
 
 
