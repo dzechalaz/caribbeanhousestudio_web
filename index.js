@@ -1948,11 +1948,15 @@ app.get('/producto', async (req, res) => {
     const [comprasMes] = await db.promise().query(
       `SELECT DATE(fecha) AS fecha, MAX(precio) AS precio
       FROM Registros
-      WHERE product_id = ? AND fecha IS NOT NULL AND fecha >= ?
+      WHERE product_id = ? 
+        AND fecha IS NOT NULL 
+        AND fecha >= ?
+        AND (evento = 'compra' OR evento = 'sim') -- Filtra por compra o sim
       GROUP BY DATE(fecha)
       ORDER BY fecha ASC`,
       [productoId, lastMonthDate]
     );
+    
 
 
     // Imprimir los datos obtenidos en la terminal
@@ -2412,13 +2416,15 @@ app.get('/producto-historial/:id', async (req, res) => {
   try {
     const [historial] = await db.promise().query(
       `SELECT DATE(fecha) AS fecha, MAX(precio) AS precio
-      FROM Registros
-      WHERE product_id = ? AND fecha IS NOT NULL
-      GROUP BY DATE(fecha)
-      ORDER BY fecha ASC`,
+       FROM Registros
+       WHERE product_id = ? 
+         AND fecha IS NOT NULL
+         AND (evento = 'compra' OR evento = 'sim') -- Filtra por compra o sim
+       GROUP BY DATE(fecha)
+       ORDER BY fecha ASC`,
       [productoId]
     );
-
+    
     // Formatear los datos para la gráfica
     const chartData = historial.map(registro => ({
       time: registro.fecha.toISOString().split('T')[0],
@@ -2656,68 +2662,99 @@ app.get('/perfil', (req, res) => {
 
 //################################### grafica dibujar ######################
 
+//################################### grafica dibujar ######################
+
+// Endpoint para servir la página
 app.get('/colaborador/grafica', (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/graficaDraw.html'));
 });
-// Obtener los registros de un producto// Obtener los registros del producto con product_id = 52
-app.get('/api/registros/52', async (req, res) => {
+
+// Obtener los registros de un producto dinámicamente
+app.get('/api/registros/:product_id', async (req, res) => {
+  const { product_id } = req.params;
+
   try {
     const [registros] = await db.promise().query(
-      `SELECT fecha, precio 
-       FROM Registros 
-       WHERE product_id = 52 
-       ORDER BY fecha ASC`
+      `SELECT id, fecha, precio, evento
+       FROM Registros
+       WHERE product_id = ? AND (evento = 'compra' OR evento = 'sim')
+       ORDER BY fecha ASC`,
+      [product_id]
     );
 
-    res.json({ success: true, registros });
+    // Asegurar que las fechas estén en formato YYYY-MM-DD
+    const registrosFormateados = registros.map((r) => ({
+      ...r,
+      fecha: r.fecha.toISOString().split('T')[0],
+    }));
+
+    res.json({ success: true, registros: registrosFormateados });
   } catch (error) {
-    console.error('Error al obtener los registros para product_id 52:', error);
+    console.error('Error al obtener los registros:', error);
     res.status(500).json({ success: false, error: 'Error al obtener los registros.' });
   }
 });
 
-// Guardar registros nuevos o actualizados para el producto con product_id = 52
-app.post('/api/registros/52', async (req, res) => {
+// Sincronizar registros dinámicamente con la base de datos
+app.post('/api/registros/:product_id/sync', async (req, res) => {
+  const { product_id } = req.params;
   const { registros } = req.body;
 
-  if (!Array.isArray(registros) || registros.length === 0) {
-    return res.status(400).json({ success: false, error: 'Debe enviar al menos un registro.' });
+  if (!Array.isArray(registros)) {
+    return res.status(400).json({ success: false, error: 'Datos inválidos.' });
   }
 
   try {
-    // Validar que cada registro tenga los campos requeridos
-    const registrosValidos = registros.filter(
-      (registro) => registro.fecha && registro.precio && !isNaN(registro.precio)
+    await db.promise().query('START TRANSACTION');
+
+    // Eliminar los registros actuales del producto especificado
+    await db.promise().query(
+      `DELETE FROM Registros WHERE product_id = ? AND (evento = 'compra' OR evento = 'sim')`,
+      [product_id]
     );
 
-    if (registrosValidos.length !== registros.length) {
-      return res.status(400).json({ success: false, error: 'Algunos registros no son válidos.' });
+    // Preparar los nuevos valores para insertar
+    const valores = registros.map(({ fecha, precio }) => {
+      const formattedFecha = new Date(fecha).toISOString().split('T')[0]; // Formato YYYY-MM-DD
+      return [product_id, 'sim', formattedFecha, parseFloat(precio) || 0.0];
+    });
+
+    // Insertar los nuevos registros si existen valores
+    if (valores.length > 0) {
+      await db.promise().query(
+        `INSERT INTO Registros (product_id, evento, fecha, precio) VALUES ?`,
+        [valores]
+      );
     }
 
-    // Borrar los registros anteriores para este product_id
-    await db.promise().query(
-      `DELETE FROM Registros WHERE product_id = 52 AND evento = "compra"`
-    );
+    await db.promise().query('COMMIT');
 
-    // Insertar los nuevos registros
-    const valores = registrosValidos.map((registro) => [
-      52, // Product ID fijo
-      'compra',
-      new Date(registro.fecha),
-      parseFloat(registro.precio),
-    ]);
-
-    await db.promise().query(
-      `INSERT INTO Registros (product_id, evento, fecha, precio) VALUES ?`,
-      [valores]
-    );
-
-    res.json({ success: true, message: 'Registros guardados correctamente para product_id 52.' });
+    res.json({ success: true, message: 'Registros sincronizados correctamente.' });
   } catch (error) {
-    console.error('Error al guardar los registros para product_id 52:', error);
-    res.status(500).json({ success: false, error: 'Error al guardar los registros.' });
+    await db.promise().query('ROLLBACK');
+    console.error('Error al sincronizar los registros:', error);
+    res.status(500).json({ success: false, error: `Error al sincronizar los registros: ${error.message}` });
   }
 });
+
+// Endpoint para eliminar un registro de un producto dinámicamente por su ID
+app.delete('/api/registros/:product_id/:id', async (req, res) => {
+  const { product_id, id } = req.params;
+
+  try {
+    await db.promise().query(
+      `DELETE FROM Registros WHERE id = ? AND product_id = ?`,
+      [id, product_id]
+    );
+    res.json({ success: true, message: 'Registro eliminado correctamente.' });
+  } catch (error) {
+    console.error('Error al eliminar el registro:', error);
+    res.status(500).json({ success: false, error: 'Error al eliminar el registro.' });
+  }
+});
+
+
+
 
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);

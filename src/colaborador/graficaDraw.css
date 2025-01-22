@@ -1,25 +1,142 @@
+/* General body styles */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #F4EDE0; /* Fondo cálido estilo Chukum */
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Main container */
 .container {
-  width: 80%;
-  margin: 0 auto;
+  width: 90%;
+  max-width: 1200px;
+  background-color: #FFF8F0; /* Fondo suave */
+  padding: 30px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
+  border-radius: 15px;
   text-align: center;
 }
 
-canvas {
-  margin: 20px auto;
-  border: 1px solid #ccc;
+/* Title styles */
+h1 {
+  color: #5B4536; /* Tono madera */
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  font-weight: bold;
+  border-bottom: 2px solid #D65C4F; /* Línea decorativa */
+  padding-bottom: 10px;
 }
 
-button {
-  margin: 10px;
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: #D65C4F;
-  color: #fff;
-  border: none;
+/* Table styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #FFF8F0;
+  border-radius: 12px;
+  overflow: hidden; /* Asegura bordes redondeados */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+table th, table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #E5D4C5; /* Línea suave */
+  font-size: 1rem;
+  color: #5B4536;
+}
+
+table th {
+  background-color: #D65C4F; /* Rojo Chukum */
+  color: #FFF8F0;
+  text-align: center;
+}
+
+table tr:hover {
+  background-color: #F9E8DC; /* Color de fondo al pasar el mouse */
+}
+
+table td:last-child {
+  text-align: center; /* Centrar botones en la última columna */
+}
+
+/* Input styles inside the table */
+input[type="date"], input[type="number"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #D99058; /* Borde naranja Chukum */
   border-radius: 5px;
-  cursor: pointer;
+  background-color: #FFF8F0;
+  color: #5B4536;
+  font-size: 1rem;
 }
 
-button:hover {
-  background-color: #b8493d;
+input[type="date"]:focus, input[type="number"]:focus {
+  outline: none;
+  border-color: #B5483E; /* Rojo Chukum oscuro */
+  box-shadow: 0 0 5px rgba(181, 72, 62, 0.5);
+}
+
+/* Button styles */
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 15px;
+}
+
+button:active {
+  transform: scale(0.98); /* Efecto de presión */
+}
+
+/* Primary button */
+.btn-rojo-chukum {
+  background-color: #D65C4F; /* Rojo Chukum */
+  color: #FFF8F0;
+}
+
+.btn-rojo-chukum:hover {
+  background-color: #B5483E; /* Rojo oscuro en hover */
+}
+
+/* Secondary button */
+.btn-secundario {
+  background-color: #8EAA6D; /* Verde Chukum */
+  color: #FFF8F0;
+}
+
+.btn-secundario:hover {
+  background-color: #6E8E51; /* Verde oscuro en hover */
+}
+
+/* Chart container */
+.chart-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+/* Chart canvas */
+canvas {
+  max-width: 100%;
+  height: auto;
+  background-color: #FFF8F0; /* Fondo del canvas */
+  border: 1px solid #E5D4C5; /* Borde suave */
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+}
+
+/* Add Row and Save Changes Buttons */
+#addRow, #saveChanges {
+  margin: 10px;
+  display: inline-block;
+  font-size: 1rem;
 }
