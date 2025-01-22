@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/colaborador/anuncios.css">
+  <title>Gestión de Anuncios</title>
+</head>
+<body>
+  <div class="container">
+    <h1>Gestión de Anuncios</h1>
+    <form id="anuncioForm">
+      <label for="imagen">Subir Imagen</label>
+      <input type="file" id="imagen" name="imagen" accept="image/*">
+
+      <div class="preview" id="preview">
+        <p>Vista previa de la imagen</p>
+        <img id="previewImg" alt="Preview" style="display: none;">
+      </div>
+
+      <div class="checkbox">
+        <label for="activo">¿Habilitar anuncio?</label>
+        <input type="checkbox" id="activo" name="activo">
+      </div>
+
+      <div class="actions">
+        <button type="submit">Guardar Anuncio</button>
+      </div>
+      <div class="volver">
+        <button id="volver-menu" type="button" class="btn-rojo-chukum">Volver al Menú</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // URL del anuncio (se inyectará dinámicamente desde el backend)
+    const anuncioPath = '{{anuncioPath}}';
+
+    // Mostrar la imagen actual del anuncio en la vista previa
+    const previewImg = document.getElementById('previewImg');
+    const previewDiv = document.getElementById('preview');
+    const previewText = previewDiv.querySelector('p');
+
+    if (anuncioPath) {
+      previewImg.src = anuncioPath;
+      previewImg.style.display = 'block';
+      previewText.style.display = 'none';
+    }
+
+    // Manejar la selección de una nueva imagen y actualizar la vista previa
+    const imagenInput = document.getElementById('imagen');
+    imagenInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          previewImg.src = e.target.result;
+          previewImg.style.display = 'block';
+          previewText.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        previewImg.style.display = 'none';
+        previewText.style.display = 'block';
+      }
+    });
+
+    // Manejar envío del formulario
+    const form = document.getElementById('anuncioForm');
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const formData = new FormData();
+      const file = imagenInput.files[0];
+      const activo = document.getElementById('activo').checked;
+
+      if (!file) {
+        alert('Por favor, selecciona una imagen.');
+        return;
+      }
+
+      formData.append('imagen', file);
+      formData.append('activo', activo);
+
+      try {
+        const response = await fetch('/colaborador/anuncios/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          alert(`Anuncio guardado con éxito. URL: ${data.url}`);
+          previewImg.src = data.url; // Actualizar la vista previa
+        } else {
+          alert('Error al guardar el anuncio. Inténtalo nuevamente.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Hubo un error al enviar el formulario.');
+      }
+    });
+
+    // Botón "Volver al Menú" nice
+    document.getElementById('volver-menu').addEventListener('click', () => {
+      window.location.href = '/colaborador/menu'; // Ajusta la ruta según tu sistema
+    });
+  </script>
+</body>
+</html>

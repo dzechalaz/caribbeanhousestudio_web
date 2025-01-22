@@ -257,7 +257,7 @@
   position: static;
   
   z-index: 2; /* Asegúrate de que esté por encima de los fondos */
-  max-width: 1920px;
+  
   padding: 1px; /* Agrega un poco de espacio interior */
   background-color: var(--color-seashell); /* Fondo para asegurarte de que el contenido sea legible */
   height: 550px ;

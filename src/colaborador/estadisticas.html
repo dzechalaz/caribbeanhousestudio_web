@@ -3,59 +3,165 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estadísticas</title>
-  <link rel="stylesheet" href="./global.css">
-  <link rel="stylesheet" href="./estadisticas.css">
+  <title>Editar Registros</title>
+  <link rel="stylesheet" href="/colaborador/productos/graficaDraw.css">
+  <script src="https://cdn.jsdelivr.net/npm/luxon/build/global/luxon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>Estadísticas del Mes</h1>
+    <h1>Editar Registros de un Producto</h1>
 
-    <button id="menuButton" class="btn-rojo-chukum">Ir al Menú</button>
+    <label for="productId">Seleccionar Producto:</label>
+    <select id="productId">
+      <option value="52">Producto 52</option>
+      <option value="38">Producto 38</option>
+      <!-- Agrega más opciones aquí -->
+    </select>
 
-    <section>
-      <h2>Visitas por Día</h2>
-      <canvas id="visitasChart" width="400" height="200"></canvas>
-    </section>
+    <canvas id="registrosChart" width="400" height="200"></canvas>
 
-    <section>
-      <h2>Top 5 Productos Más Vendidos</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Ventas</th>
-          </tr>
-        </thead>
-        <tbody id="topVendidos">
-          <!-- Datos dinámicos -->
-        </tbody>
-      </table>
-    </section>
-
-    <section>
-      <h2>Top 5 Productos Más Visitados</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Visitas</th>
-          </tr>
-        </thead>
-        <tbody id="topVisitados">
-          <!-- Datos dinámicos -->
-        </tbody>
-      </table>
-    </section>
+    <button id="addPoint" class="btn-rojo-chukum">Agregar Punto</button>
+    <button id="saveChanges" class="btn-rojo-chukum">Guardar Cambios</button>
   </div>
 
   <script>
-    // Redirigir al menú cuando se haga clic en el botón
-    document.getElementById('menuButton').addEventListener('click', function () {
-      window.location.href = '/colaborador/menu';
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const productIdElement = document.getElementById('productId');
+        let productId = productIdElement.value;
+
+        // Cambiar de producto
+        productIdElement.addEventListener('change', async () => {
+          productId = productIdElement.value;
+          await cargarRegistros(productId);
+        });
+
+        const cargarRegistros = async (productId) => {
+          // Fetch registros desde el backend
+          const response = await fetch(`/api/registros/${productId}`);
+          if (!response.ok) {
+            throw new Error(`Error fetching registros: ${response.statusText}`);
+          }
+          const data = await response.json();
+          console.log('Datos recibidos:', data);
+
+          const registros = data.registros || [];
+          if (!Array.isArray(registros)) {
+            throw new Error("El backend no devolvió un arreglo válido para 'registros'");
+          }
+
+          // Crear o actualizar la gráfica
+          renderChart(registros);
+        };
+
+        let chart;
+
+        const renderChart = (registros) => {
+          const ctx = document.getElementById('registrosChart').getContext('2d');
+
+          if (chart) {
+            chart.destroy(); // Destruir la gráfica existente antes de crear una nueva
+          }
+
+          chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: registros.map(item => new Date(item.fecha)), // Fechas en el eje X
+              datasets: [
+                {
+                  label: 'Precio',
+                  data: registros.map(item => item.precio), // Precios en el eje Y
+                  borderColor: '#D65C4F',
+                  backgroundColor: 'rgba(214, 92, 79, 0.2)',
+                  borderWidth: 2,
+                  tension: 0.4, // Curvatura de la línea
+                  fill: true,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              scales: {
+                x: {
+                  type: 'time',
+                  time: {
+                    unit: 'day',
+                  },
+                  title: {
+                    display: true,
+                    text: 'Fecha',
+                  },
+                },
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: 'Precio',
+                  },
+                },
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function (tooltipItem) {
+                      return `Precio: $${tooltipItem.raw}`;
+                    },
+                  },
+                },
+              },
+            },
+          });
+        };
+
+        // Evento para agregar nuevos puntos (editar gráfica)
+        document.getElementById('registrosChart').addEventListener('click', (event) => {
+          const canvasPosition = Chart.helpers.getRelativePosition(event, chart);
+          const dataX = chart.scales.x.getValueForPixel(canvasPosition.x);
+          const dataY = chart.scales.y.getValueForPixel(canvasPosition.y);
+
+          // Agregar nuevo punto
+          chart.data.labels.push(new Date(dataX));
+          chart.data.datasets[0].data.push(dataY);
+          chart.update();
+
+          console.log('Nuevo punto agregado:', { fecha: new Date(dataX), precio: dataY });
+        });
+
+        // Guardar cambios
+        document.getElementById('saveChanges').addEventListener('click', async () => {
+          const registros = chart.data.labels.map((fecha, index) => ({
+            fecha: fecha.toISOString(),
+            precio: chart.data.datasets[0].data[index],
+          }));
+
+          try {
+            const saveResponse = await fetch(`/api/registros/${productId}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ registros }),
+            });
+
+            if (!saveResponse.ok) {
+              throw new Error('Error al guardar registros');
+            }
+            alert('Cambios guardados exitosamente.');
+          } catch (error) {
+            console.error('Error al guardar los registros:', error);
+            alert('Error al guardar los cambios.');
+          }
+        });
+
+        await cargarRegistros(productId); // Cargar registros iniciales
+      } catch (error) {
+        console.error('Error al cargar los registros:', error);
+      }
     });
   </script>
-  <script src="./estadisticas.js"></script>
 </body>
 </html>
