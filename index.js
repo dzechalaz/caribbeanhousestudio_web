@@ -254,6 +254,7 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
               // Agregar el producto principal solo una vez
               productosMap[row.codigo] = true;
               productos.push({
+                  producto_id: row.producto_id,
                   codigo: row.codigo,
                   nombre: row.nombre,
                   precio: row.precio,
@@ -268,6 +269,7 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
           if (row.color_alterno) {
               // Agregar colores alternos como nuevas filas
               productos.push({
+                  producto_id: row.producto_id,
                   codigo: row.codigo,
                   nombre: row.nombre,
                   precio: row.precio,
@@ -2552,7 +2554,7 @@ app.post("/pedido-custom", upload.array("images"), async (req, res) => {
 
 
 //###################### ESTADISTICAS ######################
-app.get('/api/estadisticas', async (req, res) => {
+app.get('/api/estadisticas', authMiddleware , async (req, res) => {
   try {
     // Obtener el parámetro de límite, por defecto será 5
     const limite = parseInt(req.query.limite) || 5;
@@ -2615,7 +2617,7 @@ app.get('/api/estadisticas', async (req, res) => {
 //################################### Clientes 
 
 
-app.get('/colaborador/clientes', (req, res) => {
+app.get('/colaborador/clientes', authMiddleware,  (req, res) => {
   // Renderiza el archivo HTML
   res.sendFile(path.join(__dirname, 'src/colaborador/clientes.html'));
 });
@@ -2665,24 +2667,36 @@ app.get('/perfil', (req, res) => {
 //################################### grafica dibujar ######################
 
 // Endpoint para servir la página
-app.get('/colaborador/grafica', (req, res) => {
+app.get('/colaborador/grafica', authMiddleware,  (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/graficaDraw.html'));
 });
 
-// Obtener los registros de un producto dinámicamente
-app.get('/api/registros/:product_id', async (req, res) => {
-  const { product_id } = req.params;
+// Obtener los registros de un producto usando su código
+app.get('/api/registros/:codigo', async (req, res) => {
+  const { codigo } = req.params;
 
   try {
+    // Obtener el product_id asociado al código
+    const [[producto]] = await db.promise().query(
+      `SELECT producto_id FROM Productos WHERE codigo = ?`,
+      [codigo]
+    );
+
+    if (!producto) {
+      return res.status(404).json({ success: false, error: 'Producto no encontrado.' });
+    }
+
+    const productId = producto.producto_id;
+
+    // Obtener los registros para ese product_id
     const [registros] = await db.promise().query(
       `SELECT id, fecha, precio, evento
        FROM Registros
        WHERE product_id = ? AND (evento = 'compra' OR evento = 'sim')
        ORDER BY fecha ASC`,
-      [product_id]
+      [productId]
     );
 
-    // Asegurar que las fechas estén en formato YYYY-MM-DD
     const registrosFormateados = registros.map((r) => ({
       ...r,
       fecha: r.fecha.toISOString().split('T')[0],
@@ -2695,9 +2709,9 @@ app.get('/api/registros/:product_id', async (req, res) => {
   }
 });
 
-// Sincronizar registros dinámicamente con la base de datos
-app.post('/api/registros/:product_id/sync', async (req, res) => {
-  const { product_id } = req.params;
+// Sincronizar registros para un producto usando su código
+app.post('/api/registros/:codigo/sync', async (req, res) => {
+  const { codigo } = req.params;
   const { registros } = req.body;
 
   if (!Array.isArray(registros)) {
@@ -2705,21 +2719,30 @@ app.post('/api/registros/:product_id/sync', async (req, res) => {
   }
 
   try {
-    await db.promise().query('START TRANSACTION');
-
-    // Eliminar los registros actuales del producto especificado
-    await db.promise().query(
-      `DELETE FROM Registros WHERE product_id = ? AND (evento = 'compra' OR evento = 'sim')`,
-      [product_id]
+    // Obtener el product_id asociado al código
+    const [[producto]] = await db.promise().query(
+      `SELECT producto_id FROM Productos WHERE codigo = ?`,
+      [codigo]
     );
 
-    // Preparar los nuevos valores para insertar
+    if (!producto) {
+      return res.status(404).json({ success: false, error: 'Producto no encontrado.' });
+    }
+
+    const productId = producto.producto_id;
+
+    await db.promise().query('START TRANSACTION');
+
+    await db.promise().query(
+      `DELETE FROM Registros WHERE product_id = ? AND (evento = 'compra' OR evento = 'sim')`,
+      [productId]
+    );
+
     const valores = registros.map(({ fecha, precio }) => {
-      const formattedFecha = new Date(fecha).toISOString().split('T')[0]; // Formato YYYY-MM-DD
-      return [product_id, 'sim', formattedFecha, parseFloat(precio) || 0.0];
+      const formattedFecha = new Date(fecha).toISOString().split('T')[0];
+      return [productId, 'sim', formattedFecha, parseFloat(precio) || 0.0];
     });
 
-    // Insertar los nuevos registros si existen valores
     if (valores.length > 0) {
       await db.promise().query(
         `INSERT INTO Registros (product_id, evento, fecha, precio) VALUES ?`,
@@ -2736,23 +2759,6 @@ app.post('/api/registros/:product_id/sync', async (req, res) => {
     res.status(500).json({ success: false, error: `Error al sincronizar los registros: ${error.message}` });
   }
 });
-
-// Endpoint para eliminar un registro de un producto dinámicamente por su ID
-app.delete('/api/registros/:product_id/:id', async (req, res) => {
-  const { product_id, id } = req.params;
-
-  try {
-    await db.promise().query(
-      `DELETE FROM Registros WHERE id = ? AND product_id = ?`,
-      [id, product_id]
-    );
-    res.json({ success: true, message: 'Registro eliminado correctamente.' });
-  } catch (error) {
-    console.error('Error al eliminar el registro:', error);
-    res.status(500).json({ success: false, error: 'Error al eliminar el registro.' });
-  }
-});
-
 
 
 

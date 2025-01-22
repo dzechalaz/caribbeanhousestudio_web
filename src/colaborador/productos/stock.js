@@ -109,6 +109,19 @@ $(document).ready(function () {
         window.location.href = `/colaborador/productos/modificar?codigo=${codigoProducto}`;
     });
 
+    // Evento del botón "Modificar Gráfica"
+$('#grafica').click(function () {
+    const productoSeleccionado = tablaProductos.row('.selected').data();
+
+    if (!productoSeleccionado) {
+        alert('Por favor selecciona un producto para modificar la gráfica.');
+        return;
+    }
+
+    const productId = productoSeleccionado[0]; // Suponiendo que el ID del producto está en la primera columna
+    window.location.href = `/colaborador/grafica?product_id=${productId}`;
+});
+
 
 
     // Evento del botón "Eliminar Producto"

@@ -9,6 +9,7 @@
 </head>
 <body>
   <div class="container">
+    <button id="volver-menu" class="btn-rojo-chukum">Volver al Stock</button>
     <h1>Registros y Gráfica</h1>
 
     <!-- Tabla de registros -->
@@ -27,8 +28,8 @@
 
     <!-- Botones de acción -->
     <div class="button-container">
-      <button id="addRow" class="btn-rojo-chukum">Agregar Fila</button>
-      <button id="saveChanges" class="btn-rojo-chukum">Guardar Cambios</button>
+      <button id="addRow" class="btn">Agregar Fila</button>
+      <button id="saveChanges" class="btn2">Guardar Cambios</button>
     </div>
 
     <!-- Gráfica -->
@@ -38,5 +39,11 @@
   </div>
 
   <script src="grafica.js"></script>
+  <script>
+    // Evento para volver al menú principal
+    document.getElementById('volver-menu').addEventListener('click', () => {
+      window.location.href = '/colaborador/productos/stock';
+    });
+  </script>
 </body>
 </html>
