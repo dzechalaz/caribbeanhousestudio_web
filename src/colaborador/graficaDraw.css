@@ -27,7 +27,7 @@ h1 {
   font-size: 2.5rem;
   margin-bottom: 20px;
   font-weight: bold;
-  border-bottom: 2px solid #D65C4F; /* Línea decorativa */
+  border-bottom: 2px solid #4fd692; /* Línea decorativa */
   padding-bottom: 10px;
 }
 
@@ -51,7 +51,7 @@ table th, table td {
 }
 
 table th {
-  background-color: #D65C4F; /* Rojo Chukum */
+  background-color: #4fd665; /* Rojo Chukum */
   color: #FFF8F0;
   text-align: center;
 }
@@ -102,10 +102,27 @@ button:active {
   background-color: #D65C4F; /* Rojo Chukum */
   color: #FFF8F0;
 }
-
 .btn-rojo-chukum:hover {
   background-color: #B5483E; /* Rojo oscuro en hover */
 }
+.btn{
+  background-color: #5ad64f; /* Rojo Chukum */
+  color: #FFF8F0;
+}
+
+.btn:hover {
+  background-color: #60b53e; /* Rojo oscuro en hover */
+}
+
+.btn2{
+  background-color: #4f8ed6; /* Rojo Chukum */
+  color: #FFF8F0;
+}
+
+.btn2:hover {
+  background-color: #698cff; /* Rojo oscuro en hover */
+}
+
 
 /* Secondary button */
 .btn-secundario {

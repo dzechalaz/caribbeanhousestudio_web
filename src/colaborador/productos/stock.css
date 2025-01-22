@@ -155,3 +155,9 @@
   .pagination button:hover {
     background-color: #219ebc;
   }
+  .grafica{
+    background-color: #d39b33;
+  }
+  .grafica:hover {
+    background-color: #ffda60; /* Hover verde oscuro */
+  }
