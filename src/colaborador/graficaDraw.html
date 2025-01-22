@@ -3,107 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Editar Registros</title>
-  <link rel="stylesheet" href="/colaborador/graficaDraw.css">
-  <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1"></script>
+  <title>Gráfica y Registros</title>
+  <link rel="stylesheet" href="./graficaDraw.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 </head>
 <body>
   <div class="container">
-    <h1>Editar Registros de un Producto</h1>
+    <h1>Registros y Gráfica</h1>
 
-    <!-- Producto seleccionado estático, puedes eliminar este select -->
-    <canvas id="registrosChart" width="400" height="200"></canvas>
+    <!-- Tabla de registros -->
+    <table id="registrosTable" class="styled-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Precio</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Contenido dinámico -->
+      </tbody>
+    </table>
 
-    <button id="saveChanges" class="btn-rojo-chukum">Guardar Cambios</button>
+    <!-- Botones de acción -->
+    <div class="button-container">
+      <button id="addRow" class="btn-rojo-chukum">Agregar Fila</button>
+      <button id="saveChanges" class="btn-rojo-chukum">Guardar Cambios</button>
+    </div>
+
+    <!-- Gráfica -->
+    <div class="chart-container">
+      <canvas id="registrosChart" width="800" height="500"></canvas>
+    </div>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const productId = 52; // ID estático del producto
-
-        // Función para cargar los registros
-        const cargarRegistros = async (productId) => {
-          const response = await fetch(`/api/registros/${productId}`);
-          if (!response.ok) {
-            throw new Error(`Error fetching registros: ${response.statusText}`);
-          }
-          const data = await response.json();
-          console.log('Datos recibidos:', data);
-          renderChart(data.registros || []);
-          return data.registros || [];
-        };
-
-        // Variable para mantener los registros cargados
-        let registros = [];
-
-        // Función para renderizar la gráfica
-        let chart;
-        const renderChart = (registros) => {
-          const ctx = document.getElementById('registrosChart').getContext('2d');
-          if (chart) {
-            chart.destroy(); // Destruir la gráfica anterior si ya existe
-          }
-          chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-              labels: registros.map((item) => new Date(item.fecha)), // Fechas en el eje X
-              datasets: [
-                {
-                  label: 'Precio',
-                  data: registros.map((item) => item.precio), // Precios en el eje Y
-                  borderColor: '#D65C4F',
-                  backgroundColor: 'rgba(214, 92, 79, 0.2)',
-                  borderWidth: 2,
-                  tension: 0.4, // Curvatura de la línea
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              scales: {
-                x: {
-                  type: 'time',
-                  time: { unit: 'day' },
-                  title: { display: true, text: 'Fecha' },
-                },
-                y: {
-                  beginAtZero: true,
-                  title: { display: true, text: 'Precio' },
-                },
-              },
-            },
-          });
-        };
-
-        // Cargar registros iniciales
-        registros = await cargarRegistros(productId);
-
-        // Guardar cambios
-        document.getElementById('saveChanges').addEventListener('click', async () => {
-          try {
-            const saveResponse = await fetch(`/api/registros/${productId}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(registros),
-            });
-
-            if (!saveResponse.ok) {
-              throw new Error('Error al guardar registros');
-            }
-            alert('Cambios guardados exitosamente.');
-          } catch (error) {
-            console.error('Error al guardar los registros:', error);
-            alert('Error al guardar los cambios.');
-          }
-        });
-      } catch (error) {
-        console.error('Error al cargar los registros:', error);
-      }
-    });
-  </script>
+  <script src="grafica.js"></script>
 </body>
 </html>
-  
