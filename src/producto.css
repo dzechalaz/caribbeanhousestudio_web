@@ -511,7 +511,7 @@
   position: absolute;
   top: 0; /* Ajustar según el diseño general */
   left: calc(50% + 10px);
-  max-width: 300px; /* Limitar el ancho máximo */
+  max-width: 500px; /* Limitar el ancho máximo */
 }
 
 .nombreproducto {

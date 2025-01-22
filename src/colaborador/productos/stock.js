@@ -18,9 +18,12 @@ $(document).ready(function () {
                         <td>${producto.nombre || 'Sin nombre'}</td>
                         <td>${parseFloat(producto.precio).toFixed(2) || '0.00'}</td>
                         <td>${producto.categoria || 'Sin categoría'}</td>
-                        <td style="background-color: ${producto.color_hex || 'transparent'};">
-                            ${producto.color || 'Sin color'}
+                        <td style="background-color: ${producto.color_hex || 'transparent'}; position: relative;">
+                            <span style="color: ${producto.color_hex || '#FFF'}; ;  opacity: 90%; filter: invert(1); mix-blend-mode:add">
+                                ${producto.color || 'Sin color'}
+                            </span>
                         </td>
+
                         <td class="editable-stock" contenteditable="true" data-codigo="${producto.codigo}">
                             ${producto.stock || 0}
                         </td>
