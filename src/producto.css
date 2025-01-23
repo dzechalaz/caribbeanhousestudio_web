@@ -16,7 +16,8 @@
   overflow: hidden;
   height: 3371px;
   object-fit: cover;
-  mix-blend-mode: multiply;
+ 
+
 }
 .fondobajo,
 .path-253-icon6 {
@@ -31,166 +32,6 @@
   border: 1px solid var(--color-dimgray);
   box-sizing: border-box;
   height: 1880px;
-}
-.path-253-icon6 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 4000px; /* Ancho del SVG */
-  height: 426px; /* Altura del SVG */
-  transform: translate(-50%, -50%);
-}
-.group-child8 {
-  position: absolute;
-  height: calc(100% - 0.3px);
-  top: 0.26px;
-  bottom: 0.04px;
-  left: calc(50% - 3.05px);
-  width: 6.6px;
-  background-image: url(./public/rectangle-813@3x.png);
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: top;
-}
-.facebook-inner4 {
-  position: absolute;
-  top: calc(50% - 7px);
-  left: calc(50% - 7px);
-  width: 14px;
-  height: 14.5px;
-}
-.facebook6 {
-  position: absolute;
-  top: calc(50% + 56.9px);
-  left: 244px;
-  border-radius: var(--br-21xl);
-  background-color: var(--color-dimgray);
-  width: 30px;
-  height: 30px;
-}
-.vector-smart-object6 {
-  position: absolute;
-  top: calc(50% - 7px);
-  left: calc(50% - 7.5px);
-  width: 15px;
-  height: 15px;
-  object-fit: cover;
-}
-.instagram6 {
-  position: absolute;
-  top: calc(50% + 56.9px);
-  left: 283px;
-  border-radius: var(--br-21xl);
-  background-color: var(--color-dimgray);
-  width: 31px;
-  height: 30px;
-}
-.rectangle-81311-copy-46 {
-  position: absolute;
-  top: calc(50% - 7.2px);
-  left: calc(50% - 6.77px);
-  width: 14.2px;
-  height: 13.7px;
-  background-image: url(./public/rectangle-81311-copy-4@3x.png);
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: top;
-}
-.rectangle-81311-copy-4-wrapper4 {
-  position: absolute;
-  height: 100%;
-  width: 100%;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  border-radius: var(--br-21xl);
-  background-color: var(--color-dimgray);
-}
-.imagemask6 {
-  position: absolute;
-  top: calc(50% - 7px);
-  left: calc(50% - 7px);
-  width: 14px;
-  height: 14px;
-}
-.linkedin6 {
-  position: absolute;
-  top: calc(50% + 56.9px);
-  left: 323px;
-  width: 30px;
-  height: 30px;
-}
-.rectangle-813111-copy-66 {
-  position: absolute;
-  height: calc(100% - 2.7px);
-  width: calc(100% - 0.3px);
-  top: 1.21px;
-  right: 0.05px;
-  bottom: 1.49px;
-  left: 0.25px;
-  background-image: url(./public/rectangle-813111-copy-6@3x.png);
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: top;
-}
-.rectangle-813111-copy-6-wrapper4,
-.twitter6 {
-  position: absolute;
-  top: calc(50% - 7px);
-  left: calc(50% - 7.5px);
-  width: 15.4px;
-  height: 15px;
-}
-.twitter6 {
-  top: calc(50% + 56.9px);
-  left: calc(50% - 598px);
-  border-radius: var(--br-21xl);
-  background-color: var(--color-dimgray);
-  width: 31px;
-  height: 30px;
-}
-.company6 {
-  position: absolute;
-  top: calc(50% - 109.47px);
-  left: calc(50% + 10px);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  font-family: var(--font-josefin-sans);
-  color: var(--color-turquoise);
-}
-.profile-about-us-contact-addre6 {
-  position: absolute;
-  top: calc(50% - 34.1px);
-  left: calc(50% + 10px);
-  line-height: 36px;
-  display: inline-block;
-  width: 211px;
-  height: 132.6px;
-}
-.returns6 {
-  position: absolute;
-  top: calc(50% - 109.47px);
-  left: calc(50% + 333px);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  font-family: var(--font-josefin-sans);
-  color: var(--color-turquoise);
-}
-.faqs-size-guide-contact-us-container6 {
-  position: absolute;
-  top: calc(50% - 34.1px);
-  left: calc(50% + 333px);
-  line-height: 36px;
-  display: inline-block;
-  width: 211px;
-  height: 171.3px;
-}
-.lorem-ipsum-dolor-container6 {
-  position: absolute;
-  top: calc(50% - 58.62px);
-  left: 240px;
-  line-height: 20px;
 }
 .caribbean-house-studio12 {
   position: absolute;
@@ -346,64 +187,124 @@
   line-height: 26px;
   text-transform: uppercase;
 }
-.adder {
+
+
+
+
+
+
+
+
+
+
+.adderContainer{
+  position:relative;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  top: calc(50% + 199.5px);
-  left: calc(50% + 169px);
-  width: 130px;
-  height: 32px;
-  font-size: var(--font-size-7xl);
-  color: #262626;
-  position: absolute;
+  top: 678px;
+  left: 700px
 }
 
-.menos, .mas {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: #e0e0e0;
-  font-size: 20px;
-  color: #ffffff;
-  cursor: pointer;
-}
 
-.menos {
-  background-color: #d0d0d0; /* Color para el botón de menos */
-  margin-right: 10px;
-}
-
-.mas {
-  background-color: #a0a0a0; /* Color para el botón de más */
-  margin-left: 10px;
-}
-
-.cantidad {
-  font-size: 25px;
-  text-align: center;
-  width: 30px; /* Ajusta este ancho si es necesario */
-}
 
 .add-to-cart {
-  position: absolute;
-  top: calc(50% - 12px);
-  left: 33px;
   text-transform: uppercase;
+  margin-top: 20px;
 }
 .addcart {
-  position: absolute;
   bottom: 28px;
-  left: calc(50% + 169px);
-  background-color: #b4b4b4;
-  width: 221px;
+  background-color: #838a6b;
+  width: 300px;
   height: 62px;
   color: var(--color-white);
   font-family: var(--font-montserrat);
+  cursor: pointer;
 }
+.addcart:hover{
+  background-color: #a9aa65;
+}
+
+.adding {
+  background-color: #C19A6B; /* Color momentáneo para "Añadiendo" */
+  color: white;
+  cursor:not-allowed;
+}
+
+.added {
+  background-color: #87A96B; /* Color para "Añadido" */
+  color: white;
+}
+
+
+
+
+.notificacion {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.notificacion.success {
+  background-color: #90a728; /* Verde para éxito */
+  color: var(--color-white);
+  font-family: var(--font-montserrat);
+  
+}
+
+.notificacion.error {
+  background-color: #dc3545; /* Rojo para error */
+  color: var(--color-white);
+  font-family: var(--font-montserrat);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* Definir colores */
+:root {
+  --verde-disponible: #2D6A4F; /* Verde oscuro */
+  --naranja-demorado: #FF7F11; /* Naranja quemado */
+}
+
+/* Clase para disponibilidad inmediata */
+.disponible {
+  color: var(--verde-disponible);
+  font-weight: bold;
+}
+
+/* Clase para entrega diferida */
+.no-disponible {
+  color: var(--naranja-demorado);
+  font-weight: bold;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 .like-icon {
   top: 17.62px;
   left: calc(50% - 85.6px);

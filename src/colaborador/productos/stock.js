@@ -19,20 +19,22 @@ $(document).ready(function () {
                         <td>${parseFloat(producto.precio).toFixed(2) || '0.00'}</td>
                         <td>${producto.categoria || 'Sin categoría'}</td>
                         <td style="background-color: ${producto.color_hex || 'transparent'}; position: relative;">
-                            <span style="color: ${producto.color_hex || '#FFF'}; ;  opacity: 90%; filter: invert(1); mix-blend-mode:add">
+                            <span style="color: ${producto.color_hex || '#FFF'}; opacity: 90%; filter: invert(1); mix-blend-mode:add">
                                 ${producto.color || 'Sin color'}
                             </span>
                         </td>
-
-                        <td class="editable-stock" contenteditable="true" data-codigo="${producto.codigo}">
+                        <td class="editable-stock" contenteditable="true" 
+                            data-codigo="${producto.color_alterno ? `C-${producto.color_id}` : producto.codigo}">
                             ${producto.stock || 0}
                         </td>
+
                         <td>
                             <input type="checkbox" class="destacado-checkbox" 
                                 data-id="${producto.codigo}" 
                                 ${producto.destacado === 1 ? 'checked' : ''}>
                         </td>
                     `;
+
                     productosBody.appendChild(row);
                 });
 
@@ -153,52 +155,94 @@ $('#grafica').click(function () {
     });
 
 
-    // Seleccionar fila en la tabla (marcarla como seleccionada)
-    $('#productos-table tbody').on('click', 'td.editable-stock', function () {
 
-        
+
+
+
+
+
+
+
+
+
+
+
+    
+// Evento para editar la celda de stock
+    // Evento para editar la celda de stock
+    $('#productos-table tbody').on('click', 'td.editable-stock', function () {
         const celda = $(this);
 
-        if (celda.find('input').length > 0) return; // Evitar múltiples inputs
+        // Evitar múltiples inputs en la misma celda
+        if (celda.find('input').length > 0) return;
 
         const valorActual = celda.text().trim();
-        celda.html(`<input type="number" class="stock-input" value="${valorActual}" style="width: 100%;">`);
+        celda.html(`<input type="number" class="stock-input" value="${valorActual}" style="width: 100%;" min="0" step="1">`);
 
-        celda.find('input').on('blur', function () {
+        const input = celda.find('input');
+
+        // Enviar el cambio cuando el input pierda el foco (blur)
+        input.on('blur', function () {
             const nuevoValor = $(this).val().trim();
-            celda.text(nuevoValor); // Actualizar la celda
 
-            const codigoProducto = celda.data('codigo');
+            // Validar que el nuevo valor sea un número válido
+            if (nuevoValor === "" || isNaN(nuevoValor) || parseInt(nuevoValor) < 0) {
+                alert('Por favor, ingresa un valor numérico válido para el stock.');
+                celda.text(valorActual); // Restaurar el valor original
+                return;
+            }
+
+            celda.text(nuevoValor); // Actualizar la celda con el nuevo valor
+            const codigoProducto = celda.data('codigo'); // Identificar si es un color alterno o principal
 
             // Enviar el cambio al backend
             fetch('/colaborador/productos/actualizar-stock', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ codigo: codigoProducto, stock: nuevoValor }),
+                body: JSON.stringify({ productos: [{ codigo: codigoProducto, stock: parseInt(nuevoValor, 10) }] })
             })
                 .then(response => response.json())
-                
+                .then(data => {
+                    if (!data.success) {
+                        alert('Error al actualizar el stock en el servidor.');
+                        celda.text(valorActual); // Restaurar valor si hubo error en el backend
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al actualizar el stock:', error);
+                    celda.text(valorActual); // Restaurar valor en caso de error
+                });
         });
+
+        // Enviar el cambio al presionar Enter
+        input.on('keypress', function (e) {
+            if (e.key === 'Enter') {
+                $(this).blur(); // Forzar el evento blur
+            }
+        });
+
+        input.focus(); // Enfocar automáticamente en el input
     });
 
-});
+    // Evento para guardar cambios en el stock
+    $(document).on('input', '.editable-stock', function () {
+        $('#guardar-cambios').show();
+    });
 
-
-
-
-
-$(document).on('input', '.editable-stock', function () {
-    // Mostrar el botón de guardar cambios
-    $('#guardar-cambios').show();
-});
-
+    
 $('#guardar-cambios').click(function () {
     const cambios = [];
     $('.editable-stock').each(function () {
         const codigoProducto = $(this).data('codigo');
+        const tipoProducto = $(this).data('tipo');
         const nuevoStock = $(this).text().trim();
+
         if (codigoProducto && nuevoStock !== "") {
-            cambios.push({ codigo: codigoProducto, stock: parseInt(nuevoStock, 10) });
+            cambios.push({
+                codigo: codigoProducto,
+                stock: parseInt(nuevoStock, 10),
+                tipo: tipoProducto // Añadir el tipo del producto
+            });
         }
     });
 
@@ -213,16 +257,23 @@ $('#guardar-cambios').click(function () {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ productos: cambios }),
+        body: JSON.stringify({ productos: cambios })
     })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 alert('Stock actualizado con éxito.');
                 $('#guardar-cambios').hide(); // Ocultar el botón después de guardar
+                location.reload();
             } else {
                 alert(`Error al actualizar el stock: ${data.error}`);
             }
         })
         .catch(error => console.error('Error al actualizar el stock:', error));
 });
+
+});
+
+
+
+

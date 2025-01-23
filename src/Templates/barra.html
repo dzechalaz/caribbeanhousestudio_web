@@ -4,6 +4,7 @@
 <head>
     <!-- Enlace al archivo de estilos barra.css según la ruta que mencionaste -->
     <link rel="stylesheet" href="Templates/barra.css">
+    <script src="/global.js" defer></script>
 </head>
 
 <body>
@@ -41,13 +42,13 @@
       <div class="vacio"></div> 
      
     
-      <div class="cart-container" id="cart-container" style="display: none;" >
+      <a href="/carrito" style="text-decoration: none; color: inherit; " class="cart-container" id="cart-container" style="display: none;">
         <div class="carrito-container">
           <img src="/public/cart.svg" alt="Carrito" class="cart-icon">
-          <span class = "cart-text">CARRITO</span>
+          <span class="cart-text">CARRITO</span>
         </div>
-      </div>
-
+      </a>
+      
 
     <div class="session-container">
         <!-- Sección de Login o nombre de usuario -->
@@ -98,7 +99,11 @@
             menu.classList.remove('active');
         }
     });
+
+
   </script>
+
+  
 
   
   
