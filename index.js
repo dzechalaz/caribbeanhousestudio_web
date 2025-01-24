@@ -233,12 +233,13 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
           p.stock AS stock_total, 
           COALESCE(c.color, NULL) AS color_alterno, 
           COALESCE(c.color_hex, NULL) AS color_hex_alterno, 
+          c.color_id AS color_alterno_id,
           c.stock AS stock_alterno, 
           p.destacado 
       FROM Productos p
       LEFT JOIN Productos_detalles pd ON p.producto_id = pd.producto_id
       LEFT JOIN ColoresAlternos c ON p.producto_id = c.producto_id
-      ORDER BY p.codigo, c.color;
+      ORDER BY p.codigo, c.color_id;
   `;
 
   db.query(query, (err, results) => {
@@ -253,8 +254,7 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
       results.forEach(row => {
           if (!productosMap[row.codigo]) {
               // Agregar el producto principal solo una vez
-              productosMap[row.codigo] = true;
-              productos.push({
+              productosMap[row.codigo] = {
                   producto_id: row.producto_id,
                   codigo: row.codigo,
                   nombre: row.nombre,
@@ -263,31 +263,37 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
                   color: row.color_principal,
                   color_hex: row.color_hex_principal,
                   stock: row.stock_total || 0,
-                  destacado: row.destacado
-              });
+                  destacado: row.destacado,
+                  alternos: []
+              };
           }
 
+          // Agregar colores alternos al producto correspondiente
           if (row.color_alterno) {
-              // Agregar colores alternos como nuevas filas
-              productos.push({
+              productosMap[row.codigo].alternos.push({
                   producto_id: row.producto_id,
                   codigo: row.codigo,
-                  nombre: row.nombre,
+                  nombre: `↳ ${row.nombre} ALT${row.color_alterno_id}`,
                   precio: row.precio,
                   categoria: row.categoria || 'Sin categoría',
                   color: row.color_alterno,
                   color_hex: row.color_hex_alterno,
                   stock: row.stock_alterno || 0,
-                  destacado: row.destacado
+                  destacado: row.destacado,
+                  esAlterno: true
               });
           }
+      });
+
+      // Convertir el mapa a una lista ordenada
+      Object.values(productosMap).forEach(producto => {
+          productos.push(producto); // Agregar el producto principal
+          productos.push(...producto.alternos); // Agregar sus alternos inmediatamente después
       });
 
       res.json({ productos });
   });
 });
-
-
 
 
 //########################################################### eliminar productos ##################################################
@@ -387,19 +393,40 @@ app.post('/colaborador/productos/actualizar-stock', authMiddleware, (req, res) =
     return res.status(400).json({ success: false, error: 'No se enviaron productos para actualizar' });
   }
 
-  // Actualizar el stock de cada producto en la base de datos
-  let query = 'UPDATE Productos SET stock = ? WHERE codigo = ?';
+  const queries = [];
   productos.forEach(producto => {
-    const { codigo, stock } = producto;
-    db.query(query, [stock, codigo], (err, result) => {
-      if (err) {
-        console.error('Error al actualizar el stock:', err);
-        return res.status(500).json({ success: false, error: 'Error al actualizar el stock' });
+    const { nombre, stock } = producto;
+
+    // Verificar si es un color alterno por la presencia de ↳ ALT
+    if (nombre.includes('↳')) {
+      const colorIdMatch = nombre.match(/ALT(\d+)/); // Extraer el ID del color alterno
+      if (colorIdMatch) {
+        const colorId = parseInt(colorIdMatch[1], 10);
+        queries.push(new Promise((resolve, reject) => {
+          db.query('UPDATE ColoresAlternos SET stock = ? WHERE color_id = ?', [stock, colorId], (err, result) => {
+            if (err) return reject(err);
+            resolve(result);
+          });
+        }));
       }
-    });
+    } else {
+      // Producto principal
+      queries.push(new Promise((resolve, reject) => {
+        db.query('UPDATE Productos SET stock = ? WHERE codigo = ?', [stock, producto.codigo], (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
+        });
+      }));
+    }
   });
 
-  res.json({ success: true });
+  // Ejecutar todas las consultas y enviar la respuesta
+  Promise.all(queries)
+    .then(() => res.json({ success: true }))
+    .catch(err => {
+      console.error('Error al actualizar el stock:', err);
+      res.status(500).json({ success: false, error: 'Error al actualizar el stock' });
+    });
 });
 
 
