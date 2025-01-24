@@ -3,45 +3,73 @@ $(document).ready(function () {
 
     // Función para cargar los productos desde el backend
    
-    
     function cargarProductos() {
         fetch('/colaborador/productos/data')
             .then(response => response.json())
             .then(data => {
                 const productosBody = document.getElementById('productos-body');
                 productosBody.innerHTML = ''; // Limpiar el contenido existente
-
+    
                 data.productos.forEach(producto => {
                     const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${producto.codigo || 'N/A'}</td>
-                        <td>${producto.nombre || 'Sin nombre'}</td>
-                        <td>${parseFloat(producto.precio).toFixed(2) || '0.00'}</td>
-                        <td>${producto.categoria || 'Sin categoría'}</td>
-                        <td style="background-color: ${producto.color_hex || 'transparent'}; position: relative;">
-                            <span style="color: ${producto.color_hex || '#FFF'}; ;  opacity: 90%; filter: invert(1); mix-blend-mode:add">
-                                ${producto.color || 'Sin color'}
-                            </span>
-                        </td>
-
-                        <td class="editable-stock" contenteditable="true" data-codigo="${producto.codigo}">
-                            ${producto.stock || 0}
-                        </td>
-                        <td>
-                            <input type="checkbox" class="destacado-checkbox" 
-                                data-id="${producto.codigo}" 
-                                ${producto.destacado === 1 ? 'checked' : ''}>
-                        </td>
-                    `;
+    
+                    // Verificar si es un producto alterno o principal
+                    if (producto.esAlterno) {
+                        row.innerHTML = `
+                            <td>${producto.codigo || 'N/A'}</td>
+                            <td>${producto.nombre || 'Sin nombre'}</td>
+                            <td>${parseFloat(producto.precio).toFixed(2) || '0.00'}</td>
+                            <td>${producto.categoria || 'Sin categoría'}</td>
+                            <td style="background-color: ${producto.color_hex || 'transparent'}; position: relative;">
+                                <span style="color: ${producto.color_hex || '#FFF'}; opacity: 90%; filter: invert(1); mix-blend-mode:add">
+                                    ${producto.color || 'Sin color'}
+                                </span>
+                            </td>
+                            <td class="editable-stock" contenteditable="true" 
+                                data-codigo="C-${producto.color_id}">
+                                ${producto.stock || 0}
+                            </td>
+                            <td>
+                                <input type="checkbox" class="destacado-checkbox" 
+                                    data-id="${producto.codigo}" 
+                                    ${producto.destacado === 1 ? 'checked' : ''}>
+                            </td>
+                        `;
+                    } else {
+                        row.innerHTML = `
+                            <td>${producto.codigo || 'N/A'}</td>
+                            <td>${producto.nombre || 'Sin nombre'}</td>
+                            <td>${parseFloat(producto.precio).toFixed(2) || '0.00'}</td>
+                            <td>${producto.categoria || 'Sin categoría'}</td>
+                            <td style="background-color: ${producto.color_hex || 'transparent'}; position: relative;">
+                                <span style="color: ${producto.color_hex || '#FFF'}; opacity: 90%; filter: invert(1); mix-blend-mode:add">
+                                    ${producto.color || 'Sin color'}
+                                </span>
+                            </td>
+                            <td class="editable-stock" contenteditable="true" 
+                                data-codigo="${producto.codigo}">
+                                ${producto.stock || 0}
+                            </td>
+                            <td>
+                                <input type="checkbox" class="destacado-checkbox" 
+                                    data-id="${producto.codigo}" 
+                                    ${producto.destacado === 1 ? 'checked' : ''}>
+                            </td>
+                        `;
+                    }
+    
                     productosBody.appendChild(row);
                 });
-
+    
                 // Reinicializar DataTables
-                tablaProductos.destroy();
+                if ($.fn.DataTable.isDataTable('#productos-table')) {
+                    tablaProductos.destroy();
+                }
                 tablaProductos = $('#productos-table').DataTable();
             })
             .catch(error => console.error('Error al cargar productos:', error));
     }
+    
     // Llamar a la función cargarProductos para obtener los datos al cargar la página
     cargarProductos();
 
@@ -153,76 +181,111 @@ $('#grafica').click(function () {
     });
 
 
-    // Seleccionar fila en la tabla (marcarla como seleccionada)
+
+
+
+
+
+
+
+
+
+
     $('#productos-table tbody').on('click', 'td.editable-stock', function () {
-
-        
         const celda = $(this);
-
-        if (celda.find('input').length > 0) return; // Evitar múltiples inputs
-
+    
+        // Evitar múltiples inputs en la misma celda
+        if (celda.find('input').length > 0) return;
+    
         const valorActual = celda.text().trim();
-        celda.html(`<input type="number" class="stock-input" value="${valorActual}" style="width: 100%;">`);
-
-        celda.find('input').on('blur', function () {
-            const nuevoValor = $(this).val().trim();
-            celda.text(nuevoValor); // Actualizar la celda
-
-            const codigoProducto = celda.data('codigo');
-
-            // Enviar el cambio al backend
-            fetch('/colaborador/productos/actualizar-stock', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ codigo: codigoProducto, stock: nuevoValor }),
-            })
-                .then(response => response.json())
-                
+        celda.html(`<input type="number" class="stock-input" value="${valorActual}" style="width: 100%;" min="0" step="1">`);
+    
+        const input = celda.find('input');
+    
+        // Mostrar el botón de guardar cambios
+        $('#guardar-cambios').show();
+    
+        // Guardar cambios al perder el foco
+        input.on('blur', function () {
+          const nuevoValor = $(this).val().trim();
+    
+          // Validar que el nuevo valor sea un número válido
+          if (nuevoValor === "" || isNaN(nuevoValor) || parseInt(nuevoValor) < 0) {
+            alert('Por favor, ingresa un valor numérico válido para el stock.');
+            celda.text(valorActual); // Restaurar el valor original
+            return;
+          }
+    
+          celda.text(nuevoValor); // Actualizar la celda con el nuevo valor
         });
-    });
-
-});
-
-
-
-
-
-$(document).on('input', '.editable-stock', function () {
-    // Mostrar el botón de guardar cambios
-    $('#guardar-cambios').show();
-});
-
-$('#guardar-cambios').click(function () {
-    const cambios = [];
-    $('.editable-stock').each(function () {
-        const codigoProducto = $(this).data('codigo');
-        const nuevoStock = $(this).text().trim();
-        if (codigoProducto && nuevoStock !== "") {
-            cambios.push({ codigo: codigoProducto, stock: parseInt(nuevoStock, 10) });
+    
+        // Guardar cambios al presionar Enter
+        input.on('keypress', function (e) {
+          if (e.key === 'Enter') {
+            $(this).blur(); // Forzar el evento blur
+          }
+        });
+    
+        input.focus(); // Enfocar automáticamente en el input
+      });
+    
+      // Evento para guardar cambios en el stock
+      $('#guardar-cambios').click(function () {
+        const botonGuardar = $(this);
+        botonGuardar.text('Guardando...'); // Cambiar texto del botón
+        botonGuardar.prop('disabled', true); // Deshabilitar el botón mientras se guarda
+    
+        const cambios = [];
+        $('.editable-stock').each(function () {
+          const celda = $(this);
+          const codigoProducto = celda.data('codigo');
+          const nombreProducto = celda.closest('tr').find('td:nth-child(2)').text().trim(); // Leer el nombre
+          const nuevoStock = celda.text().trim();
+    
+          if (codigoProducto && nuevoStock !== "") {
+            cambios.push({
+              codigo: codigoProducto,
+              nombre: nombreProducto, // Enviar también el nombre para identificar alternos
+              stock: parseInt(nuevoStock, 10)
+            });
+          }
+        });
+    
+        if (cambios.length === 0) {
+          alert('No hay cambios para guardar.');
+          botonGuardar.text('Guardar Cambios'); // Restaurar texto del botón
+          botonGuardar.prop('disabled', false); // Habilitar el botón
+          return;
         }
-    });
-
-    if (cambios.length === 0) {
-        alert('No hay cambios para guardar.');
-        return;
-    }
-
-    // Enviar los cambios al backend
-    fetch('/colaborador/productos/actualizar-stock', {
-        method: 'POST',
-        headers: {
+    
+        // Enviar los cambios al backend
+        fetch('/colaborador/productos/actualizar-stock', {
+          method: 'POST',
+          headers: {
             'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ productos: cambios }),
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Stock actualizado con éxito.');
-                $('#guardar-cambios').hide(); // Ocultar el botón después de guardar
-            } else {
-                alert(`Error al actualizar el stock: ${data.error}`);
-            }
+          },
+          body: JSON.stringify({ productos: cambios })
         })
-        .catch(error => console.error('Error al actualizar el stock:', error));
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert('Stock actualizado con éxito.');
+              botonGuardar.hide(); // Ocultar el botón después de guardar
+            } else {
+              alert(`Error al actualizar el stock: ${data.error}`);
+            }
+          })
+          .catch(error => console.error('Error al actualizar el stock:', error))
+          .finally(() => {
+            // Restaurar el texto y habilitar el botón después de guardar
+            botonGuardar.text('Guardar Cambios');
+            botonGuardar.prop('disabled', false);
+          });
+      });
+  
+
 });
+
+
+
+

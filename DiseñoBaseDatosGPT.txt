@@ -1,16 +1,4 @@
 
-mysql> DESCRIBE ColoresAlternos;
-+-------------+-------------+------+-----+---------+----------------+
-| Field       | Type        | Null | Key | Default | Extra          |
-+-------------+-------------+------+-----+---------+----------------+
-| color_id    | int         | NO   | PRI | NULL    | auto_increment |
-| producto_id | int         | NO   | MUL | NULL    |                |
-| color       | varchar(50) | NO   |     | NULL    |                |
-| color_hex   | varchar(7)  | NO   |     | NULL    |                |
-| stock       | int         | NO   |     | 0       |                |
-+-------------+-------------+------+-----+---------+----------------+
-5 rows in set (0.11 sec)
-
 mysql> DESCRIBE Productos_detalles; 
 +--------------+------+------+-----+---------+-------+
 | Field        | Type | Null | Key | Default | Extra |
@@ -25,6 +13,20 @@ mysql> DESCRIBE Productos_detalles;
 | color_hex    | text | YES  |     | NULL    |       |
 +--------------+------+------+-----+---------+-------+
 8 rows in set (0.11 sec)
+
+
+mysql> DESCRIBE ColoresAlternos;
++-------------+-------------+------+-----+---------+----------------+
+| Field       | Type        | Null | Key | Default | Extra          |
++-------------+-------------+------+-----+---------+----------------+
+| color_id    | int         | NO   | PRI | NULL    | auto_increment |
+| producto_id | int         | NO   | MUL | NULL    |                |
+| color       | varchar(50) | NO   |     | NULL    |                |
+| color_hex   | varchar(7)  | NO   |     | NULL    |                |
+| stock       | int         | NO   |     | 0       |                |
++-------------+-------------+------+-----+---------+----------------+
+5 rows in set (0.11 sec)
+
 
 mysql> DESCRIBE Productos;          
 +-------------+---------------+------+-----+-------------------+-------------------+

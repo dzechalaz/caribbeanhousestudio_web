@@ -10,6 +10,7 @@ if (producto) {
 
     <link rel="stylesheet" href="/global.css" />
     <link rel="stylesheet" href="/producto.css" />
+    <script src="/global.js" defer></script>
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Josefin Sans:wght@400;600;700&display=swap"
@@ -22,6 +23,7 @@ if (producto) {
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
     />
+    
   </head>
   <header>
     <div id="barra"></div>
@@ -73,15 +75,15 @@ if (producto) {
           data-animate-on-scroll
         />
 
-        <div class="adder">
-            <div class="menos">-</div>
-            <div class="cantidad">1</div>
-            <div class="mas">+</div>
+        <div class="adderContainer"> 
+          <div class="addcart">
+            <div class="add-to-cart" id="addToCartButton" data-product-id="<%= producto.producto_id %>">
+              + añadir al carrito
+            </div>
+          </div>
         </div>
-        <div class="addcart">
-          <div class="add-to-cart">+ add to cart</div>
-        </div>
-       
+          
+        
 
         <div class="imagenes" id="imagenes-container">
           <div class="a">
@@ -136,7 +138,17 @@ if (producto) {
                 <span class="tela"><%= acabado %></span> <!-- Acabado desde info.txt -->
             </p>
             
+            <div id="availability-container">
+              <p id="availability-status">Cargando disponibilidad...</p>
+          </div>
+            
+            
+            
         </div>
+       
+        
+    
+        
         
 
       </div>
@@ -155,85 +167,79 @@ if (producto) {
     
 
     <script>
-      
-      //cambiar colores y imagenes
-      document.addEventListener('DOMContentLoaded', () => {
-        const params = new URLSearchParams(window.location.search);
-        const productoId = params.get('id');
-        const colorGrid = document.getElementById('color-grid');
-        const colorNameElement = document.getElementById('color-name');
-        const mainImage = document.getElementById('mainImage');
-        const imageIds = ['imagen-a', 'imagen-b', 'imagen-c', 'imagen-d'];
 
-        if (!productoId) {
-          console.error('No se proporcionó un ID de producto.');
-          return;
-        }
 
-        // Cargar colores y rutas desde el backend
-        fetch(`/colores?id=${productoId}`)
-          .then(response => response.json())
-          .then(data => {
-            // Verificar que colores exista y sea un array
-            if (!data.colores || !Array.isArray(data.colores)) {
-              console.error('La respuesta del servidor no tiene el formato esperado.');
+
+          document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const productoId = params.get('id');
+            const colorGrid = document.getElementById('color-grid');
+            const colorNameElement = document.getElementById('color-name');
+            const mainImage = document.getElementById('mainImage');
+            const availabilityStatus = document.getElementById('availability-status');
+            const imageIds = ['imagen-a', 'imagen-b', 'imagen-c', 'imagen-d'];
+
+            if (!productoId) {
+              console.error('No se proporcionó un ID de producto.');
               return;
             }
 
-            const colores = data.colores;
+            // Cargar colores y disponibilidad desde el backend
+            fetch(`/colores?id=${productoId}`)
+              .then((response) => response.json())
+              .then((data) => {
+                if (!data.success || !data.colores || !Array.isArray(data.colores)) {
+                  console.error('La respuesta del servidor no tiene el formato esperado.');
+                  return;
+                }
 
-            // Crear la paleta de colores
-            colorGrid.innerHTML = ''; // Limpia el grid
-            colores.forEach(color => {
-              const colorBox = document.createElement('div');
-              colorBox.className = 'color-box';
-              colorBox.style.backgroundColor = color.color_hex;
+                const colores = data.colores;
 
-              // Evento para cambiar imágenes y texto del color
-              colorBox.onclick = () => {
-                const rutaImagenes = color.ruta_imagenes;
+                // Crear la paleta de colores
+                colorGrid.innerHTML = ''; // Limpia el grid
+                colores.forEach((color) => {
+                  const colorBox = document.createElement('div');
+                  colorBox.className = 'color-box';
+                  colorBox.style.backgroundColor = color.color_hex;
 
-                // Actualizar las imágenes principales y miniaturas
-                mainImage.src = `${rutaImagenes}/a.webp`;
-                imageIds.forEach((id, index) => {
-                  document.getElementById(id).src = `${rutaImagenes}/${String.fromCharCode(97 + index)}.webp`;
+                  // Evento para cambiar imágenes, texto del color y disponibilidad
+                  colorBox.onclick = () => {
+                    const rutaImagenes = color.ruta_imagenes;
+
+                    // Actualizar las imágenes principales y miniaturas
+                    mainImage.src = `${rutaImagenes}/a.webp`;
+                    imageIds.forEach((id, index) => {
+                      document.getElementById(id).src = `${rutaImagenes}/${String.fromCharCode(97 + index)}.webp`;
+                    });
+
+                    // Actualizar el texto del color
+                    colorNameElement.textContent = color.color;
+
+                    // Actualizar la disponibilidad según el backend
+                    availabilityStatus.textContent =
+                      color.disponible ? 'Disponible para envío inmediato' : 'Entrega en 10-14 días';
+                      // Asumiendo que 'color.disponible' contiene el número de unidades en stock
+                      if (color.disponible > 0) {
+                        availabilityStatus.textContent = 'Disponible para envío inmediato';
+                        availabilityStatus.className = 'disponible';
+                      } else {
+                        availabilityStatus.textContent = 'Entrega en 10-14 días';
+                        availabilityStatus.className = 'no-disponible';
+}
+
+                  };
+
+                  colorGrid.appendChild(colorBox);
                 });
 
-                // Actualizar el texto del color
-                colorNameElement.textContent = color.color;
-              };
-
-              colorGrid.appendChild(colorBox);
-            });
-
-            // Simular un clic en el color principal para cargarlo por defecto
-            if (colores.length > 0) {
-              colorGrid.firstChild.click();
-            }
-          })
-          .catch(error => console.error('Error al cargar los colores:', error));
-      });
-
-
-      const params = new URLSearchParams(window.location.search);
-      const productoId = params.get('id');
-
-      // Cargar colores desde el backend
-      fetch(`/colores?id=${productoId}`)
-        .then(response => response.json())
-        .then(colores => {
-          const colorGrid = document.getElementById('color-grid');
-          colorGrid.innerHTML = '';
-
-          // Crear cuadros para cada color
-          colores.forEach(color => {
-            const colorBox = document.createElement('div');
-            colorBox.className = 'color-box';
-            colorBox.style.backgroundColor = color.color_hex;
-            colorGrid.appendChild(colorBox);
+                // Simular un clic en el color principal para cargarlo por defecto
+                if (colores.length > 0) {
+                  colorGrid.firstChild.click();
+                }
+              })
+              .catch((error) => console.error('Error al cargar los colores:', error));
           });
-        })
-        .catch(error => console.error('Error al cargar los colores:', error));
+
 
 
 
@@ -241,6 +247,8 @@ if (producto) {
         document.getElementById('mainImage').src = "<%= CFI %>/Products/<%= producto.producto_id %>/" + imageName;
     }
     
+
+          
 
       var scrollAnimElements = document.querySelectorAll("[data-animate-on-scroll]");
       var observer = new IntersectionObserver(
@@ -266,7 +274,7 @@ if (producto) {
       
 
       
-    window.onload = function () {
+      window.onload = function () {
       let claseAResaltar = "catalogo";
 
       // Cargar barra.html dinámicamente
@@ -432,9 +440,88 @@ if (producto) {
       });
       
       
-      
-        
-        
+        // agregar al carrito
+
+      document.addEventListener('DOMContentLoaded', () => {
+        // Seleccionar el botón
+        const addToCartButton = document.getElementById('addToCartButton');
+        const addCartContainer = document.querySelector('.addcart');
+
+        // Escuchar el clic del botón
+        addCartContainer.addEventListener('click', async () => {
+          // Cambiar el texto y el color del botón a "Añadiendo"
+          const originalText = addToCartButton.textContent;
+          addToCartButton.textContent = 'Añadiendo...';
+          addCartContainer.style.backgroundColor = '#B5483E'; // Cambiar el color (ejemplo: rojo oscuro)
+          addCartContainer.style.cursor = 'not-allowed';
+
+
+          // Obtener el product_id desde el atributo data-product-id
+          const productId = addToCartButton.dataset.productId;
+
+          if (!productId) {
+            alert('Producto no válido');
+            return;
+          }
+
+          // Obtener el color_id si está seleccionado (opcional)
+          const selectedColorId = document.querySelector('input[name="color_id"]:checked')?.value;
+
+          try {
+            // Realizar la solicitud POST al endpoint
+            const response = await fetch(`/addToCart/${productId}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ color_id: selectedColorId || null }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+              // Mostrar notificación de éxito
+              mostrarNotificacion('Producto añadido al carrito correctamente', 'success');
+
+              // Delay de 1 segundo antes de revertir cambios
+              setTimeout(() => {
+                // Cambiar el botón a "Ir al carrito"
+                addToCartButton.textContent = originalText;
+                addCartContainer.style.backgroundColor = '#838a6b'; // Cambiar el color (ejemplo: verde)
+                addCartContainer.style.cursor = 'pointer';
+              }, 1000);
+            } else {
+              // Mostrar mensaje de error
+              mostrarNotificacion(result.error || 'Ocurrió un error al añadir al carrito', 'error');
+              // Revertir el texto y color del botón
+              addToCartButton.textContent = originalText;
+              addCartContainer.style.backgroundColor = ''; // Restablecer el color original
+            }
+          } catch (error) {
+            console.error('Error al añadir al carrito:', error);
+            mostrarNotificacion('Error al procesar la solicitud', 'error');
+            // Revertir el texto y color del botón
+            addToCartButton.textContent = originalText;
+            addCartContainer.style.backgroundColor = ''; // Restablecer el color original
+          }
+        });
+
+        // Función para mostrar una notificación
+        function mostrarNotificacion(mensaje, tipo) {
+          const notificacion = document.createElement('div');
+          notificacion.className = `notificacion ${tipo}`; // Añadir clase para estilos (success o error)
+          notificacion.textContent = mensaje;
+
+          // Añadir la notificación al cuerpo del documento
+          document.body.appendChild(notificacion);
+
+          // Eliminar la notificación después de 3 segundos
+          setTimeout(() => {
+            notificacion.remove();
+          }, 3000);
+        }
+      });
+
+
+ 
       
       
     </script>

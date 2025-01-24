@@ -212,6 +212,7 @@ app.get('/anuncio', async (req, res) => {
 
 
 
+
 //########################################################### STOCK  ##################################################
 
 app.get('/colaborador/productos/stock', authMiddleware, (req, res) => {
@@ -232,12 +233,13 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
           p.stock AS stock_total, 
           COALESCE(c.color, NULL) AS color_alterno, 
           COALESCE(c.color_hex, NULL) AS color_hex_alterno, 
+          c.color_id AS color_alterno_id,
           c.stock AS stock_alterno, 
           p.destacado 
       FROM Productos p
       LEFT JOIN Productos_detalles pd ON p.producto_id = pd.producto_id
       LEFT JOIN ColoresAlternos c ON p.producto_id = c.producto_id
-      ORDER BY p.codigo, c.color;
+      ORDER BY p.codigo, c.color_id;
   `;
 
   db.query(query, (err, results) => {
@@ -252,8 +254,7 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
       results.forEach(row => {
           if (!productosMap[row.codigo]) {
               // Agregar el producto principal solo una vez
-              productosMap[row.codigo] = true;
-              productos.push({
+              productosMap[row.codigo] = {
                   producto_id: row.producto_id,
                   codigo: row.codigo,
                   nombre: row.nombre,
@@ -262,31 +263,37 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
                   color: row.color_principal,
                   color_hex: row.color_hex_principal,
                   stock: row.stock_total || 0,
-                  destacado: row.destacado
-              });
+                  destacado: row.destacado,
+                  alternos: []
+              };
           }
 
+          // Agregar colores alternos al producto correspondiente
           if (row.color_alterno) {
-              // Agregar colores alternos como nuevas filas
-              productos.push({
+              productosMap[row.codigo].alternos.push({
                   producto_id: row.producto_id,
                   codigo: row.codigo,
-                  nombre: row.nombre,
+                  nombre: `↳ ${row.nombre} ALT${row.color_alterno_id}`,
                   precio: row.precio,
                   categoria: row.categoria || 'Sin categoría',
                   color: row.color_alterno,
                   color_hex: row.color_hex_alterno,
                   stock: row.stock_alterno || 0,
-                  destacado: row.destacado
+                  destacado: row.destacado,
+                  esAlterno: true
               });
           }
+      });
+
+      // Convertir el mapa a una lista ordenada
+      Object.values(productosMap).forEach(producto => {
+          productos.push(producto); // Agregar el producto principal
+          productos.push(...producto.alternos); // Agregar sus alternos inmediatamente después
       });
 
       res.json({ productos });
   });
 });
-
-
 
 
 //########################################################### eliminar productos ##################################################
@@ -386,20 +393,43 @@ app.post('/colaborador/productos/actualizar-stock', authMiddleware, (req, res) =
     return res.status(400).json({ success: false, error: 'No se enviaron productos para actualizar' });
   }
 
-  // Actualizar el stock de cada producto en la base de datos
-  let query = 'UPDATE Productos SET stock = ? WHERE codigo = ?';
+  const queries = [];
   productos.forEach(producto => {
-    const { codigo, stock } = producto;
-    db.query(query, [stock, codigo], (err, result) => {
-      if (err) {
-        console.error('Error al actualizar el stock:', err);
-        return res.status(500).json({ success: false, error: 'Error al actualizar el stock' });
+    const { nombre, stock } = producto;
+
+    // Verificar si es un color alterno por la presencia de ↳ ALT
+    if (nombre.includes('↳')) {
+      const colorIdMatch = nombre.match(/ALT(\d+)/); // Extraer el ID del color alterno
+      if (colorIdMatch) {
+        const colorId = parseInt(colorIdMatch[1], 10);
+        queries.push(new Promise((resolve, reject) => {
+          db.query('UPDATE ColoresAlternos SET stock = ? WHERE color_id = ?', [stock, colorId], (err, result) => {
+            if (err) return reject(err);
+            resolve(result);
+          });
+        }));
       }
-    });
+    } else {
+      // Producto principal
+      queries.push(new Promise((resolve, reject) => {
+        db.query('UPDATE Productos SET stock = ? WHERE codigo = ?', [stock, producto.codigo], (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
+        });
+      }));
+    }
   });
 
-  res.json({ success: true });
+  // Ejecutar todas las consultas y enviar la respuesta
+  Promise.all(queries)
+    .then(() => res.json({ success: true }))
+    .catch(err => {
+      console.error('Error al actualizar el stock:', err);
+      res.status(500).json({ success: false, error: 'Error al actualizar el stock' });
+    });
 });
+
+
 
 // Ruta para actualizar el estado de destacado de un producto
 app.post('/colaborador/productos/actualizar-destacado', authMiddleware, (req, res) => {
@@ -1942,13 +1972,14 @@ app.get('/comprasbuscar', (req, res) => {
 
 
 
-
-
 //########################################## Catálogo ##################################################
 app.get('/producto', async (req, res) => {
   const productoId = req.query.id;
 
   try {
+    // Obtener disponibilidad mediante la función
+    
+
     // Paso 1: Consultar el producto en la base de datos
     const [productoResult] = await db.promise().query(
       'SELECT * FROM Productos WHERE producto_id = ?',
@@ -1976,36 +2007,27 @@ app.get('/producto', async (req, res) => {
       FROM Productos
       WHERE producto_id = ?
     `;
-    
-    // Ejecutar la consulta
     await db.promise().query(queryInsertVisita, [productoId, productoId]);
 
     // Paso 3: Consultar las compras del último mes
     const lastMonthDate = new Date();
     lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
 
-  // Modificación en la consulta para filtrar registros
     const [comprasMes] = await db.promise().query(
       `SELECT DATE(fecha) AS fecha, MAX(precio) AS precio
-      FROM Registros
-      WHERE product_id = ? 
-        AND fecha IS NOT NULL 
-        AND fecha >= ?
-        AND (evento = 'compra' OR evento = 'sim') -- Filtra por compra o sim
-      GROUP BY DATE(fecha)
-      ORDER BY fecha ASC`,
+       FROM Registros
+       WHERE product_id = ? 
+         AND fecha IS NOT NULL 
+         AND fecha >= ?
+         AND (evento = 'compra' OR evento = 'sim')
+       GROUP BY DATE(fecha)
+       ORDER BY fecha ASC`,
       [productoId, lastMonthDate]
     );
-    
 
-
-    // Imprimir los datos obtenidos en la terminal
-    
-
-    // Formatear los datos para la gráfica
-    const chartData = comprasMes.map(compra => ({
+    const chartData = comprasMes.map((compra) => ({
       time: compra.fecha.toISOString().split('T')[0],
-      value: compra.precio
+      value: compra.precio,
     }));
 
     console.log('Datos obtenidos para chartData:', chartData);
@@ -2016,7 +2038,7 @@ app.get('/producto', async (req, res) => {
       [producto.categoria, productoId]
     );
 
-    // Renderizar la plantilla EJS con los datos del producto
+    // Renderizar la plantilla EJS con los datos del producto y disponibilidad
     res.render('producto', {
       producto,
       descripcion1: detalles.descripcion1 || 'No disponible',
@@ -2026,13 +2048,15 @@ app.get('/producto', async (req, res) => {
       acabado: detalles.acabado || 'No disponible',
       color: detalles.color || 'No disponible',
       productosRelacionados: relatedProducts,
-      chartData
+      chartData,
+      
     });
   } catch (err) {
     console.error('Error en el servidor:', err);
     res.status(500).send('Error interno del servidor');
   }
 });
+// Endpoint para colores con stock y disponibilidad
 app.get('/colores', async (req, res) => {
   const productoId = req.query.id;
 
@@ -2041,9 +2065,7 @@ app.get('/colores', async (req, res) => {
       return res.status(400).json({ error: 'Falta el parámetro "id".' });
     }
 
-   
-
-    // Buscar el color principal
+    // Buscar el color principal y su información desde Productos_detalles
     const [detallesResult] = await db.promise().query(
       'SELECT color_hex, color FROM Productos_detalles WHERE producto_id = ?',
       [productoId]
@@ -2053,34 +2075,50 @@ app.get('/colores', async (req, res) => {
       return res.status(404).json({ error: 'Producto no encontrado en detalles.' });
     }
 
-    const colorPrincipal = {
-      color_id: null,
-      color_hex: detallesResult[0].color_hex,
-      color: detallesResult[0].color || "Color Principal",
-      ruta_imagenes: `${CFI}/Products/${productoId}`
-    };
-
-    // Buscar colores alternos
-    const [coloresAlternosResult] = await db.promise().query(
-      'SELECT color_id, color_hex, color FROM ColoresAlternos WHERE producto_id = ?',
+    // Obtener el stock del producto principal desde la tabla Productos
+    const [productoStockResult] = await db.promise().query(
+      'SELECT stock FROM Productos WHERE producto_id = ?',
       [productoId]
     );
 
-    const coloresAlternos = coloresAlternosResult.map(color => ({
+    if (productoStockResult.length === 0) {
+      return res.status(404).json({ error: 'Producto no encontrado.' });
+    }
+
+    const stockPrincipal = productoStockResult[0].stock;
+
+    const colorPrincipal = {
+      color_id: null, // El color principal no tiene un ID específico
+      color_hex: detallesResult[0].color_hex,
+      color: detallesResult[0].color || 'Color Principal',
+      ruta_imagenes: `${CFI}/Products/${productoId}`,
+      disponible: stockPrincipal > 0, // Disponibilidad basada en el stock
+    };
+
+    // Buscar colores alternos y sus stocks desde ColoresAlternos
+    const [coloresAlternosResult] = await db.promise().query(
+      'SELECT color_id, color_hex, color, stock FROM ColoresAlternos WHERE producto_id = ?',
+      [productoId]
+    );
+
+    const coloresAlternos = coloresAlternosResult.map((color) => ({
       color_id: color.color_id,
       color_hex: color.color_hex,
-      color: color.color || "Color Alterno",
-      ruta_imagenes: `${CFI}/Colors/${productoId}/${color.color_id}`
+      color: color.color || 'Color Alterno',
+      ruta_imagenes: `${CFI}/Colors/${productoId}/${color.color_id}`,
+      disponible: color.stock > 0, // Disponibilidad basada en el stock
     }));
 
-    // Responder con el JSON completo
-    res.json({ colores: [colorPrincipal, ...coloresAlternos] });
+    // Enviar todos los colores (principal + alternos) junto con su disponibilidad
+    res.json({
+      success: true,
+      colores: [colorPrincipal, ...coloresAlternos],
+    });
   } catch (err) {
     console.error('Error en el servidor:', err);
     res.status(500).json({ error: 'Error interno del servidor.' });
   }
 });
-
 
 
 
@@ -2795,6 +2833,78 @@ app.post('/api/registros/:codigo/sync', async (req, res) => {
     await db.promise().query('ROLLBACK');
     console.error('Error al sincronizar los registros:', error);
     res.status(500).json({ success: false, error: `Error al sincronizar los registros: ${error.message}` });
+  }
+});
+
+
+//#################### carrito de compras ######################
+
+app.get('/carrito', (req, res) => {
+
+  const userId = req.session.userId;
+
+  // Verificar que el usuario esté autenticado
+  if (!userId) {
+    return res.redirect('/login');
+  }
+
+  res.render('carrito');
+});
+
+// Endpoint para añadir al carrito
+app.post('/addToCart/:product_id', async (req, res) => {
+  const { product_id } = req.params; // ID del producto desde el URL
+  const { color_id = null } = req.body; // ID del color alterno si está seleccionado
+  const userId = req.session.userId; // ID del usuario desde la sesión actual
+
+  // Verificar que el usuario esté autenticado
+  if (!userId) {
+    return res.redirect('/login'); // Redirigir al usuario a la página de inicio de sesión
+  }
+  
+  try {
+    let colorNombre;
+
+    if (color_id) {
+      // Si se seleccionó un color alterno, buscarlo en la tabla ColoresAlternos
+      const [colorAlterno] = await db.promise().query(
+        'SELECT color FROM ColoresAlternos WHERE color_id = ? AND producto_id = ?',
+        [color_id, product_id]
+      );
+
+      if (colorAlterno.length === 0) {
+        return res.status(404).json({ success: false, error: 'Color alterno no encontrado' });
+      }
+
+      colorNombre = colorAlterno[0].color;
+    } else {
+      // Si no se seleccionó un color alterno, buscar el color principal en Productos_detalles
+      const [colorPrincipal] = await db.promise().query(
+        'SELECT color FROM Productos_detalles WHERE producto_id = ?',
+        [product_id]
+      );
+
+      if (colorPrincipal.length === 0) {
+        return res.status(404).json({ success: false, error: 'Color principal no encontrado' });
+      }
+
+      colorNombre = colorPrincipal[0].color;
+    }
+
+    // Insertar el producto en el carrito
+    const queryInsertCarrito = `
+      INSERT INTO carrito (usuario_id, producto_id, cantidad, color)
+      VALUES (?, ?, 1, ?)
+      ON DUPLICATE KEY UPDATE cantidad = cantidad + 1
+
+    `;
+
+    await db.promise().query(queryInsertCarrito, [userId, product_id, colorNombre]);
+
+    res.json({ success: true, });
+  } catch (err) {
+    console.error('Error al añadir al carrito:', err);
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 });
 
