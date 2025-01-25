@@ -5,7 +5,7 @@
   <meta name="viewport" content="initial-scale=1, width=device-width" />
 
   <link rel="stylesheet" href="./global.css" />
-  <link rel="stylesheet" href="./perfil.css" />
+  <link rel="stylesheet" href="./carrito.css" />
 
   <link
     rel="stylesheet"
@@ -27,61 +27,32 @@
   <div class = "container" >
 
     <!-- aqiu escribir el codigo nuevo -->
-    <div class="profile-container">
-      <h2>Tu Carrito</h2>
+      <div class="profile-container">
+        <h2>Tu Carrito</h2>
+        
+        <!-- Lista de productos en el carrito -->
+        <ul class="cart-items">
+          <!-- Aquí se cargarán los productos dinámicamente desde carrito.js -->
+        </ul>
       
-      <!-- Lista de productos en el carrito -->
-      <ul class="cart-items">
-        <li class="cart-item">
-          <img src="./public/sample-product1.jpg" alt="Producto 1" class="product-image">
-          <div class="item-details">
-            <p class="product-name">Silla Caribeña</p>
-            <p class="product-color">Color: Pino</p>
-            <p class="product-price">Precio: $2,500.00</p>
-            <div class="quantity-container">
-              <button class="quantity-btn" data-action="decrease">-</button>
-              <input type="number" class="quantity-input" value="3" min="1">
-              <button class="quantity-btn" data-action="increase">+</button>
-            </div>
-            <p class="availability">Disponible para envío inmediato</p>
-            <button class="delete-item-btn">Eliminar</button>
-          </div>
-        </li>
-        <li class="cart-item">
-          <img src="./public/sample-product2.jpg" alt="Producto 2" class="product-image">
-          <div class="item-details">
-            <p class="product-name">Mesa Caribeña</p>
-            <p class="product-color">Color: Fresno Natural</p>
-            <p class="product-price">Precio: $3,200.00</p>
-            <div class="quantity-container">
-              <button class="quantity-btn" data-action="decrease">-</button>
-              <input type="number" class="quantity-input" value="2" min="1">
-              <button class="quantity-btn" data-action="increase">+</button>
-            </div>
-            <p class="availability">Entrega en 10-14 días</p>
-            <button class="delete-item-btn">Eliminar</button>
-          </div>
-        </li>
-      </ul>
-    
-      <!-- Resumen del carrito -->
-      <div class="cart-summary">
-        <p>Total de productos: <span class="total-items">5</span></p>
-        <p>Total: <span class="total-price">$12,900.00</span></p>
-      </div>
-    
-      <!-- Botones de acción -->
-      <div class="cart-actions">
-        <button id="proceed-to-checkout" class="checkout-btn">Proceder al Pago</button>
-        <button id="continue-shopping" class="continue-btn">Seguir Comprando</button>
+        <!-- Resumen del carrito -->
+        <div class="cart-summary">
+          <p>Total de productos: <span class="total-items">0</span></p>
+          <p>Total: <span class="total-price">$0.00</span></p>
+        </div>
+      
+        <!-- Botones de acción -->
+        <div class="cart-actions">
+          <button id="proceed-to-checkout" class="checkout-btn">Proceder al Pago</button>
+          <button id="continue-shopping" class="continue-btn">Seguir Comprando</button>
+        </div>
       </div>
     </div>
-    
-
-  </div>
+    </div>
 
 
   <div id="footer" class="footer"></div>
+  <script src="./carrito.js"></script>
 
   <script>
     // barra y footer

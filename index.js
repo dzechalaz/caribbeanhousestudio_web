@@ -2869,17 +2869,163 @@ app.post('/api/registros/:codigo/sync', async (req, res) => {
 
 //#################### carrito de compras ######################
 
-app.get('/carrito', (req, res) => {
-
-  const userId = req.session.userId;
-
-  // Verificar que el usuario esté autenticado
-  if (!userId) {
-    return res.redirect('/login');
-  }
-
+app.get('/carrito', authMiddleware, (req, res) => {
   res.render('carrito');
 });
+
+
+app.get('/api/carrito', authMiddleware, (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.status(401).json({ success: false, message: 'Usuario no autenticado.' });
+  }
+
+  const query = `
+    SELECT 
+      c.id AS carrito_id,
+      c.cantidad,
+      c.color AS color_carrito,
+      p.producto_id,
+      p.nombre AS producto_nombre,
+      p.precio AS producto_precio,
+      p.categoria AS producto_categoria,
+      p.codigo AS producto_codigo,
+      p.stock AS stock_producto,
+      pd.color AS producto_color_principal,
+      pd.color_hex AS producto_color_hex,
+      ca.color AS alterno_color,
+      ca.color_hex AS alterno_color_hex,
+      ca.stock AS stock_alterno
+    FROM carrito c
+    LEFT JOIN Productos p ON c.producto_id = p.producto_id
+    LEFT JOIN Productos_detalles pd ON c.producto_id = pd.producto_id
+    LEFT JOIN ColoresAlternos ca ON c.producto_id = ca.producto_id AND c.color = ca.color
+    WHERE c.usuario_id = ?
+  `;
+
+  db.query(query, [userId], (err, results) => {
+    if (err) {
+      console.error('Error al obtener el carrito:', err);
+      return res.status(500).json({ success: false, message: 'Error al obtener el carrito.' });
+    }
+
+    const carrito = results.map((item) => {
+      const esPrincipal = item.color_carrito === item.producto_color_principal;
+      const stockDisponible = esPrincipal ? item.stock_producto : item.stock_alterno;
+
+      return {
+        carrito_id: item.carrito_id,
+        producto_id: item.producto_id,
+        producto_nombre: item.producto_nombre,
+        precio: parseFloat(item.producto_precio),
+        categoria: item.producto_categoria,
+        codigo: item.producto_codigo,
+        color: esPrincipal ? item.producto_color_principal : item.alterno_color,
+        color_hex: esPrincipal ? item.producto_color_hex : item.alterno_color_hex,
+        cantidad: item.cantidad,
+        stock: stockDisponible,
+        disponibilidad: item.cantidad > stockDisponible
+          ? 'Entrega en 10-14 días'
+          : 'Disponible para envío inmediato',
+        path_imagen: esPrincipal
+          ? `${CFI}/Products/${item.producto_id}/a.webp`
+          : `${CFI}/Colors/${item.producto_id}/${item.alterno_color}/a.webp`,
+      };
+    });
+
+    res.json({ success: true, carrito });
+  });
+});
+
+
+// borrar del carrito
+app.delete('/api/carrito/:carritoId', authMiddleware, (req, res) => {
+  const carritoId = req.params.carritoId;
+
+  // Verificar que se envíe un ID válido
+  if (!carritoId) {
+    return res.status(400).json({ success: false, message: 'ID del carrito no proporcionado.' });
+  }
+
+  const query = `
+    DELETE FROM carrito
+    WHERE id = ?
+  `;
+
+  db.query(query, [carritoId], (err, result) => {
+    if (err) {
+      console.error('Error al eliminar el producto del carrito:', err);
+      return res.status(500).json({ success: false, message: 'Error al eliminar el producto del carrito.' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Elemento no encontrado en el carrito.' });
+    }
+
+    res.json({ success: true, message: 'Producto eliminado del carrito correctamente.' });
+  });
+});
+
+app.put('/api/carrito/:carritoId', authMiddleware, (req, res) => {
+  const { carritoId } = req.params;
+  const { cantidad } = req.body;
+
+  if (!carritoId || typeof cantidad !== 'number' || cantidad <= 0) {
+    return res.status(400).json({ success: false, message: 'Datos inválidos.' });
+  }
+
+  const queryStock = `
+    SELECT c.color, p.stock AS stock_producto, ca.stock AS stock_alterno
+    FROM carrito c
+    LEFT JOIN Productos p ON c.producto_id = p.producto_id
+    LEFT JOIN ColoresAlternos ca ON c.producto_id = ca.producto_id AND c.color = ca.color
+    WHERE c.id = ?
+  `;
+
+  db.query(queryStock, [carritoId], (err, results) => {
+    if (err) {
+      console.error('Error al verificar el stock:', err);
+      return res.status(500).json({ success: false, message: 'Error al verificar el stock.' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ success: false, message: 'Producto no encontrado en el carrito.' });
+    }
+
+    const item = results[0];
+    const stockDisponible = item.stock_alterno !== null ? item.stock_alterno : item.stock_producto;
+
+    // Determinar la disponibilidad
+    const disponibilidad =
+      cantidad > stockDisponible
+        ? 'Entrega en 10-14 días'
+        : 'Disponible para envío inmediato';
+
+    const updateQuery = 'UPDATE carrito SET cantidad = ? WHERE id = ?';
+    db.query(updateQuery, [cantidad, carritoId], (err) => {
+      if (err) {
+        console.error('Error al actualizar la cantidad:', err);
+        return res.status(500).json({ success: false, message: 'Error al actualizar la cantidad.' });
+      }
+
+      res.json({
+        success: true,
+        message: 'Cantidad actualizada correctamente.',
+        disponibilidad,
+        stockDisponible,
+      });
+    });
+  });
+});
+
+
+
+
+
+
+
+
 
 // Endpoint para añadir al carrito
 app.post('/addToCart/:product_id', async (req, res) => {
