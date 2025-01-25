@@ -11,12 +11,16 @@ const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const fetch = require('node-fetch'); 
 const nodemailer = require('nodemailer');
+const cookieParser = require('cookie-parser');
 
 const archiver = require('archiver');
 
 
+
 const cors = require('cors');
 app.use(cors());
+
+app.use(cookieParser());
 
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 
@@ -133,12 +137,14 @@ app.get('/colaborador/productos/crear', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/productos/crear_producto.html'));
 });
 
+let anuncioHabilitado = false; // Por defecto deshabilitado
+// Endpoint para /colaborador/anuncios (renderización del HTML)
 // Endpoint para /colaborador/anuncios (renderización del HTML)
 app.get('/colaborador/anuncios', authMiddleware, (req, res) => {
   const timestamp = Date.now();
   const anuncioPath = `https://pub-9eb3385798dc4bcba46fb69f616dc1a0.r2.dev/Anuncios/anuncio.webp?t=${timestamp}`;
 
-  // Leer el archivo HTML y reemplazar un marcador con la URL del anuncio
+  // Leer el archivo HTML y reemplazar un marcador con la URL del anuncio y habilitación
   const fs = require('fs');
   const htmlPath = path.join(__dirname, 'src/colaborador/anuncios.html');
   fs.readFile(htmlPath, 'utf8', (err, data) => {
@@ -147,26 +153,32 @@ app.get('/colaborador/anuncios', authMiddleware, (req, res) => {
       return res.status(500).send('Error interno del servidor');
     }
 
-    // Reemplazar el marcador {{anuncioPath}} con la URL dinámica
-    const htmlConAnuncio = data.replace('{{anuncioPath}}', anuncioPath);
+    // Incluir el valor de habilitación
+    const htmlConAnuncio = data
+      .replace('{{anuncioPath}}', anuncioPath)
+      .replace('{{anuncioHabilitado}}', anuncioHabilitado ? 'true' : 'false'); // Agregar variable
     res.send(htmlConAnuncio);
   });
 });
 
+
 // Endpoint para procesar la subida de la imagen
-// Endpoint para subir la imagen al bucket sin procesarla
 app.post('/colaborador/anuncios/upload', authMiddleware, upload.single('imagen'), async (req, res) => {
   try {
+    const activo = req.body.activo === 'true'; // Estado del checkbox
+    anuncioHabilitado = activo; // Actualizar el estado global
+
+    // Si no hay imagen, solo actualizar el estado del anuncio
     if (!req.file) {
-      return res.status(400).send('No se ha subido ninguna imagen.');
+      console.log(`El estado del anuncio se actualizó: ${anuncioHabilitado ? 'Habilitado' : 'Deshabilitado'}`);
+      return res.status(200).json({
+        success: true,
+        message: 'Estado del anuncio actualizado correctamente.',
+        habilitado: anuncioHabilitado,
+      });
     }
 
-    const activo = req.body.activo === 'true'; // Estado del checkbox
-
-    // Actualizar el estado global
-    anuncioHabilitado = activo;
-
-    // Subir la imagen al bucket
+    // Si hay una imagen, procesarla y subirla al bucket
     const fileName = 'anuncio.webp';
     const productPath = `Anuncios/`;
     const filePath = `${productPath}${fileName}`;
@@ -183,23 +195,42 @@ app.post('/colaborador/anuncios/upload', authMiddleware, upload.single('imagen')
 
     // Construir la URL pública
     const imageUrl = `${CFI}/${filePath}`;
-    res.status(200).json({ success: true, message: 'Imagen subida con éxito.', url: imageUrl, habilitado: anuncioHabilitado });
+    res.status(200).json({
+      success: true,
+      message: 'Imagen y estado del anuncio actualizados correctamente.',
+      url: imageUrl,
+      habilitado: anuncioHabilitado,
+    });
   } catch (error) {
-    console.error('Error al procesar la imagen:', error);
-    res.status(500).send('Error al procesar la imagen.');
+    console.error('Error al procesar la imagen o actualizar el estado:', error);
+    res.status(500).send('Error al procesar la solicitud.');
   }
 });
 
 
 
 // Estado global para habilitar o deshabilitar el anuncio
-let anuncioHabilitado = false; // Por defecto deshabilitado
+
 
 app.get('/anuncio', async (req, res) => {
   try {
     if (!anuncioHabilitado) {
       return res.json({ success: false, message: 'El anuncio no está habilitado.' });
     }
+
+    const lastAnuncioTime = req.cookies.lastAnuncioTime;
+    const currentTime = Date.now();
+    const thirtyMinutes = 30 * 60 * 1000; // 30 minutos en milisegundos
+
+    if (lastAnuncioTime && currentTime - lastAnuncioTime < thirtyMinutes) {
+      return res.json({ success: false, message: 'El anuncio ya fue mostrado recientemente.' });
+    }
+
+    // Actualizar la cookie con el tiempo actual
+    res.cookie('lastAnuncioTime', currentTime, {
+      maxAge: thirtyMinutes, // La cookie expira en 30 minutos
+      httpOnly: true, // Solo accesible por el servidor
+    });
 
     const timestamp = Date.now();
     const anuncioPath = `https://pub-9eb3385798dc4bcba46fb69f616dc1a0.r2.dev/Anuncios/anuncio.webp?t=${timestamp}`;
@@ -209,7 +240,6 @@ app.get('/anuncio', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al cargar el anuncio.' });
   }
 });
-
 
 
 
@@ -2030,7 +2060,7 @@ app.get('/producto', async (req, res) => {
       value: compra.precio,
     }));
 
-    console.log('Datos obtenidos para chartData:', chartData);
+    //console.log('Datos obtenidos para chartData:', chartData);
 
     // Paso 4: Seleccionar productos relacionados
     const [relatedProducts] = await db.promise().query(
@@ -2509,7 +2539,7 @@ app.get('/producto-historial/:id', async (req, res) => {
       value: registro.precio,
     }));
 
-    console.log(`Datos para producto ${productoId}:`, chartData); // Imprimir en el servidor
+    //console.log(`Datos para producto ${productoId}:`, chartData); // Imprimir en el servidor
 
     res.json(chartData); // Enviar los datos de la gráfica como JSON
   } catch (err) {
@@ -2536,7 +2566,7 @@ app.use(async (req, res, next) => {
       `,
       [today]
     );
-    console.log(`Visita registrada para la fecha: ${today}`);
+    //console.log(`Visita registrada para la fecha: ${today}`);
   } catch (err) {
     console.error('Error al registrar visita:', err);
   }
@@ -2839,17 +2869,163 @@ app.post('/api/registros/:codigo/sync', async (req, res) => {
 
 //#################### carrito de compras ######################
 
-app.get('/carrito', (req, res) => {
-
-  const userId = req.session.userId;
-
-  // Verificar que el usuario esté autenticado
-  if (!userId) {
-    return res.redirect('/login');
-  }
-
+app.get('/carrito', authMiddleware, (req, res) => {
   res.render('carrito');
 });
+
+
+app.get('/api/carrito', authMiddleware, (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.status(401).json({ success: false, message: 'Usuario no autenticado.' });
+  }
+
+  const query = `
+    SELECT 
+      c.id AS carrito_id,
+      c.cantidad,
+      c.color AS color_carrito,
+      p.producto_id,
+      p.nombre AS producto_nombre,
+      p.precio AS producto_precio,
+      p.categoria AS producto_categoria,
+      p.codigo AS producto_codigo,
+      p.stock AS stock_producto,
+      pd.color AS producto_color_principal,
+      pd.color_hex AS producto_color_hex,
+      ca.color AS alterno_color,
+      ca.color_hex AS alterno_color_hex,
+      ca.stock AS stock_alterno
+    FROM carrito c
+    LEFT JOIN Productos p ON c.producto_id = p.producto_id
+    LEFT JOIN Productos_detalles pd ON c.producto_id = pd.producto_id
+    LEFT JOIN ColoresAlternos ca ON c.producto_id = ca.producto_id AND c.color = ca.color
+    WHERE c.usuario_id = ?
+  `;
+
+  db.query(query, [userId], (err, results) => {
+    if (err) {
+      console.error('Error al obtener el carrito:', err);
+      return res.status(500).json({ success: false, message: 'Error al obtener el carrito.' });
+    }
+
+    const carrito = results.map((item) => {
+      const esPrincipal = item.color_carrito === item.producto_color_principal;
+      const stockDisponible = esPrincipal ? item.stock_producto : item.stock_alterno;
+
+      return {
+        carrito_id: item.carrito_id,
+        producto_id: item.producto_id,
+        producto_nombre: item.producto_nombre,
+        precio: parseFloat(item.producto_precio),
+        categoria: item.producto_categoria,
+        codigo: item.producto_codigo,
+        color: esPrincipal ? item.producto_color_principal : item.alterno_color,
+        color_hex: esPrincipal ? item.producto_color_hex : item.alterno_color_hex,
+        cantidad: item.cantidad,
+        stock: stockDisponible,
+        disponibilidad: item.cantidad > stockDisponible
+          ? 'Entrega en 10-14 días'
+          : 'Disponible para envío inmediato',
+        path_imagen: esPrincipal
+          ? `${CFI}/Products/${item.producto_id}/a.webp`
+          : `${CFI}/Colors/${item.producto_id}/${item.alterno_color}/a.webp`,
+      };
+    });
+
+    res.json({ success: true, carrito });
+  });
+});
+
+
+// borrar del carrito
+app.delete('/api/carrito/:carritoId', authMiddleware, (req, res) => {
+  const carritoId = req.params.carritoId;
+
+  // Verificar que se envíe un ID válido
+  if (!carritoId) {
+    return res.status(400).json({ success: false, message: 'ID del carrito no proporcionado.' });
+  }
+
+  const query = `
+    DELETE FROM carrito
+    WHERE id = ?
+  `;
+
+  db.query(query, [carritoId], (err, result) => {
+    if (err) {
+      console.error('Error al eliminar el producto del carrito:', err);
+      return res.status(500).json({ success: false, message: 'Error al eliminar el producto del carrito.' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Elemento no encontrado en el carrito.' });
+    }
+
+    res.json({ success: true, message: 'Producto eliminado del carrito correctamente.' });
+  });
+});
+
+app.put('/api/carrito/:carritoId', authMiddleware, (req, res) => {
+  const { carritoId } = req.params;
+  const { cantidad } = req.body;
+
+  if (!carritoId || typeof cantidad !== 'number' || cantidad <= 0) {
+    return res.status(400).json({ success: false, message: 'Datos inválidos.' });
+  }
+
+  const queryStock = `
+    SELECT c.color, p.stock AS stock_producto, ca.stock AS stock_alterno
+    FROM carrito c
+    LEFT JOIN Productos p ON c.producto_id = p.producto_id
+    LEFT JOIN ColoresAlternos ca ON c.producto_id = ca.producto_id AND c.color = ca.color
+    WHERE c.id = ?
+  `;
+
+  db.query(queryStock, [carritoId], (err, results) => {
+    if (err) {
+      console.error('Error al verificar el stock:', err);
+      return res.status(500).json({ success: false, message: 'Error al verificar el stock.' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ success: false, message: 'Producto no encontrado en el carrito.' });
+    }
+
+    const item = results[0];
+    const stockDisponible = item.stock_alterno !== null ? item.stock_alterno : item.stock_producto;
+
+    // Determinar la disponibilidad
+    const disponibilidad =
+      cantidad > stockDisponible
+        ? 'Entrega en 10-14 días'
+        : 'Disponible para envío inmediato';
+
+    const updateQuery = 'UPDATE carrito SET cantidad = ? WHERE id = ?';
+    db.query(updateQuery, [cantidad, carritoId], (err) => {
+      if (err) {
+        console.error('Error al actualizar la cantidad:', err);
+        return res.status(500).json({ success: false, message: 'Error al actualizar la cantidad.' });
+      }
+
+      res.json({
+        success: true,
+        message: 'Cantidad actualizada correctamente.',
+        disponibilidad,
+        stockDisponible,
+      });
+    });
+  });
+});
+
+
+
+
+
+
+
+
 
 // Endpoint para añadir al carrito
 app.post('/addToCart/:product_id', async (req, res) => {

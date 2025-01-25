@@ -1,0 +1,195 @@
+body {
+  font-family: 'Montserrat', sans-serif; /* Fuente Montserrat */
+  margin: 0;
+  padding: 0;
+  background-color: #F8E8D3; /* Fondo cálido estilo chukum */
+}
+
+.container {
+  background-image: url('./public/080bef28e2d2463cae04d69b5960f9f82@2x.png');
+  background-size: cover; /* La imagen cubrirá todo el fondo */
+  background-repeat: no-repeat; /* Evita que la imagen se repita */
+  height: calc(100vh + 250px);
+}
+
+/* Contenedor principal del carrito */
+.profile-container {
+  position: relative;
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+  background-color: #C8D9CE; /* Verde azulado pastel tipo chukum */
+  border-radius: 15px; /* Bordes redondeados */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para darle un efecto elevado */
+  top: 110px;
+}
+
+/* Título */
+h2 {
+  margin-bottom: 15px;
+  color: #2A7F62; /* Verde azulado más oscuro */
+  font-size: 1.8rem;
+  text-align: center;
+}
+
+/* Lista de productos en el carrito */
+.cart-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 15px;
+  background-color: #F5F5F5; /* Fondo claro para las tarjetas */
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cart-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Imagen del producto */
+.product-image {
+  width: 200px;
+  height: 200px;
+  border-radius: 10px;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+/* Detalles del producto */
+.item-details {
+  flex-grow: 1;
+}
+
+.product-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.product-color,
+.product-price,
+.availability {
+  font-size: 0.9rem;
+  margin: 5px 0;
+}
+
+.availability {
+  color: #2A7F62;
+  font-weight: bold;
+}
+
+/* Controles de cantidad */
+.quantity-container {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.quantity-btn {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background-color: #2A7F62;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 0 5px;
+  transition: background-color 0.3s ease;
+}
+
+.quantity-btn:hover {
+  background-color: #20594A;
+}
+
+.quantity-input {
+  width: 50px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+/* Botón de eliminar */
+.delete-item-btn {
+  background-color: #E74C3C;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-left: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.delete-item-btn:hover {
+  background-color: #C0392B;
+}
+
+/* Resumen del carrito */
+.cart-summary {
+  text-align: right;
+  margin-top: 20px;
+}
+
+.total-items,
+.total-price {
+  font-weight: bold;
+  color: #2A7F62;
+}
+
+/* Botones de acción */
+.cart-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+}
+
+.checkout-btn,
+.continue-btn {
+  background-color: #2A7F62;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.checkout-btn:hover,
+.continue-btn:hover {
+  background-color: #20594A;
+}
+
+.continue-btn {
+  background-color: #95A78D; /* Verde grisáceo */
+}
+
+.continue-btn:hover {
+  background-color: #7B8D72;
+}
+
+.availability {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.availability.disponible {
+  color: #1abc9c; /* Verde pastel */
+}
+
+.availability.no-disponible {
+  color: #e67e22; /* Naranja chukum */
+}

@@ -35,18 +35,23 @@
   <script>
     // URL del anuncio (se inyectará dinámicamente desde el backend)
     const anuncioPath = '{{anuncioPath}}';
-
+    const anuncioHabilitado = '{{anuncioHabilitado}}' === 'true'; // Convertir a booleano
+  
+    // Cargar estado inicial del checkbox
+    const activoCheckbox = document.getElementById('activo');
+    activoCheckbox.checked = anuncioHabilitado; // Reflejar el estado actual
+  
     // Mostrar la imagen actual del anuncio en la vista previa
     const previewImg = document.getElementById('previewImg');
     const previewDiv = document.getElementById('preview');
     const previewText = previewDiv.querySelector('p');
-
+  
     if (anuncioPath) {
       previewImg.src = anuncioPath;
       previewImg.style.display = 'block';
       previewText.style.display = 'none';
     }
-
+  
     // Manejar la selección de una nueva imagen y actualizar la vista previa
     const imagenInput = document.getElementById('imagen');
     imagenInput.addEventListener('change', (event) => {
@@ -64,47 +69,51 @@
         previewText.style.display = 'block';
       }
     });
-
+  
     // Manejar envío del formulario
     const form = document.getElementById('anuncioForm');
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
-
+  
       const formData = new FormData();
       const file = imagenInput.files[0];
       const activo = document.getElementById('activo').checked;
-
+  
+      // Si no hay una nueva imagen, solo actualizar el estado de habilitación
       if (!file) {
-        alert('Por favor, selecciona una imagen.');
-        return;
+        formData.append('activo', activo);
+      } else {
+        formData.append('imagen', file);
+        formData.append('activo', activo);
       }
-
-      formData.append('imagen', file);
-      formData.append('activo', activo);
-
+  
       try {
         const response = await fetch('/colaborador/anuncios/upload', {
           method: 'POST',
           body: formData,
         });
-
+  
         if (response.ok) {
           const data = await response.json();
-          alert(`Anuncio guardado con éxito. URL: ${data.url}`);
-          previewImg.src = data.url; // Actualizar la vista previa
+          alert('Cambios guardados con éxito.');
+  
+          if (data.url) {
+            previewImg.src = data.url; // Actualizar la vista previa
+          }
         } else {
-          alert('Error al guardar el anuncio. Inténtalo nuevamente.');
+          alert('Error al guardar los cambios. Inténtalo nuevamente.');
         }
       } catch (error) {
         console.error('Error:', error);
-        alert('Hubo un error al enviar el formulario.');
+        alert('Hubo un error al guardar los cambios.');
       }
     });
-
-    // Botón "Volver al Menú" nice
+  
+    // Botón "Volver al Menú"
     document.getElementById('volver-menu').addEventListener('click', () => {
       window.location.href = '/colaborador/menu'; // Ajusta la ruta según tu sistema
     });
   </script>
+  
 </body>
 </html>
