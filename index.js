@@ -2087,6 +2087,9 @@ app.get('/producto', async (req, res) => {
   }
 });
 // Endpoint para colores con stock y disponibilidad
+
+
+
 app.get('/colores', async (req, res) => {
   const productoId = req.query.id;
 
@@ -2756,7 +2759,6 @@ app.get('/api/colaborador/clientes', (req, res) => {
 });
 
 app.get('/perfil', (req, res) => {
-
   const userId = req.session.userId;
 
   // Verificar que el usuario esté autenticado
@@ -2764,7 +2766,43 @@ app.get('/perfil', (req, res) => {
     return res.redirect('/login');
   }
 
-  res.render('perfil');
+  // Obtener información del usuario desde la base de datos
+  const query = `SELECT nombre, telefono FROM Usuarios WHERE usuario_id = ?`;
+
+  db.query(query, [userId], (err, results) => {
+    if (err) {
+      console.error('Error al obtener datos del usuario:', err);
+      return res.status(500).send('Error al obtener datos del usuario');
+    }
+
+    if (results.length === 0) {
+      return res.status(404).send('Usuario no encontrado');
+    }
+
+    // Renderizar la página de perfil con los datos del usuario
+    const user = results[0];
+    res.render('perfil', { user });
+  });
+});
+
+
+app.post('/api/update-profile', (req, res) => {
+  const userId = req.session.userId;
+  const { name, phone } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({ message: 'Usuario no autenticado' });
+  }
+
+  const query = `UPDATE Usuarios SET nombre = ?, telefono = ? WHERE usuario_id = ?`;
+  db.query(query, [name, phone, userId], (err, results) => {
+    if (err) {
+      console.error('Error al actualizar el perfil:', err);
+      return res.status(500).json({ message: 'Error al actualizar el perfil' });
+    }
+
+    res.json({ message: 'Perfil actualizado correctamente' });
+  });
 });
 
 
@@ -2869,12 +2907,12 @@ app.post('/api/registros/:codigo/sync', async (req, res) => {
 
 //#################### carrito de compras ######################
 
-app.get('/carrito', authMiddleware, (req, res) => {
+app.get('/carrito', (req, res) => {
   res.render('carrito');
 });
 
 
-app.get('/api/carrito', authMiddleware, (req, res) => {
+app.get('/api/carrito', (req, res) => {
   const userId = req.session.userId;
 
   if (!userId) {
@@ -2894,6 +2932,7 @@ app.get('/api/carrito', authMiddleware, (req, res) => {
       p.stock AS stock_producto,
       pd.color AS producto_color_principal,
       pd.color_hex AS producto_color_hex,
+      ca.color_id AS alterno_color_id,
       ca.color AS alterno_color,
       ca.color_hex AS alterno_color_hex,
       ca.stock AS stock_alterno
@@ -2930,7 +2969,7 @@ app.get('/api/carrito', authMiddleware, (req, res) => {
           : 'Disponible para envío inmediato',
         path_imagen: esPrincipal
           ? `${CFI}/Products/${item.producto_id}/a.webp`
-          : `${CFI}/Colors/${item.producto_id}/${item.alterno_color}/a.webp`,
+          : `${CFI}/Colors/${item.producto_id}/${item.alterno_color_id}/a.webp`,
       };
     });
 
@@ -2940,7 +2979,7 @@ app.get('/api/carrito', authMiddleware, (req, res) => {
 
 
 // borrar del carrito
-app.delete('/api/carrito/:carritoId', authMiddleware, (req, res) => {
+app.delete('/api/carrito/:carritoId', (req, res) => {
   const carritoId = req.params.carritoId;
 
   // Verificar que se envíe un ID válido
@@ -2967,7 +3006,7 @@ app.delete('/api/carrito/:carritoId', authMiddleware, (req, res) => {
   });
 });
 
-app.put('/api/carrito/:carritoId', authMiddleware, (req, res) => {
+app.put('/api/carrito/:carritoId',  (req, res) => {
   const { carritoId } = req.params;
   const { cantidad } = req.body;
 
@@ -3021,69 +3060,68 @@ app.put('/api/carrito/:carritoId', authMiddleware, (req, res) => {
 
 
 
-
-
-
-
-
-
 // Endpoint para añadir al carrito
 app.post('/addToCart/:product_id', async (req, res) => {
   const { product_id } = req.params; // ID del producto desde el URL
-  const { color_id = null } = req.body; // ID del color alterno si está seleccionado
+  const { color_name = null } = req.body; // Nombre del color seleccionado
   const userId = req.session.userId; // ID del usuario desde la sesión actual
 
   // Verificar que el usuario esté autenticado
   if (!userId) {
-    return res.redirect('/login'); // Redirigir al usuario a la página de inicio de sesión
+    return res.status(401).json({ success: false, error: 'Usuario no autenticado.' });
   }
-  
-  try {
-    let colorNombre;
 
-    if (color_id) {
-      // Si se seleccionó un color alterno, buscarlo en la tabla ColoresAlternos
-      const [colorAlterno] = await db.promise().query(
-        'SELECT color FROM ColoresAlternos WHERE color_id = ? AND producto_id = ?',
-        [color_id, product_id]
+  try {
+    let colorNombre = color_name;
+
+    // Validar si el color existe
+    if (colorNombre) {
+      const [colorCheck] = await db.promise().query(
+        `SELECT 1 
+         FROM Productos_detalles 
+         WHERE producto_id = ? AND color = ?
+         UNION
+         SELECT 1 
+         FROM ColoresAlternos 
+         WHERE producto_id = ? AND color = ?`,
+        [product_id, colorNombre, product_id, colorNombre]
       );
 
-      if (colorAlterno.length === 0) {
-        return res.status(404).json({ success: false, error: 'Color alterno no encontrado' });
+      if (colorCheck.length === 0) {
+        return res.status(404).json({ success: false, error: 'Color no encontrado.' });
       }
-
-      colorNombre = colorAlterno[0].color;
     } else {
-      // Si no se seleccionó un color alterno, buscar el color principal en Productos_detalles
-      const [colorPrincipal] = await db.promise().query(
+      const [defaultColor] = await db.promise().query(
         'SELECT color FROM Productos_detalles WHERE producto_id = ?',
         [product_id]
       );
 
-      if (colorPrincipal.length === 0) {
-        return res.status(404).json({ success: false, error: 'Color principal no encontrado' });
+      if (defaultColor.length === 0) {
+        return res.status(404).json({ success: false, error: 'Color principal no encontrado.' });
       }
 
-      colorNombre = colorPrincipal[0].color;
+      colorNombre = defaultColor[0].color;
     }
 
-    // Insertar el producto en el carrito
+    // Insertar un nuevo registro en la tabla carrito
     const queryInsertCarrito = `
       INSERT INTO carrito (usuario_id, producto_id, cantidad, color)
-      VALUES (?, ?, 1, ?)
-      ON DUPLICATE KEY UPDATE cantidad = cantidad + 1
-
+      VALUES (?, ?, ?, ?)
     `;
 
-    await db.promise().query(queryInsertCarrito, [userId, product_id, colorNombre]);
+    // Ejecutar la consulta para insertar en el carrito
+    await db.promise().query(queryInsertCarrito, [userId, product_id, 1, colorNombre]);
 
-    res.json({ success: true, });
+    res.json({
+      success: true,
+      message: 'Producto añadido al carrito exitosamente.',
+      color: colorNombre,
+    });
   } catch (err) {
     console.error('Error al añadir al carrito:', err);
     res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 });
-
 
 
 app.listen(PORT, () => {

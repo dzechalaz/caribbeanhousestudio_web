@@ -140,86 +140,81 @@
     <script>
       
    
+      window.onload = function () {
+        let claseAResaltar = "catalogo";
       
-    window.onload = function () {
-      let claseAResaltar = "catalogo";
-
-      // Cargar barra.html dinámicamente
-      fetch("/Templates/barra.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("barra").innerHTML = data;
-
-          // Aplicar el estilo para el elemento resaltado
-          let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
-          if (elementoAResaltar) {
-            elementoAResaltar.style.fontWeight = "bold";
-            elementoAResaltar.style.color = "var(--color-lightseagreen)";
-          }
-
-          // Por defecto, el login-wrapper3 redirige a /login
-          const loginWrapper = document.querySelector("#login-wrapper3");
-          const loginText = document.querySelector(".login5"); // El texto dentro del botón
-
-          // Asegúrate de seleccionar cartContainer DESPUÉS de que se cargue la barra
-          const cartContainer = document.getElementById("cart-container");
-
-          if (loginWrapper) {
-            loginWrapper.onclick = function () {
-              window.location.href = "/login";
-            }; // Redirige a /login por defecto
-          }
-
-          // Verificar la sesión para modificar el botón de login/logout si es necesario
-          fetch("/api/session")
-            .then((response) => response.json())
-            .then((data) => {
-              console.log("Sesión obtenida:", data);
-
-              if (data.isAuthenticated) {
-                // Cambiamos el color del contenedor (wrapper) a rojo chukum
-                loginWrapper.setAttribute(
-                  "style",
-                  "background-color: #C19A6B; top: -10;"
-                );
-
-                // Cambiamos el texto a "Mi Perfil"
+        // Usar Promise.all para cargar barra y footer en paralelo
+        Promise.all([
+          fetch("/Templates/barra.html").then((response) => response.text()),
+          fetch("/Templates/footer.html").then((response) => response.text()),
+        ])
+          .then(([barraHTML, footerHTML]) => {
+            // Insertar el contenido de la barra y el footer
+            document.getElementById("barra").innerHTML = barraHTML;
+            document.getElementById("footer").innerHTML = footerHTML;
+      
+            // Aplicar estilo al elemento resaltado
+            let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
+            if (elementoAResaltar) {
+              elementoAResaltar.style.fontWeight = "bold";
+              elementoAResaltar.style.color = "var(--color-lightseagreen)";
+            }
+      
+            // Inicializar funcionalidades de la barra
+            inicializarBarra();
+          })
+          .catch((error) => console.error("Error al cargar los templates:", error));
+      };
+      
+      function inicializarBarra() {
+        const loginWrapper = document.querySelector("#login-wrapper3");
+        const loginText = document.querySelector(".login5"); // El texto dentro del botón
+        const cartContainer = document.getElementById("cart-container");
+      
+        // Configuración predeterminada del botón de login
+        if (loginWrapper) {
+          loginWrapper.onclick = function () {
+            window.location.href = "/login";
+          };
+        }
+      
+        // Verificar sesión para personalizar la barra
+        fetch("/api/session")
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("Sesión obtenida:", data);
+      
+            if (data.isAuthenticated) {
+              // Cambiar el diseño y funcionalidad del login-wrapper para usuarios autenticados
+              if (loginWrapper) {
+                loginWrapper.style.backgroundColor = "#C19A6B";
+                loginWrapper.style.top = "-10px"; // Ajustar posición si necesario
                 loginText.textContent = "Mi Perfil";
-
-                // Cambiamos la acción a ir al perfil
                 loginWrapper.onclick = function () {
                   window.location.href = "/perfil";
                 };
-
-                // Hacer visible el cartContainer
-                if (cartContainer) {
-                  cartContainer.style.display = "flex"; // O 'block', según el diseño
-                } else {
-                  console.warn("cart-container no encontrado en el DOM");
-                }
-
-                console.log("Sesión iniciada. Usuario:", data.correo);
-              } else {
-                console.log("No hay sesión iniciada.");
-                // Ocultar el cartContainer si no está autenticado
-                if (cartContainer) {
-                  cartContainer.style.display = "none";
-                }
               }
-            })
-            .catch((error) => console.error("Error al cargar la sesión:", error));
-        })
-        .catch((error) => console.error("Error al cargar la barra:", error));
-
-      // Cargar el footer.html dinámicamente
-      fetch("/Templates/footer.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("footer").innerHTML = data;
-        })
-        .catch((error) => console.error("Error al cargar el footer:", error));
-    };
-
+      
+              // Mostrar el carrito para usuarios autenticados
+              if (cartContainer) {
+                cartContainer.style.display = "flex"; // Cambiar a 'block' si el diseño lo requiere
+              } else {
+                console.warn("cart-container no encontrado en el DOM");
+              }
+      
+              console.log("Sesión iniciada. Usuario:", data.correo);
+            } else {
+              console.log("No hay sesión iniciada.");
+      
+              // Ocultar el carrito si no está autenticado
+              if (cartContainer) {
+                cartContainer.style.display = "none";
+              }
+            }
+          })
+          .catch((error) => console.error("Error al cargar la sesión:", error));
+      }
+      
 
 
       var logo = document.getElementById("logo");
