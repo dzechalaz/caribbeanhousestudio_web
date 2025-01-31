@@ -70,3 +70,30 @@ Descripción de la tabla 'ordenes':
 ('usuario_id', 'int', 'NO', 'MUL', None, '')
 ('referencia', 'varchar(255)', 'YES', '', None, '')
 ('fecha_orden', 'datetime', 'NO', '', 'CURRENT_TIMESTAMP', 'DEFAULT_GENERATED')
+
+mysql>  DESCRIBE carrito;
++-------------+-------------+------+-----+-------------------+-------------------+
+| Field       | Type        | Null | Key | Default           | Extra             |
++-------------+-------------+------+-----+-------------------+-------------------+
+| id          | int         | NO   | PRI | NULL              | auto_increment    |
+| usuario_id  | int         | NO   | MUL | NULL              |                   |
+| producto_id | int         | NO   | MUL | NULL              |                   |
+| cantidad    | int         | NO   |     | 1                 |                   |
+| created_at  | timestamp   | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
+| color       | varchar(50) | YES  |     | NULL              |                   |
++-------------+-------------+------+-----+-------------------+-------------------+
+6 rows in set (0.12 sec)
+
+
+
+mysql> DESCRIBE Usuarios;
++------------+--------------+------+-----+---------+----------------+
+| Field      | Type         | Null | Key | Default | Extra          |
++------------+--------------+------+-----+---------+----------------+
+| usuario_id | int          | NO   | PRI | NULL    | auto_increment |
+| nombre     | varchar(100) | NO   |     | NULL    |                |
+| correo     | varchar(100) | NO   | UNI | NULL    |                |
+| password   | text         | NO   |     | NULL    |                |
+| telefono   | varchar(20)  | YES  |     | NULL    |                |
++------------+--------------+------+-----+---------+----------------+
+5 rows in set (0.16 sec)

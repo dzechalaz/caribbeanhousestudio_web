@@ -168,8 +168,6 @@ if (producto) {
 
     <script>
 
-
-
           document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             const productoId = params.get('id');
@@ -205,29 +203,33 @@ if (producto) {
                   // Evento para cambiar imágenes, texto del color y disponibilidad
                   colorBox.onclick = () => {
                     const rutaImagenes = color.ruta_imagenes;
-
+                  
                     // Actualizar las imágenes principales y miniaturas
                     mainImage.src = `${rutaImagenes}/a.webp`;
                     imageIds.forEach((id, index) => {
                       document.getElementById(id).src = `${rutaImagenes}/${String.fromCharCode(97 + index)}.webp`;
                     });
-
+                  
                     // Actualizar el texto del color
                     colorNameElement.textContent = color.color;
-
+                  
                     // Actualizar la disponibilidad según el backend
-                    availabilityStatus.textContent =
-                      color.disponible ? 'Disponible para envío inmediato' : 'Entrega en 10-14 días';
-                      // Asumiendo que 'color.disponible' contiene el número de unidades en stock
-                      if (color.disponible > 0) {
-                        availabilityStatus.textContent = 'Disponible para envío inmediato';
-                        availabilityStatus.className = 'disponible';
-                      } else {
-                        availabilityStatus.textContent = 'Entrega en 10-14 días';
-                        availabilityStatus.className = 'no-disponible';
-}
-
+                    if (color.disponible > 0) {
+                      availabilityStatus.textContent = 'Disponible para envío inmediato';
+                      availabilityStatus.className = 'disponible';
+                    } else {
+                      availabilityStatus.textContent = 'Entrega en 10-14 días';
+                      availabilityStatus.className = 'no-disponible';
+                    }
+                  
+                    // Guardar el color seleccionado en Local Storage
+                    localStorage.setItem('colorSeleccionado', JSON.stringify({
+                      color_id: color.color_id,
+                      color_nombre: color.color,
+                      producto_id: productoId,
+                    }));
                   };
+                  
 
                   colorGrid.appendChild(colorBox);
                 });
@@ -442,84 +444,67 @@ if (producto) {
       
         // agregar al carrito
 
-      document.addEventListener('DOMContentLoaded', () => {
-        // Seleccionar el botón
-        const addToCartButton = document.getElementById('addToCartButton');
-        const addCartContainer = document.querySelector('.addcart');
-
-        // Escuchar el clic del botón
-        addCartContainer.addEventListener('click', async () => {
-          // Cambiar el texto y el color del botón a "Añadiendo"
-          const originalText = addToCartButton.textContent;
-          addToCartButton.textContent = 'Añadiendo...';
-          addCartContainer.style.backgroundColor = '#B5483E'; // Cambiar el color (ejemplo: rojo oscuro)
-          addCartContainer.style.cursor = 'not-allowed';
-
-
-          // Obtener el product_id desde el atributo data-product-id
-          const productId = addToCartButton.dataset.productId;
-
-          if (!productId) {
-            alert('Producto no válido');
-            return;
-          }
-
-          // Obtener el color_id si está seleccionado (opcional)
-          const selectedColorId = document.querySelector('input[name="color_id"]:checked')?.value;
-
-          try {
-            // Realizar la solicitud POST al endpoint
-            const response = await fetch(`/addToCart/${productId}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ color_id: selectedColorId || null }),
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-              // Mostrar notificación de éxito
-              mostrarNotificacion('Producto añadido al carrito correctamente', 'success');
-
-              // Delay de 1 segundo antes de revertir cambios
-              setTimeout(() => {
-                // Cambiar el botón a "Ir al carrito"
-                addToCartButton.textContent = originalText;
-                addCartContainer.style.backgroundColor = '#838a6b'; // Cambiar el color (ejemplo: verde)
-                addCartContainer.style.cursor = 'pointer';
-              }, 1000);
-            } else {
-              // Mostrar mensaje de error
-              mostrarNotificacion(result.error || 'Ocurrió un error al añadir al carrito', 'error');
-              // Revertir el texto y color del botón
-              addToCartButton.textContent = originalText;
-              addCartContainer.style.backgroundColor = ''; // Restablecer el color original
+        document.addEventListener('DOMContentLoaded', () => {
+          // Seleccionar el botón
+          const addToCartButton = document.getElementById('addToCartButton');
+          const addCartContainer = document.querySelector('.addcart');
+        
+          addCartContainer.addEventListener('click', async () => {
+            const productId = addToCartButton.dataset.productId;
+        
+            if (!productId) {
+              alert('Producto no válido');
+              return;
             }
-          } catch (error) {
-            console.error('Error al añadir al carrito:', error);
-            mostrarNotificacion('Error al procesar la solicitud', 'error');
-            // Revertir el texto y color del botón
-            addToCartButton.textContent = originalText;
-            addCartContainer.style.backgroundColor = ''; // Restablecer el color original
+        
+            // Recuperar el color seleccionado desde Local Storage
+            const colorSeleccionado = JSON.parse(localStorage.getItem('colorSeleccionado'));
+        
+            // Imprimir la información que se enviará al backend
+            console.log('Datos enviados al backend:', {
+              product_id: productId,
+              color_name: colorSeleccionado?.color_nombre || null,
+            });
+        
+            try {
+              // Realizar la solicitud POST al backend con el nombre del color
+              const response = await fetch(`/addToCart/${productId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  color_name: colorSeleccionado?.color_nombre || null,
+                }),
+              });
+        
+              const result = await response.json();
+        
+              if (response.ok) {
+                mostrarNotificacion('Producto añadido al carrito correctamente', 'success');
+              } else {
+                mostrarNotificacion(result.error || 'Ocurrió un error al añadir al carrito', 'error');
+              }
+            } catch (error) {
+              console.error('Error al añadir al carrito:', error);
+              mostrarNotificacion('Error al procesar la solicitud', 'error');
+            }
+          });
+        
+          // Función para mostrar una notificación
+          function mostrarNotificacion(mensaje, tipo) {
+            const notificacion = document.createElement('div');
+            notificacion.className = `notificacion ${tipo}`; // Añadir clase para estilos (success o error)
+            notificacion.textContent = mensaje;
+        
+            // Añadir la notificación al cuerpo del documento
+            document.body.appendChild(notificacion);
+        
+            // Eliminar la notificación después de 3 segundos
+            setTimeout(() => {
+              notificacion.remove();
+            }, 3000);
           }
         });
-
-        // Función para mostrar una notificación
-        function mostrarNotificacion(mensaje, tipo) {
-          const notificacion = document.createElement('div');
-          notificacion.className = `notificacion ${tipo}`; // Añadir clase para estilos (success o error)
-          notificacion.textContent = mensaje;
-
-          // Añadir la notificación al cuerpo del documento
-          document.body.appendChild(notificacion);
-
-          // Eliminar la notificación después de 3 segundos
-          setTimeout(() => {
-            notificacion.remove();
-          }, 3000);
-        }
-      });
-
+        
 
  
       

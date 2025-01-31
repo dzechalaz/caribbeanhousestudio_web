@@ -33,15 +33,25 @@
           <h2>Información Personal</h2>
           <form id="personal-info-form">
             <label for="name">Nombre:</label>
-            <input type="text" id="name" name="name" placeholder="Tu nombre completo" required>
-      
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Tu nombre completo"
+              value="<%= user.nombre %>"
+              required
+            />
+  
             <label for="phone">Teléfono:</label>
-            <input type="text" id="phone" name="phone" placeholder="Tu número de teléfono" required>
+            <input
+              type="text"
+              id="phone"
+              name="phone"
+              placeholder="Tu número de teléfono"
+              value="<%= user.telefono %>"
+              required
+            />
             <button type="submit">Guardar cambios</button>
-           
-            
-          </form>
-          <button class="logout" onclick="window.location.href='/logout';">Cerrar Sesión</button>
 
           
         </section>
@@ -170,6 +180,34 @@
         .catch((error) => console.error("Error al cargar el footer:", error));
     };
 
+    // guardar cambios en perfil
+
+    document.getElementById("personal-info-form").addEventListener("submit", function (event) {
+      event.preventDefault(); // Evita el comportamiento predeterminado de recargar la página
+    
+      const formData = {
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+      };
+    
+      // Enviar datos al servidor usando Fetch API
+      fetch("/api/update-profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      })
+        .then((response) => {
+          if (response.ok) {
+            alert("Información actualizada correctamente");
+          } else {
+            alert("Hubo un error al actualizar la información");
+          }
+        })
+        .catch((error) => console.error("Error al enviar los datos:", error));
+    });
+    
 
 
   </script>
