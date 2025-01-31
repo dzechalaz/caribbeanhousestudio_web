@@ -9,13 +9,15 @@ body {
   background-image: url('./public/080bef28e2d2463cae04d69b5960f9f82@2x.png');
   background-size: cover; /* La imagen cubrirá todo el fondo */
   background-repeat: no-repeat; /* Evita que la imagen se repita */
-  height: calc(100vh + 250px);
+  height: calc(100vh + 0px);
+  min-height: 800px;
 }
 
 /* Contenedor principal del carrito */
 .profile-container {
   position: relative;
-  max-width: 500px;
+  max-width: 700px;
+  width: 40%;
   margin: auto;
   padding: 20px;
   background-color: #C8D9CE; /* Verde azulado pastel tipo chukum */
