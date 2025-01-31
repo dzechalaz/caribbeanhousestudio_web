@@ -696,26 +696,25 @@ app.get('/colaborador/productos/generar-codigo', (req, res) => {
 
 
 
-
-//################################# MODIFICAR PRODUCTOS ##################################################
 app.post(
-  '/colaborador/productos/modificar/:codigo',
+  "/colaborador/productos/modificar/:codigo",
   upload.fields([
-    { name: 'imagenA', maxCount: 1 },
-    { name: 'imagenB', maxCount: 1 },
-    { name: 'imagenC', maxCount: 1 },
-    { name: 'imagenD', maxCount: 1 },
+    { name: "imagenA", maxCount: 1 },
+    { name: "imagenB", maxCount: 1 },
+    { name: "imagenC", maxCount: 1 },
+    { name: "imagenD", maxCount: 1 },
     // Campos dinámicos para colores alternos
-    { name: 'imagen_color_a[]', maxCount: 10 },
-    { name: 'imagen_color_b[]', maxCount: 10 },
-    { name: 'imagen_color_c[]', maxCount: 10 },
-    { name: 'imagen_color_d[]', maxCount: 10 },
+    { name: "imagen_color_a[]", maxCount: 10 },
+    { name: "imagen_color_b[]", maxCount: 10 },
+    { name: "imagen_color_c[]", maxCount: 10 },
+    { name: "imagen_color_d[]", maxCount: 10 },
   ]),
   async (req, res) => {
     const {
       nombre,
       precio,
       categoria,
+      codigo,
       stock,
       material,
       dimensiones,
@@ -733,42 +732,45 @@ app.post(
 
     const codigoProducto = req.params.codigo;
 
-    if (!nombre || !precio || !categoria || !stock) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          error: 'Los campos nombre, precio, categoría y stock son obligatorios',
-        });
+    if (!nombre || !precio || !categoria || !stock || !codigo) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "Los campos nombre, precio, categoría, código y stock son obligatorios",
+      });
     }
 
     try {
-      // Obtener el producto_id basado en el código del producto
+      // Obtener el producto_id basado en el código del producto original
       const [productoResult] = await db
         .promise()
-        .query('SELECT producto_id FROM Productos WHERE codigo = ?', [codigoProducto]);
+        .query("SELECT producto_id FROM Productos WHERE codigo = ?", [
+          codigoProducto,
+        ]);
       if (productoResult.length === 0) {
-        return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+        return res
+          .status(404)
+          .json({ success: false, error: "Producto no encontrado" });
       }
 
       const productoId = productoResult[0].producto_id;
 
-      // Actualizar datos del producto principal
+      // Actualizar datos del producto principal, incluyendo el nuevo código
       const updateProductoQuery = `
         UPDATE Productos 
-        SET nombre = ?, precio = ?, categoria = ?, stock = ? 
-        WHERE codigo = ?
+        SET nombre = ?, precio = ?, categoria = ?, codigo = ?, stock = ? 
+        WHERE producto_id = ?
       `;
       await db
         .promise()
-        .query(updateProductoQuery, [nombre, precio, categoria, stock, codigoProducto]);
-
-      // Crear un nuevo registro en la tabla Registros
-      const insertRegistroQuery = `
-        INSERT INTO Registros (product_id, evento, fecha, precio)
-        VALUES (?, 'sim', NOW(), ?)
-      `;
-      await db.promise().query(insertRegistroQuery, [productoId, precio]);
+        .query(updateProductoQuery, [
+          nombre,
+          precio,
+          categoria,
+          codigo,
+          stock,
+          productoId,
+        ]);
 
       // Actualizar detalles del producto
       const updateDetallesQuery = `
@@ -799,7 +801,12 @@ app.post(
 
       // Manejo de imágenes principales
       const productPath = `Products/${productoId}/`;
-      const imageNames = { imagenA: 'a.webp', imagenB: 'b.webp', imagenC: 'c.webp', imagenD: 'd.webp' };
+      const imageNames = {
+        imagenA: "a.webp",
+        imagenB: "b.webp",
+        imagenC: "c.webp",
+        imagenD: "d.webp",
+      };
 
       for (const [fieldName, fileName] of Object.entries(imageNames)) {
         const file = req.files[fieldName]?.[0] || null;
@@ -824,22 +831,22 @@ app.post(
 
         if (colorId) {
           // Actualizar color alterno existente
-          await db
-            .promise()
-            .query(
-              `UPDATE ColoresAlternos
+          await db.promise().query(
+            `
+              UPDATE ColoresAlternos
               SET color = ?, color_hex = ?, stock = ?
-              WHERE color_id = ? AND producto_id = ?`,
-              [colorValue, hexValue, stockValue, colorId, productoId]
-            );
+              WHERE color_id = ? AND producto_id = ?
+            `,
+            [colorValue, hexValue, stockValue, colorId, productoId]
+          );
 
           // Manejo de imágenes para el color alterno
           const colorPath = `Colors/${productoId}/${colorId}/`;
           const alternoImageNames = {
-            [`imagen_color_a[]`]: 'a.webp',
-            [`imagen_color_b[]`]: 'b.webp',
-            [`imagen_color_c[]`]: 'c.webp',
-            [`imagen_color_d[]`]: 'd.webp',
+            [`imagen_color_a[]`]: "a.webp",
+            [`imagen_color_b[]`]: "b.webp",
+            [`imagen_color_c[]`]: "c.webp",
+            [`imagen_color_d[]`]: "d.webp",
           };
 
           for (const [fieldName, fileName] of Object.entries(alternoImageNames)) {
@@ -853,23 +860,23 @@ app.post(
           }
         } else {
           // Insertar nuevo color alterno
-          const [result] = await db
-            .promise()
-            .query(
-              `INSERT INTO ColoresAlternos (producto_id, color, color_hex, stock)
-              VALUES (?, ?, ?, ?)`,
-              [productoId, colorValue, hexValue, stockValue]
-            );
+          const [result] = await db.promise().query(
+            `
+              INSERT INTO ColoresAlternos (producto_id, color, color_hex, stock)
+              VALUES (?, ?, ?, ?)
+            `,
+            [productoId, colorValue, hexValue, stockValue]
+          );
 
           const newColorId = result.insertId;
 
           // Manejo de imágenes para el nuevo color alterno
           const colorPath = `Colors/${productoId}/${newColorId}/`;
           const alternoImageNames = {
-            [`imagen_color_a[]`]: 'a.webp',
-            [`imagen_color_b[]`]: 'b.webp',
-            [`imagen_color_c[]`]: 'c.webp',
-            [`imagen_color_d[]`]: 'd.webp',
+            [`imagen_color_a[]`]: "a.webp",
+            [`imagen_color_b[]`]: "b.webp",
+            [`imagen_color_c[]`]: "c.webp",
+            [`imagen_color_d[]`]: "d.webp",
           };
 
           for (const [fieldName, fileName] of Object.entries(alternoImageNames)) {
@@ -893,10 +900,16 @@ app.post(
         await db.promise().query(deleteQuery, [eliminar_colores, productoId]);
       }
 
-      res.json({ success: true, message: 'Producto y colores alternos actualizados correctamente.' });
+      res.json({
+        success: true,
+        message: "Producto y colores alternos actualizados correctamente.",
+      });
     } catch (err) {
-      console.error('Error al modificar el producto:', err);
-      res.status(500).json({ success: false, error: 'Error al modificar el producto' });
+      console.error("Error al modificar el producto:", err);
+      res.status(500).json({
+        success: false,
+        error: "Error al modificar el producto",
+      });
     }
   }
 );

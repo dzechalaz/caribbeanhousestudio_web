@@ -38,8 +38,10 @@
 
       <div class="form-group">
         <label for="codigo">Código:</label>
-        <input type="text" id="codigo" name="codigo" readonly>
+        <input type="text" id="codigo" name="codigo" placeholder="Código del producto" readonly>
+        <button type="button" id="generar-codigo" class="btn-secondary">Generar Código</button>
       </div>
+
 
       <div class="form-group">
         <label for="stock">Stock:</label>
@@ -150,6 +152,25 @@
 
       }
     });
+
+
+    document.getElementById('generar-codigo').addEventListener('click', function () {
+      const categoria = document.getElementById('categoria').value;
+      const codigoInput = document.getElementById('codigo');
+
+      if (categoria) {
+        fetch(`/colaborador/productos/generar-codigo?categoria=${categoria}`)
+          .then(response => response.json())
+          .then(data => {
+            codigoInput.value = data.codigo;
+          })
+          .catch(error => console.error('Error al generar código:', error));
+      } else {
+        alert('Selecciona una categoría primero');
+      }
+    });
     </script>
+
+    
 </body>
 </html>
