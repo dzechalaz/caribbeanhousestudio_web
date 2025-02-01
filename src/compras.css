@@ -41,7 +41,7 @@
 }
 .inputbuscar {
   top: calc(50% - 18.5px);
-  left: calc(50% + 198px);
+  right: 270px;
   background-color: var(--color-white);
   border: 1px solid var(--color-dimgray);
   box-sizing: border-box;
@@ -56,7 +56,7 @@
   background-color: transparent;
   position: absolute;
   top: calc(50% - 11.5px);
-  left: calc(50% + 233px);
+  right: 270px;
   color: var(--color-darkslategray-100);
   text-align: left;
   display: inline-block;
@@ -66,7 +66,7 @@
 .lupa-icon {
   position: absolute;
   top: calc(50% - 10.75px);
-  left: calc(50% + 207.5px);
+  right: 595px;
   width: 22.3px;
   height: 22.3px;
 }
@@ -87,7 +87,7 @@
   background-color: var(--color-darkslategray-100);
   position: absolute;
   top: calc(50% - 18.5px);
-  right: 230px;
+  right: 100px;
   border-radius: var(--br-xs);
   width: 160px;
   height: 37px;
@@ -106,15 +106,22 @@
   right: 0;
   left: 0;
   z-index: 2;
-  top: 80px;
+  margin-top: 7vh;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
   background-color: var(--color-steelblue-100);
-  height: 105px;
+  height: 9vh;
   text-align: center;
   font-size: var(--font-size-30xl);
   font-family: var(--font-josefin-sans);
-
 }
+@media (max-height: 901px) {
+  .seguimientoheader {
+  
+    margin-top: 10vh;
+    
+  }
+}
+  
 
 .compra-realizada {
   left: 26px;
@@ -325,13 +332,14 @@
   animation: 1s ease 0s 1 normal forwards slide-in-bottom;
 }
 .seguimientopre {
-  position: relative;
+  position: absolute;
   width: 100%;
-  height: 1503px;
+  height: 100vh;
   text-align: left;
   font-size: var(--font-size-xs);
   color: var(--color-white);
   font-family: var(--font-montserrat);
+  
   
 }
 

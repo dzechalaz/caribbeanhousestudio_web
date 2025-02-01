@@ -7,97 +7,255 @@
   <link rel="stylesheet" href="./global.css" />
   <link rel="stylesheet" href="./perfil.css" />
 
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap"
-  />
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600&display=swap"
-  />
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
-  />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap" />
 
   <title>Compras</title>
 </head>
 <body>
   <div id="barra"></div>
-
-  <div class = "container" >
-
+  <div class="container">
     <div class="profile-container">
-        <!-- Información personal -->
-        <section class="personal-info">
-          <h2>Información Personal</h2>
-          <form id="personal-info-form">
-            <label for="name">Nombre:</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              placeholder="Tu nombre completo"
-              value="<%= user.nombre %>"
-              required
-            />
-  
-            <label for="phone">Teléfono:</label>
-            <input
-              type="text"
-              id="phone"
-              name="phone"
-              placeholder="Tu número de teléfono"
-              value="<%= user.telefono %>"
-              required
-            />
-            <button type="submit">Guardar cambios</button>
+      <!-- Información personal -->
+      <section class="personal-info">
+        <h2>Información Personal</h2>
+        <form id="personal-info-form">
+          <label for="name">Nombre:</label>
+          <input type="text" id="name" name="name" value="<%= user.nombre %>" required />
 
-          
-        </section>
+          <label for="phone">Teléfono:</label>
+          <input type="text" id="phone" name="phone" value="<%= user.telefono %>" required class="tel" />
+          <button type="submit">Guardar cambios</button>
+        </form>
+      </section>
       
-        <!-- Direcciones de envío -->
-        <section class="address-section">
-          <h2>Direcciones de Envío</h2>
-          <ul id="address-list">
-            <!-- Ejemplo de una dirección -->
-            <li class="address-item">
-              <p><b>Nombre de Dirección:</b> Casa</p>
-              <p><b>Calle:</b> Av. Siempre Viva 123</p>
-              <p><b>Fraccionamiento o Colonia:</b> Los Heores</p>
-              <p><b>Ciudad:</b> Mérida</p>
-              <p><b>Estado:</b> Yucatán</p>
-              <p><b>CP:</b> 12345</p>
-              <button class="edit-address">Editar</button>
-              <button class="delete-address">Eliminar</button>
-            </li>
-          </ul>
-          <button id="add-address">Agregar Dirección</button>
-        </section>
+      <!-- Direcciones de envío -->
+      <section class="address-section">
+        <h2>Direcciones de Envío</h2>
+        <ul id="address-list"></ul>
+        <button id="open-add-address">Agregar Dirección</button>
+      </section>
       
-        <!-- Métodos de pago -->
-        <section class="payment-section">
-          <h2>Métodos de Pago</h2>
-          <ul id="payment-list">
-            <!-- Ejemplo de un método de pago -->
-            <li class="payment-item">
-              <p><b>Tipo:</b> Tarjeta de Crédito</p>
-              <p><b>Detalles:</b> **** **** **** 1234</p>
-              <button class="delete-payment">Eliminar</button>
-            </li>
-          </ul>
-          <button id="add-payment">Agregar Método de Pago</button>
-        </section>
+      <!-- Modal para agregar dirección -->
+    <!-- Modal para agregar dirección -->
+<div id="address-modal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Agregar Dirección</h2>
+    <form id="add-address-form">
+      <div class="input-group">
+        <label for="nombre_direccion">Nombre:</label>
+        <input type="text" id="nombre_direccion" placeholder="Ej. Casa, Oficina" required />
       </div>
 
+      <div class="input-group">
+        <label for="calle">Calle:</label>
+        <input type="text" id="calle" placeholder="Ej. Av. Siempre Viva 123" required />
+      </div>
+
+      <div class="input-group">
+        <label for="colonia">Colonia:</label>
+        <input type="text" id="colonia" placeholder="Ej. Centro" required />
+      </div>
+
+      <div class="input-group">
+        <label for="ciudad">Ciudad:</label>
+        <input type="text" id="ciudad" placeholder="Ej. Playa del Carmen" required />
+      </div>
+
+      <div class="input-group">
+        <label for="estado">Estado:</label>
+        <input type="text" id="estado" placeholder="Ej. Quintana Roo" required />
+      </div>
+
+      <div class="input-group">
+        <label for="cp">Código Postal:</label>
+        <input type="text" id="cp" placeholder="Ej. 70000" required />
+      </div>
+
+      <button type="submit" class="save-button">Guardar Dirección</button>
+    </form>
+  </div>
+</div>
+
+    </div>
   </div>
 
-
-
   <div id="footer" class="footer"></div>
+  <div class="img"></div>
 
+  <script>
+    // Manejo del modal para abrir y cerrar
+    document.getElementById("open-add-address").addEventListener("click", function () {
+      document.getElementById("address-modal").style.display = "flex";
+    });
 
+    document.querySelector(".close").addEventListener("click", function () {
+      document.getElementById("address-modal").style.display = "none";
+    });
+
+    window.addEventListener("click", function (event) {
+      if (event.target === document.getElementById("address-modal")) {
+        document.getElementById("address-modal").style.display = "none";
+      }
+    });
+
+   
+      // Cargar direcciones dinámicamente con formato optimizado
+      document.addEventListener("DOMContentLoaded", function () {
+        fetch("/api/direcciones")
+          .then(response => response.json())
+          .then(data => {
+            const addressList = document.getElementById("address-list");
+            addressList.innerHTML = ""; // Limpiar la lista antes de volver a cargar
+    
+            // Si no hay direcciones, mostramos un mensaje
+            if (data.length === 0) {
+              addressList.innerHTML = "<p>No tienes direcciones guardadas.</p>";
+              return;
+            }
+    
+            // Crear la estructura de cada dirección
+            data.forEach(direccion => {
+              const div = document.createElement("div");
+              div.classList.add("address-item");
+    
+              div.innerHTML = `
+                <div class="address-header">
+                  <p><b>${direccion.nombre_direccion}</b></p>
+                </div>
+                <div class="address-body">
+                  <p>${direccion.calle}, ${direccion.colonia}, ${direccion.ciudad}, ${direccion.estado}, ${direccion.cp}</p>
+                </div>
+                 <button class="delete-address" data-id="${direccion.direccion_id}">Eliminar</button>
+              `;
+    
+              addressList.appendChild(div);
+            });
+          })
+          .catch(error => console.error("Error al cargar direcciones:", error));
+      });
+   
+    
+
+    
+      // Manejo del formulario de agregar dirección
+      document.getElementById("add-address-form").addEventListener("submit", function (event) {
+        event.preventDefault();
+    
+        const formData = {
+          nombre_direccion: document.getElementById("nombre_direccion").value,
+          calle: document.getElementById("calle").value,
+          colonia: document.getElementById("colonia").value,
+          ciudad: document.getElementById("ciudad").value,
+          estado: document.getElementById("estado").value,
+          cp: document.getElementById("cp").value,
+        };
+    
+        fetch("/api/direcciones", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        })
+        .then(() => {
+          // Cerrar el modal
+          document.getElementById("address-modal").style.display = "none";
+          // Recargar la lista de direcciones sin recargar la página
+          cargarDirecciones();
+        })
+        .catch(error => console.error("Error al agregar dirección:", error));
+      });
+    
+      function cargarDirecciones() {
+        fetch("/api/direcciones")
+          .then(response => response.json())
+          .then(data => {
+            const addressList = document.getElementById("address-list");
+            addressList.innerHTML = ""; // Limpiar la lista antes de volver a cargar
+    
+            data.forEach(direccion => {
+              const li = document.createElement("li");
+              li.classList.add("address-item");
+              li.innerHTML = `
+                <p><b>${direccion.nombre_direccion}</b></p>
+                <p>${direccion.calle}, ${direccion.colonia}, ${direccion.ciudad}, ${direccion.estado}, ${direccion.cp}</p>
+                <button class="delete-address" data-id="${direccion.direccion_id}">Eliminar</button>
+              `;
+              addressList.appendChild(li);
+            });
+          })
+          .catch(error => console.error("Error al cargar direcciones:", error));
+      }
+
+    
+    
+    
+  </script>
+
+  <script>
+
+    
+        // Eliminar direcciones sin confirmar ni recargar la página
+    document.addEventListener("click", function (event) {
+      if (event.target.classList.contains("delete-address")) {
+        const direccionId = event.target.getAttribute("data-id");
   
+        fetch(`/api/direcciones/${direccionId}`, { method: "DELETE" })
+          .then(response => {
+            if (response.ok) {
+              // Eliminar la dirección visualmente sin recargar la página
+              const direccionElemento = event.target.closest(".address-item");
+              if (direccionElemento) {
+                direccionElemento.remove();
+              }
+            }
+          })
+          .catch(error => console.error("Error al eliminar la dirección:", error));
+      }
+    });
+  
+    function cargarDirecciones() {
+      fetch("/api/direcciones")
+        .then(response => response.json())
+        .then(data => {
+          const addressList = document.getElementById("address-list");
+          addressList.innerHTML = ""; // Limpiar antes de recargar las direcciones
+  
+          if (data.length === 0) {
+            addressList.innerHTML = "<p>No tienes direcciones guardadas.</p>";
+            return;
+          }
+  
+          data.forEach(direccion => {
+            const div = document.createElement("div");
+            div.classList.add("address-item");
+            div.innerHTML = `
+              <div class="address-header">
+                <p><b>${direccion.nombre_direccion}</b></p>
+              </div>
+              <div class="address-body">
+                <p>${direccion.calle}, ${direccion.colonia}, ${direccion.ciudad}, ${direccion.estado}, ${direccion.cp}</p>
+              </div>
+              <button class="delete-address" data-id="${direccion.direccion_id}">Eliminar</button>
+            `;
+            addressList.appendChild(div);
+          });
+        })
+        .catch(error => console.error("Error al cargar direcciones:", error));
+    }
+  
+    // Recargar direcciones después de eliminación
+    function actualizarDirecciones() {
+      setTimeout(() => {
+        cargarDirecciones();
+      }, 500); // Espera medio segundo antes de recargar para evitar errores visuales
+    }
+  </script>
+  
+</body>
+</html>
+
   <script>
     // barra y footer
     
@@ -211,5 +369,23 @@
 
 
   </script>
+
+
+  <script>
+    function ajustarAlturaContainer() {
+      const profileContainer = document.querySelector(".profile-container");
+      const container = document.querySelector(".container");
+  
+      if (profileContainer && container) {
+        const profileHeight = profileContainer.offsetHeight;
+        container.style.minHeight = `${profileHeight + 300}px`;
+      }
+    }
+  
+    // Ajustar al cargar y al redimensionar la ventana
+    window.addEventListener("load", ajustarAlturaContainer);
+    window.addEventListener("resize", ajustarAlturaContainer);
+  </script>
+  
 </body>
 </html>

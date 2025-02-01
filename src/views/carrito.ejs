@@ -40,7 +40,26 @@
           <p>Total de productos: <span class="total-items">0</span></p>
           <p>Total: <span class="total-price">$0.00</span></p>
         </div>
-      
+
+        <!-- Selección de dirección de envío -->
+        <div class="shipping-address">
+          <h3>Dirección de Envío</h3>
+          <div id="selected-address">
+            <p><b id="address-name"></b></p>
+            <p id="address-details"></p>
+            <button id="change-address">Cambiar</button>
+          </div>
+        </div>
+
+        <!-- Modal para seleccionar dirección -->
+        <div id="address-modal" class="modal" style="display: none;">
+          <div class="modal-content">
+            
+            <h2>Selecciona una Dirección</h2>
+            <ul id="address-list"></ul>
+          </div>
+        </div>
+              
         <!-- Botones de acción -->
         <div class="cart-actions">
           <button id="proceed-to-checkout" class="checkout-btn">Proceder al Pago</button>
@@ -59,6 +78,7 @@
 
 
   <div id="footer" class="footer"></div>
+  <div id="img" class="img"></div>
   <script src="./carrito.js"></script>
 
   <script>

@@ -443,67 +443,90 @@ if (producto) {
       
       
         // agregar al carrito
-
         document.addEventListener('DOMContentLoaded', () => {
           // Seleccionar el botón
           const addToCartButton = document.getElementById('addToCartButton');
           const addCartContainer = document.querySelector('.addcart');
-        
+      
           addCartContainer.addEventListener('click', async () => {
-            const productId = addToCartButton.dataset.productId;
-        
-            if (!productId) {
-              alert('Producto no válido');
-              return;
-            }
-        
-            // Recuperar el color seleccionado desde Local Storage
-            const colorSeleccionado = JSON.parse(localStorage.getItem('colorSeleccionado'));
-        
-            // Imprimir la información que se enviará al backend
-            console.log('Datos enviados al backend:', {
-              product_id: productId,
-              color_name: colorSeleccionado?.color_nombre || null,
-            });
-        
-            try {
-              // Realizar la solicitud POST al backend con el nombre del color
-              const response = await fetch(`/addToCart/${productId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  color_name: colorSeleccionado?.color_nombre || null,
-                }),
-              });
-        
-              const result = await response.json();
-        
-              if (response.ok) {
-                mostrarNotificacion('Producto añadido al carrito correctamente', 'success');
-              } else {
-                mostrarNotificacion(result.error || 'Ocurrió un error al añadir al carrito', 'error');
+              if (!addToCartButton) return;
+      
+              const originalText = addToCartButton.textContent; // Guardar el texto original
+              const originalBackground = addToCartButton.style.backgroundColor; // Guardar color original
+      
+              // Cambiar estilos mientras se añade al carrito
+              addToCartButton.textContent = "Añadiendo...";
+              addCartContainer.style.backgroundColor = "#A67B5B"; // Azul chukum menos saturado
+              addToCartButton.style.cursor = "not-allowed"; // Evitar más clics
+              addToCartButton.disabled = true;
+      
+              const productId = addToCartButton.dataset.productId;
+      
+              if (!productId) {
+                  alert('Producto no válido');
+                  resetButton();
+                  return;
               }
-            } catch (error) {
-              console.error('Error al añadir al carrito:', error);
-              mostrarNotificacion('Error al procesar la solicitud', 'error');
-            }
+      
+              // Recuperar el color seleccionado desde Local Storage
+              const colorSeleccionado = JSON.parse(localStorage.getItem('colorSeleccionado'));
+      
+              // Imprimir la información que se enviará al backend
+              console.log('Datos enviados al backend:', {
+                  product_id: productId,
+                  color_name: colorSeleccionado?.color_nombre || null,
+              });
+      
+              try {
+                  // Realizar la solicitud POST al backend con el nombre del color
+                  const response = await fetch(`/addToCart/${productId}`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                          color_name: colorSeleccionado?.color_nombre || null,
+                      }),
+                  });
+      
+                  const result = await response.json();
+      
+                  if (response.ok) {
+                      mostrarNotificacion('Producto añadido al carrito correctamente', 'success');
+                  } else {
+                      mostrarNotificacion(result.error || 'Ocurrió un error al añadir al carrito', 'error');
+                  }
+              } catch (error) {
+                  console.error('Error al añadir al carrito:', error);
+                  mostrarNotificacion('Error al procesar la solicitud', 'error');
+              } finally {
+                  // Restaurar el botón después de 1 segundo
+                  setTimeout(resetButton, 1000);
+              }
           });
-        
+      
+          // Función para restaurar el botón
+          function resetButton() {
+              addToCartButton.textContent = "+ añadir al carrito";
+              addCartContainer.style.backgroundColor = ""; // Volver al color original
+              addToCartButton.style.cursor = "pointer"; // Restaurar cursor
+              addToCartButton.disabled = false;
+          }
+      
           // Función para mostrar una notificación
           function mostrarNotificacion(mensaje, tipo) {
-            const notificacion = document.createElement('div');
-            notificacion.className = `notificacion ${tipo}`; // Añadir clase para estilos (success o error)
-            notificacion.textContent = mensaje;
-        
-            // Añadir la notificación al cuerpo del documento
-            document.body.appendChild(notificacion);
-        
-            // Eliminar la notificación después de 3 segundos
-            setTimeout(() => {
-              notificacion.remove();
-            }, 3000);
+              const notificacion = document.createElement('div');
+              notificacion.className = `notificacion ${tipo}`; // Añadir clase para estilos (success o error)
+              notificacion.textContent = mensaje;
+      
+              // Añadir la notificación al cuerpo del documento
+              document.body.appendChild(notificacion);
+      
+              // Eliminar la notificación después de 3 segundos
+              setTimeout(() => {
+                  notificacion.remove();
+              }, 3000);
           }
-        });
+      });
+      
         
 
  
@@ -514,6 +537,8 @@ if (producto) {
 
       
   </body>
+  <script src="https://unpkg.com/lightweight-charts@4.0.0/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="/global.js" defer></script>
 </html>
 <% 
 } else { 
