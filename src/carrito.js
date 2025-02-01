@@ -154,7 +154,62 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+
+
+  
   // Inicializar el carrito
   console.log("Inicializando el carrito...");
   loadCart();
+
+
+});
+document.addEventListener("DOMContentLoaded", function () {
+  fetch("/api/direcciones")
+    .then(response => response.json())
+    .then(data => {
+      if (data.length === 0) {
+        document.getElementById("selected-address").innerHTML = "<p>No tienes direcciones guardadas.</p>";
+        return;
+      }
+
+      // Guardar la dirección seleccionada en el sessionStorage
+      const savedAddress = sessionStorage.getItem("selectedAddress");
+      let selected = savedAddress ? JSON.parse(savedAddress) : data[0];
+
+      // Mostrar la dirección seleccionada
+      document.getElementById("address-name").textContent = selected.nombre_direccion;
+      document.getElementById("address-details").textContent = 
+        `${selected.calle}, ${selected.colonia}, ${selected.ciudad}, ${selected.estado}, ${selected.cp}`;
+
+      // Guardar en sessionStorage
+      sessionStorage.setItem("selectedAddress", JSON.stringify(selected));
+
+      // Mostrar todas las direcciones en el modal
+      const addressList = document.getElementById("address-list");
+      data.forEach(direccion => {
+        const li = document.createElement("li");
+        li.textContent = `${direccion.nombre_direccion} - ${direccion.calle}, ${direccion.colonia}`;
+        li.addEventListener("click", () => {
+          sessionStorage.setItem("selectedAddress", JSON.stringify(direccion));
+          document.getElementById("address-name").textContent = direccion.nombre_direccion;
+          document.getElementById("address-details").textContent = 
+            `${direccion.calle}, ${direccion.colonia}, ${direccion.ciudad}, ${direccion.estado}, ${direccion.cp}`;
+          document.getElementById("address-modal").style.display = "none";
+        });
+        addressList.appendChild(li);
+      });
+    })
+    .catch(error => console.error("Error al cargar direcciones:", error));
+});
+
+// Manejo del modal
+document.getElementById("change-address").addEventListener("click", function () {
+  document.getElementById("address-modal").style.display = "flex";
+});
+
+
+window.addEventListener("click", function (event) {
+  if (event.target === document.getElementById("address-modal")) {
+    document.getElementById("address-modal").style.display = "none";
+  }
 });

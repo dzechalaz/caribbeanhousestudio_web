@@ -2,19 +2,34 @@ body {
   font-family: 'Montserrat', sans-serif; /* Fuente Montserrat */
   margin: 0;
   padding: 0;
-  background-color: #F8E8D3; /* Fondo cálido estilo chukum */
+  background-color: #fef6ed; /* Fondo cálido estilo chukum */
 }
 
-.container {
-  background-image: url('./public/080bef28e2d2463cae04d69b5960f9f82@2x.png');
-  background-size: cover; /* La imagen cubrirá todo el fondo */
-  background-repeat: no-repeat; /* Evita que la imagen se repita */
-  height: calc(100vh + 0px);
-  min-height: 800px;
+.container{
+  margin-bottom: 50px;
+  min-height: 80vh;
+
 }
+
+
+.img {
+  background-image: url('./public/080bef28e2d2463cae04d69b5960f9f82@2x.png');
+  background-size: cover;
+  background-repeat: repeat-y;
+  mix-blend-mode: multiply;
+  position: fixed; /* Se mantiene fijo y repite en Y */
+  width: 100%;
+  top: 0;
+  bottom: 0;
+  min-height: calc(100vh+900px);
+  z-index: -1;
+}
+
+
 
 /* Contenedor principal del carrito */
 .profile-container {
+
   position: relative;
   max-width: 700px;
   width: 40%;
@@ -23,7 +38,8 @@ body {
   background-color: #C8D9CE; /* Verde azulado pastel tipo chukum */
   border-radius: 15px; /* Bordes redondeados */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para darle un efecto elevado */
-  top: 110px;
+  margin-top: 12vh;
+  margin-bottom: 12vhpx;
 }
 
 /* Título */
@@ -194,4 +210,65 @@ h2 {
 
 .availability.no-disponible {
   color: #e67e22; /* Naranja chukum */
+}
+
+
+.shipping-address {
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+}
+
+#selected-address {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#change-address {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 40%;
+  text-align: center;
+}
+
+#address-list {
+  list-style: none;
+  padding: 0;
+}
+
+#address-list li {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+}
+
+#address-list li:hover {
+  background-color: #f1f1f1;
 }

@@ -2073,7 +2073,7 @@ app.get('/producto', async (req, res) => {
       value: compra.precio,
     }));
 
-    //console.log('Datos obtenidos para chartData:', chartData);
+    console.log('Datos obtenidos para chartData:', chartData);
 
     // Paso 4: Seleccionar productos relacionados
     const [relatedProducts] = await db.promise().query(
@@ -2855,10 +2855,9 @@ app.delete('/api/direcciones/:id', (req, res) => {
       return res.status(500).json({ message: 'Error al eliminar dirección' });
     }
 
-    res.json({ message: 'Dirección eliminada correctamente' });
+    res.json({  });
   });
 });
-
 app.post('/api/direcciones', (req, res) => {
   const userId = req.session.userId;
   const { nombre_direccion, calle, colonia, ciudad, estado, cp } = req.body;
@@ -2869,13 +2868,13 @@ app.post('/api/direcciones', (req, res) => {
 
   const query = `INSERT INTO Direcciones (usuario_id, nombre_direccion, calle, colonia, ciudad, estado, cp) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
-  db.query(query, [userId, nombre_direccion, calle, colonia, ciudad, estado, cp], (err, result) => {
+  db.query(query, [userId, nombre_direccion, calle, colonia, ciudad, estado, cp], (err) => {
     if (err) {
       console.error('Error al agregar dirección:', err);
       return res.status(500).json({ message: 'Error al agregar dirección' });
     }
 
-    res.json({ message: 'Dirección agregada correctamente', direccion_id: result.insertId });
+    res.status(204).send(); // No devuelve contenido si se agregó correctamente
   });
 });
 
@@ -3051,6 +3050,25 @@ app.get('/api/carrito', (req, res) => {
     res.json({ success: true, carrito });
   });
 });
+
+app.get("/api/direcciones", (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Usuario no autenticado." });
+  }
+
+  const query = "SELECT * FROM Direcciones WHERE usuario_id = ?";
+  db.query(query, [userId], (err, results) => {
+    if (err) {
+      console.error("Error al obtener direcciones:", err);
+      return res.status(500).json({ success: false, message: "Error al obtener direcciones." });
+    }
+
+    res.json(results);
+  });
+});
+
 
 
 // borrar del carrito

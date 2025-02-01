@@ -25,7 +25,7 @@
           <input type="text" id="name" name="name" value="<%= user.nombre %>" required />
 
           <label for="phone">Teléfono:</label>
-          <input type="text" id="phone" name="phone" value="<%= user.telefono %>" required />
+          <input type="text" id="phone" name="phone" value="<%= user.telefono %>" required class="tel" />
           <button type="submit">Guardar cambios</button>
         </form>
       </section>
@@ -83,6 +83,7 @@
   </div>
 
   <div id="footer" class="footer"></div>
+  <div class="img"></div>
 
   <script>
     // Manejo del modal para abrir y cerrar
@@ -100,80 +101,158 @@
       }
     });
 
-    // Cargar direcciones dinámicamente
-    document.addEventListener("DOMContentLoaded", function () {
+   
+      // Cargar direcciones dinámicamente con formato optimizado
+      document.addEventListener("DOMContentLoaded", function () {
+        fetch("/api/direcciones")
+          .then(response => response.json())
+          .then(data => {
+            const addressList = document.getElementById("address-list");
+            addressList.innerHTML = ""; // Limpiar la lista antes de volver a cargar
+    
+            // Si no hay direcciones, mostramos un mensaje
+            if (data.length === 0) {
+              addressList.innerHTML = "<p>No tienes direcciones guardadas.</p>";
+              return;
+            }
+    
+            // Crear la estructura de cada dirección
+            data.forEach(direccion => {
+              const div = document.createElement("div");
+              div.classList.add("address-item");
+    
+              div.innerHTML = `
+                <div class="address-header">
+                  <p><b>${direccion.nombre_direccion}</b></p>
+                </div>
+                <div class="address-body">
+                  <p>${direccion.calle}, ${direccion.colonia}, ${direccion.ciudad}, ${direccion.estado}, ${direccion.cp}</p>
+                </div>
+                 <button class="delete-address" data-id="${direccion.direccion_id}">Eliminar</button>
+              `;
+    
+              addressList.appendChild(div);
+            });
+          })
+          .catch(error => console.error("Error al cargar direcciones:", error));
+      });
+   
+    
+
+    
+      // Manejo del formulario de agregar dirección
+      document.getElementById("add-address-form").addEventListener("submit", function (event) {
+        event.preventDefault();
+    
+        const formData = {
+          nombre_direccion: document.getElementById("nombre_direccion").value,
+          calle: document.getElementById("calle").value,
+          colonia: document.getElementById("colonia").value,
+          ciudad: document.getElementById("ciudad").value,
+          estado: document.getElementById("estado").value,
+          cp: document.getElementById("cp").value,
+        };
+    
+        fetch("/api/direcciones", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        })
+        .then(() => {
+          // Cerrar el modal
+          document.getElementById("address-modal").style.display = "none";
+          // Recargar la lista de direcciones sin recargar la página
+          cargarDirecciones();
+        })
+        .catch(error => console.error("Error al agregar dirección:", error));
+      });
+    
+      function cargarDirecciones() {
+        fetch("/api/direcciones")
+          .then(response => response.json())
+          .then(data => {
+            const addressList = document.getElementById("address-list");
+            addressList.innerHTML = ""; // Limpiar la lista antes de volver a cargar
+    
+            data.forEach(direccion => {
+              const li = document.createElement("li");
+              li.classList.add("address-item");
+              li.innerHTML = `
+                <p><b>${direccion.nombre_direccion}</b></p>
+                <p>${direccion.calle}, ${direccion.colonia}, ${direccion.ciudad}, ${direccion.estado}, ${direccion.cp}</p>
+                <button class="delete-address" data-id="${direccion.direccion_id}">Eliminar</button>
+              `;
+              addressList.appendChild(li);
+            });
+          })
+          .catch(error => console.error("Error al cargar direcciones:", error));
+      }
+
+    
+    
+    
+  </script>
+
+  <script>
+
+    
+        // Eliminar direcciones sin confirmar ni recargar la página
+    document.addEventListener("click", function (event) {
+      if (event.target.classList.contains("delete-address")) {
+        const direccionId = event.target.getAttribute("data-id");
+  
+        fetch(`/api/direcciones/${direccionId}`, { method: "DELETE" })
+          .then(response => {
+            if (response.ok) {
+              // Eliminar la dirección visualmente sin recargar la página
+              const direccionElemento = event.target.closest(".address-item");
+              if (direccionElemento) {
+                direccionElemento.remove();
+              }
+            }
+          })
+          .catch(error => console.error("Error al eliminar la dirección:", error));
+      }
+    });
+  
+    function cargarDirecciones() {
       fetch("/api/direcciones")
         .then(response => response.json())
         .then(data => {
           const addressList = document.getElementById("address-list");
-          
-          // Si no hay direcciones, mostramos un mensaje, pero NO abrimos el modal automáticamente
+          addressList.innerHTML = ""; // Limpiar antes de recargar las direcciones
+  
           if (data.length === 0) {
             addressList.innerHTML = "<p>No tienes direcciones guardadas.</p>";
             return;
           }
-          
+  
           data.forEach(direccion => {
-            const li = document.createElement("li");
-            li.classList.add("address-item");
-            li.innerHTML = `
-              <p><b>Nombre:</b> ${direccion.nombre_direccion}</p>
-              <p><b>Calle:</b> ${direccion.calle}</p>
-              <p><b>Colonia:</b> ${direccion.colonia}</p>
-              <p><b>Ciudad:</b> ${direccion.ciudad}</p>
-              <p><b>Estado:</b> ${direccion.estado}</p>
-              <p><b>CP:</b> ${direccion.cp}</p>
+            const div = document.createElement("div");
+            div.classList.add("address-item");
+            div.innerHTML = `
+              <div class="address-header">
+                <p><b>${direccion.nombre_direccion}</b></p>
+              </div>
+              <div class="address-body">
+                <p>${direccion.calle}, ${direccion.colonia}, ${direccion.ciudad}, ${direccion.estado}, ${direccion.cp}</p>
+              </div>
               <button class="delete-address" data-id="${direccion.direccion_id}">Eliminar</button>
             `;
-            addressList.appendChild(li);
+            addressList.appendChild(div);
           });
         })
         .catch(error => console.error("Error al cargar direcciones:", error));
-    });
-
-    // Manejo del formulario de agregar dirección
-    document.getElementById("add-address-form").addEventListener("submit", function (event) {
-      event.preventDefault();
-
-      const formData = {
-        nombre_direccion: document.getElementById("nombre_direccion").value,
-        calle: document.getElementById("calle").value,
-        colonia: document.getElementById("colonia").value,
-        ciudad: document.getElementById("ciudad").value,
-        estado: document.getElementById("estado").value,
-        cp: document.getElementById("cp").value,
-      };
-
-      fetch("/api/direcciones", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      })
-      .then(response => response.json())
-      .then(data => {
-        alert(data.message);
-        location.reload();
-      })
-      .catch(error => console.error("Error al agregar dirección:", error));
-    });
-
-    // Eliminar direcciones
-    document.addEventListener("click", function (event) {
-      if (event.target.classList.contains("delete-address")) {
-        const direccionId = event.target.getAttribute("data-id");
-
-        if (confirm("¿Estás seguro de que quieres eliminar esta dirección?")) {
-          fetch(`/api/direcciones/${direccionId}`, { method: "DELETE" })
-            .then(response => response.json())
-            .then(data => {
-              alert(data.message);
-              location.reload();
-            })
-            .catch(error => console.error("Error al eliminar la dirección:", error));
-        }
-      }
-    });
+    }
+  
+    // Recargar direcciones después de eliminación
+    function actualizarDirecciones() {
+      setTimeout(() => {
+        cargarDirecciones();
+      }, 500); // Espera medio segundo antes de recargar para evitar errores visuales
+    }
   </script>
+  
 </body>
 </html>
 
@@ -290,5 +369,23 @@
 
 
   </script>
+
+
+  <script>
+    function ajustarAlturaContainer() {
+      const profileContainer = document.querySelector(".profile-container");
+      const container = document.querySelector(".container");
+  
+      if (profileContainer && container) {
+        const profileHeight = profileContainer.offsetHeight;
+        container.style.minHeight = `${profileHeight + 300}px`;
+      }
+    }
+  
+    // Ajustar al cargar y al redimensionar la ventana
+    window.addEventListener("load", ajustarAlturaContainer);
+    window.addEventListener("resize", ajustarAlturaContainer);
+  </script>
+  
 </body>
 </html>

@@ -8,26 +8,15 @@
     left: 0;
     height: 87px;
     text-align: center;
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-xl);
     color: var(--color-darkslategray-100);
     font-family: var(--font-josefin-sans);
   }
 
-.component-1-13-child {
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.13);
-    background-color: #edebeb;
-  }
 
 .component-1-13 {
     position: absolute;
-    height: 10vh;
+    height: 100%;
     width: 100%;
     top: 0;
     right: 0;
@@ -38,15 +27,20 @@
     color: var(--color-darkslategray-200);
   }
 
+  .cart-text{
+    
+    text-align: center;
+    font-size: var(--font-size-xl);
+    color: #3A6EA5;
+    font-family: var(--font-josefin-sans);
+    
+  }
   
 
 .component-1-13-child{
     display: flex;
-  }
-
-.component-1-13-child{
     position: absolute;
-    height: 85%;
+    height: 100%;
     width: 100%;
     top: 0;
     right: 0;
@@ -83,7 +77,7 @@
 .caribbean-house-studio11 {
     position: absolute;
     width: calc(100% + 1px);
-    top: -10px;
+    top: 0px;
     left: 0;
     font-weight: 600;
     font-size: calc(100%) ;
@@ -93,7 +87,7 @@
 .logo-icon5 {
     position: absolute;
     height: calc(100% - 21.3px);
-    top: 0px;
+    top: 10px;
     bottom: 10.15px;
     left: 13px;
     max-height: 100%;
@@ -107,7 +101,7 @@
     display: flex;
     align-items: center;
     gap: 50px;
-    margin-top: 3.5vh; /* Ajusta la altura */
+    margin-top: 2.8vh; /* Ajusta la altura */
     width: 60%; /* Define el ancho del contenedor como el 60% de la página */
     transform: translateX(60%); /* Mueve el menú hacia el 60% del ancho */
     justify-content: flex-start; /* Mantén los elementos alineados desde el principio del contenedor */
@@ -117,11 +111,24 @@
     .menu-items {
         width: 80%; /* Define el ancho del contenedor para alinearse mejor con el 30% del grosor */
         transform: translateX(20%); /* Mueve el menú hacia el 30% del ancho */
+        margin-top: 3.9vh; /* Ajusta la altura */
     }
     .logo5 {
       display: none;
   }
+  .barra-pestaas5{
+    font-size: var(--font-size-base);
+  }
+  .cart-text{
+    
+    
+    font-size: var(--font-size-base);
+
+    
+  }
+  
 }
+
 
 
 
@@ -265,12 +272,4 @@
     width: 24px; /* Tamaño del ícono */
     height: auto; /* Mantiene la proporción */
   }
-  .cart-text{
-    
-    text-align: center;
-    font-size: var(--font-size-base);
-    color: #3A6EA5;
-    font-family: var(--font-josefin-sans);
-    
-  }
-  
+ 

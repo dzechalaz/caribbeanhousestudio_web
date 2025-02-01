@@ -1,16 +1,14 @@
 body {
     font-family: 'Montserrat', sans-serif; /* Fuente Montserrat */
     
-   
+    
+    background-color: #d3e5f8; /* Fondo cálido estilo Shukum */ 
 }
 .container{
-    background-image: url('./public/080bef28e2d2463cae04d69b5960f9f82@2x.png');
-    background-size: cover; /* La imagen cubrirá todo el fondo */
-    background-repeat: no-repeat; /* Evita que la imagen se repita */
-    height: calc(100vh + 250px);
-    background-color: #F8E8D3; /* Fondo cálido estilo Shukum */ 
+  margin-bottom: 50px;
 
 }
+
 
   .profile-container {
     position: relative;
@@ -22,10 +20,27 @@ body {
     border-radius: 15px; /* Bordes redondeados */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para darle un efecto elevado */
      /* Borde ligeramente más oscuro para contraste */
-    top: 110px;
+    top: 12vh;
+    margin-bottom: 200px;
+   
+    
     
   }
-  
+  .img {
+    background-image: url('./public/080bef28e2d2463cae04d69b5960f9f82@2x.png');
+    background-size: cover;
+    background-repeat: repeat-y;
+    mix-blend-mode: multiply;
+    position: fixed; /* Se mantiene fijo y repite en Y */
+    width: 100%;
+    top: 0;
+    bottom: 0;
+    min-height: calc(100vh+900px);
+    z-index: -1;
+}
+
+
+
   h2 {
     margin-bottom: 15px;
     color: #333;
@@ -45,7 +60,12 @@ body {
     margin-bottom: 15px;
     border: 1px solid #ddd;
     border-radius: 4px;
+    max-width: 300px;
   }
+  .tel{
+    max-width: 142px;
+  }
+
   
   form button {
     margin-right: 10px;
@@ -62,14 +82,13 @@ body {
     background-color: #16a085;
   }
   
-  .address-section, .payment-section {
-    margin-top: 40px;
-  }
-  
+ 
   ul {
     list-style: none;
     padding: 0;
   }
+
+  
   
   .address-item, .payment-item {
     border: 1px solid #ddd;
@@ -77,6 +96,8 @@ body {
     padding: 15px;
     margin-bottom: 15px;
     background-color: #f9f9f9;
+    max-width: 700px;
+    width: 90%;
   }
   
   button.edit-address, button.delete-address, button.delete-payment {
@@ -156,11 +177,21 @@ body {
 
 form input {
   width: 90%;
+  
   padding: 10px;
   margin: 5px 0;
   border: 1px solid #ccc;
   border-radius: 5px;
 }
+.personal-info, .address-section{
+  
+  max-width: 800px;
+  width: 90%;
+  left: 8%;
+  position: relative;
+  
+}
+
 
 button {
   padding: 10px;
@@ -175,3 +206,4 @@ button {
 button:hover {
   background-color: #005f73;
 }
+
