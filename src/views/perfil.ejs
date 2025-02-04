@@ -15,8 +15,11 @@
 </head>
 <body>
   <div id="barra"></div>
+
   <div class="container">
     <div class="profile-container">
+      <button class = "logout" >Cerrar Sesión</button>
+      
       <!-- Información personal -->
       <section class="personal-info">
         <h2>Información Personal</h2>
@@ -27,6 +30,7 @@
           <label for="phone">Teléfono:</label>
           <input type="text" id="phone" name="phone" value="<%= user.telefono %>" required class="tel" />
           <button type="submit">Guardar cambios</button>
+          
         </form>
       </section>
       
@@ -86,6 +90,22 @@
   <div class="img"></div>
 
   <script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const logoutButton = document.querySelector(".logout");
+  
+      if (logoutButton) {
+          logoutButton.addEventListener("click", function () {
+              console.log("🔒 Cerrando sesión...");
+              window.location.href = "/logout";
+          });
+      }
+  });
+
+
+
+
+
     // Manejo del modal para abrir y cerrar
     document.getElementById("open-add-address").addEventListener("click", function () {
       document.getElementById("address-modal").style.display = "flex";

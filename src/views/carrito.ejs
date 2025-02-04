@@ -29,6 +29,11 @@
     <!-- aqiu escribir el codigo nuevo -->
       <div class="profile-container">
         <h2>Tu Carrito</h2>
+           <!-- 🔹 Campo para ingresar referencia de compra -->
+        <div class="reference-container">
+          <label for="purchase-reference"><b>Referencia de Compra:</b></label>
+          <input type="text" id="purchase-reference" placeholder="Ingresa una referencia" required>
+        </div>
         
         <!-- Lista de productos en el carrito -->
         <ul class="cart-items">
@@ -54,11 +59,12 @@
         <!-- Modal para seleccionar dirección -->
         <div id="address-modal" class="modal" style="display: none;">
           <div class="modal-content">
-            
+            <span class="close" onclick="document.getElementById('address-modal').style.display='none'">&times;</span>
             <h2>Selecciona una Dirección</h2>
             <ul id="address-list"></ul>
           </div>
         </div>
+
               
         <!-- Botones de acción -->
         <div class="cart-actions">

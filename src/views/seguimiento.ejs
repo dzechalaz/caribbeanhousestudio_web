@@ -1,6 +1,6 @@
 <% 
 const descripciones = {
-    0: 'El pedido no ha sido confirmado y está en proceso de pago.',
+    0: 'Tu pedido ha sido registrado, pero aún no ha sido confirmado. Una vez revisado, se asignará una fecha de entrega. Te notificaremos cuando avance en el proceso.',
     1: 'El pedido ha sido confirmado y está en proceso de preparación.',
     2: 'Todos los insumos están listos para comenzar la fabricación.',
     3: 'El producto está en proceso de maquila, se está llevando a cabo la producción.',
@@ -38,6 +38,7 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
                     <b class="direccin-de-envio">Dirección de Envio</b>
                     <div class="nombre-juan-quintana-calle-container">
                         <p class="nombre-juan-quintana">Calle: <%= direccion.calle %></p>
+                        <p class="nombre-juan-quintana">Colonia: <%= direccion.colonia || 'No especificado' %></p> <!-- ✅ Ahora siempre tiene valor -->
                         <p class="nombre-juan-quintana">Ciudad: <%= direccion.ciudad %></p>
                         <p class="nombre-juan-quintana">Estado: <%= direccion.estado %></p>
                         <p class="nombre-juan-quintana">Código Postal: <%= direccion.codigoPostal %></p>

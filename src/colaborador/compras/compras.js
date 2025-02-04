@@ -23,6 +23,7 @@ $(document).ready(function () {
             tablaCompras.row.add([
               compra.compra_id,
               compra.producto_nombre,
+              compra.color || 'No especificado', // 🔥 Se agregó Color después de Producto
               compra.cantidad,
               fechaFormateada, // Usar fecha formateada aquí
               compra.direccion_envio,

@@ -88,6 +88,8 @@ body {
     padding: 0;
   }
 
+
+
   
   
   .address-item, .payment-item {
@@ -111,16 +113,26 @@ body {
     font-size: 0.9rem;
   }
 
-  button.logout{
-    margin-top: 10px;
+  .logout{
+    position: relative;
+    left: 75%;
+    top: 10px;
+    z-index: 2;
     padding: 5px 10px;
     border: none;
     background-color: #e74c3c;
     color: white;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 1.5rem;
   }
+
+  
+  
+  .logout:hover {
+    background-color: #ff3939;
+  }
+  
   
   button.edit-address:hover, button.delete-address:hover, button.delete-payment:hover {
     background-color: #c0392b;
