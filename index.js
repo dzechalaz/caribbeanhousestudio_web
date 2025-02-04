@@ -10,7 +10,7 @@ const bcrypt = require('bcrypt'); // Asegúrate de tener esta línea
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const fetch = require('node-fetch'); 
-const nodemailer = require('nodemailer');
+t
 const cookieParser = require('cookie-parser');
 
 const archiver = require('archiver');
