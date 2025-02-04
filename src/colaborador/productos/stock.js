@@ -30,9 +30,7 @@ $(document).ready(function () {
                                 ${producto.stock || 0}
                             </td>
                             <td>
-                                <input type="checkbox" class="destacado-checkbox" 
-                                    data-id="${producto.codigo}" 
-                                    ${producto.destacado === 1 ? 'checked' : ''}>
+                                
                             </td>
                         `;
                     } else {

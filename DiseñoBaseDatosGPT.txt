@@ -45,24 +45,33 @@ mysql> DESCRIBE Productos;
 9 rows in set (0.12 sec)
 
 
+
+
+mysql> DESCRIBE Compras;
++------------------+--------------+------+-----+---------+----------------+
+| Field            | Type         | Null | Key | Default | Extra          |
++------------------+--------------+------+-----+---------+----------------+
+| compra_id        | int          | NO   | PRI | NULL    | auto_increment |
+| producto_id      | int          | YES  | MUL | NULL    |                |
+| usuario_id       | int          | NO   | MUL | NULL    |                |
+| fecha_compra     | date         | NO   |     | NULL    |                |
+| estado           | int          | NO   |     | 0       |                |
+| direccion_envio  | varchar(255) | NO   |     | NULL    |                |
+| cantidad         | int          | NO   |     | 1       |                |
+| orden_id         | int          | YES  | MUL | NULL    |                |
+| FechaEstimada    | date         | YES  |     | NULL    |                |
+| CostumProduct_id | int          | YES  |     | NULL    |                |
+| color            | varchar(50)  | NO   |     |         |                |
++------------------+--------------+------+-----+---------+----------------+
+11 rows in set (0.12 sec)
+
+
 Descripción de la tabla 'Registros':
 ('id', 'int', 'NO', 'PRI', None, 'auto_increment')
 ('product_id', 'int', 'NO', 'MUL', None, '')
 ('evento', "enum('visita','compra')", 'NO', '', None, '')
 ('fecha', 'datetime', 'NO', '', None, '')
 ('precio', 'decimal(10,2)', 'YES', '', None, '')
-
-Descripción de la tabla 'Compras':
-('compra_id', 'int', 'NO', 'PRI', None, 'auto_increment')
-('producto_id', 'int', 'YES', 'MUL', None, '')
-('usuario_id', 'int', 'NO', 'MUL', None, '')
-('fecha_compra', 'date', 'NO', '', None, '')
-('estado', 'int', 'NO', '', '1', '')
-('direccion_envio', 'varchar(255)', 'NO', '', None, '')
-('cantidad', 'int', 'NO', '', '1', '')
-('orden_id', 'int', 'YES', 'MUL', None, '')
-('FechaEstimada', 'date', 'YES', '', None, '')
-('CostumProduct_id', 'int', 'YES', '', None, '')
 
 Descripción de la tabla 'ordenes':
 ('orden_id', 'int', 'NO', 'PRI', None, 'auto_increment')
@@ -97,3 +106,21 @@ mysql> DESCRIBE Usuarios;
 | telefono   | varchar(20)  | YES  |     | NULL    |                |
 +------------+--------------+------+-----+---------+----------------+
 5 rows in set (0.16 sec)
+
+
+
+mysql> DESCRIBE Direcciones; 
++------------------+--------------+------+-----+---------+----------------+
+| Field            | Type         | Null | Key | Default | Extra          |
++------------------+--------------+------+-----+---------+----------------+
+| direccion_id     | int          | NO   | PRI | NULL    | auto_increment |
+| usuario_id       | int          | NO   | MUL | NULL    |                |
+| nombre_direccion | varchar(100) | NO   |     | NULL    |                |
+| calle            | varchar(255) | NO   |     | NULL    |                |
+| colonia          | varchar(100) | NO   |     | NULL    |                |
+| ciudad           | varchar(100) | NO   |     | NULL    |                |
+| estado           | varchar(100) | NO   |     | NULL    |                |
+| cp               | varchar(10)  | NO   |     | NULL    |                |
+| Seleccionada     | varchar(1)   | NO   |     | f       |                |
++------------------+--------------+------+-----+---------+----------------+
+9 rows in set (0.14 sec)

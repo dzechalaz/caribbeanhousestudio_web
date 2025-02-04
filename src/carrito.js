@@ -1,3 +1,129 @@
+document.addEventListener("DOMContentLoaded", function () {
+  fetch("/api/direccionesCarrito") // 🔹 Endpoint correcto para el carrito
+    .then(response => response.json())
+    .then(data => {
+      console.log("📌 Direcciones obtenidas del backend (Carrito):", data);
+
+      const addressName = document.getElementById("address-name");
+      const addressDetails = document.getElementById("address-details");
+      const changeAddressButton = document.getElementById("change-address");
+
+      if (data.length === 0) {
+        // 🔹 No hay direcciones registradas
+        addressName.textContent = "No tienes direcciones";
+        addressDetails.textContent = "";
+        changeAddressButton.textContent = "Crear Dirección";
+        changeAddressButton.onclick = () => (window.location.href = "/perfil");
+        return;
+      }
+
+      // 🔍 Buscar la dirección con `Seleccionada = 't'`
+      const selected = data.find(addr => addr.Seleccionada === 't');
+
+      if (selected) {
+        console.log("✅ Dirección seleccionada encontrada:", selected);
+        updateSelectedAddress(selected);
+        changeAddressButton.textContent = "Cambiar";
+      } else {
+        console.warn("⚠️ No se encontró ninguna dirección con Seleccionada = 't'. Mostrando opción de selección.");
+        addressName.textContent = "Seleccionar una dirección";
+        addressDetails.textContent = "";
+        changeAddressButton.textContent = "Seleccionar";
+      }
+
+      // 📝 Mostrar todas las direcciones en el modal
+      const addressList = document.getElementById("address-list");
+      addressList.innerHTML = ""; // Limpiar lista antes de agregar direcciones
+
+      data.forEach(direccion => {
+        console.log(`🧐 Dirección: ${direccion.nombre_direccion} - Seleccionada: ${direccion.Seleccionada}`);
+
+        const li = document.createElement("li");
+        li.innerHTML = `<span>${direccion.nombre_direccion} - ${direccion.calle}, ${direccion.colonia}, ${direccion.ciudad}, ${direccion.estado}, ${direccion.cp}</span> `;
+
+        li.style.cursor = "pointer";
+
+        li.addEventListener("click", async () => {
+          await selectAddress(direccion.direccion_id);
+          updateSelectedAddress(direccion);
+          document.getElementById("address-modal").style.display = "none";
+          changeAddressButton.textContent = "Cambiar"; // Cambiar texto del botón
+        });
+
+        addressList.appendChild(li);
+      });
+    })
+    .catch(error => console.error("❌ Error al cargar direcciones (Carrito):", error));
+});
+
+// 🔹 Función para actualizar la dirección en el HTML
+function updateSelectedAddress(address) {
+  console.log("🔄 Dirección seleccionada en el HTML (Carrito):", address);
+  document.getElementById("address-name").textContent = address.nombre_direccion;
+  document.getElementById("address-details").textContent =
+    `${address.calle}, ${address.colonia}, ${address.ciudad}, ${address.estado}, ${address.cp}`;
+}
+
+// Endpoint para cambiar la dirección seleccionada en el carrito
+async function selectAddress(direccionId) {
+  try {
+    const response = await fetch("/api/direccionesCarrito/seleccionar", { // 🔹 Endpoint correcto
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ direccion_id: direccionId }),
+    });
+
+    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+  } catch (error) {
+    console.error("❌ Error al seleccionar dirección (Carrito):", error);
+  }
+}
+
+// Manejo del modal
+document.getElementById("change-address").addEventListener("click", function () {
+  document.getElementById("address-modal").style.display = "flex";
+});
+
+window.addEventListener("click", function (event) {
+  if (event.target === document.getElementById("address-modal")) {
+    document.getElementById("address-modal").style.display = "none";
+  }
+});
+
+
+
+// Validar referencia y proceder con la compra
+document.getElementById("proceed-to-checkout").addEventListener("click", async () => {
+  try {
+    const referenceInput = document.getElementById("purchase-reference").value.trim();
+    if (!referenceInput) {
+      alert("❌ Debes ingresar una referencia de compra.");
+      return;
+    }
+
+    console.log("📌 Referencia de compra ingresada:", referenceInput);
+
+    const response = await fetch("/api/orden/crear", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ referencia: referenceInput }) // ✅ Se envía correctamente la referencia
+    });
+
+    const data = await response.json();
+    if (!data.success) throw new Error(data.message);
+
+    alert("✅ Orden creada exitosamente!");
+    window.location.href = "/compras"; // Redirigir a compras
+  } catch (error) {
+    alert(`❌ Error en la compra: ${error.message}`);
+  }
+});
+
+
+
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
   const cartItemsContainer = document.querySelector(".cart-items");
   const totalItemsElement = document.querySelector(".total-items");
@@ -6,16 +132,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // Cargar productos del carrito desde el backend
   async function loadCart() {
     try {
-      console.log("Cargando el carrito...");
+      
       const response = await fetch("/api/carrito");
-      console.log("Respuesta del servidor obtenida:", response);
+     
 
       if (!response.ok) {
         throw new Error(`Error HTTP: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("Datos del carrito obtenidos:", data);
+      
 
       if (data.success && data.carrito) {
         console.log("Carrito cargado con éxito:", data.carrito);
@@ -31,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Renderizar los productos en el carrito
   function renderCartItems(cartItems) {
-    console.log("Renderizando productos en el carrito...");
+    
     cartItemsContainer.innerHTML = "";
     let totalItems = 0;
     let totalPrice = 0;
@@ -39,8 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
     cartItems.forEach((item) => {
       const { producto_nombre, color, precio, cantidad, disponibilidad, path_imagen, producto_id } = item;
 
-      console.log("Producto a renderizar:", item);
-
+      
       // Determinar clase según disponibilidad
       const availabilityClass =
         disponibilidad === "Disponible para envío inmediato" ? "disponible" : "no-disponible";
@@ -79,7 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Actualizar el resumen del carrito
   function updateCartSummary(totalItems, totalPrice) {
-    console.log("Actualizando resumen del carrito. Total items:", totalItems, "Total price:", totalPrice);
+  
     totalItemsElement.textContent = totalItems;
     totalPriceElement.textContent = `$${totalPrice.toFixed(2)}`;
   }
@@ -97,7 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       input.value = cantidad;
 
-      console.log(`Actualizando cantidad: ${cantidad} para el carrito ID: ${carritoId}`);
+     
 
       try {
         // Actualizar cantidad en el backend
@@ -107,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
           body: JSON.stringify({ cantidad }),
         });
 
-        console.log("Respuesta al actualizar cantidad:", response);
+       
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -115,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const data = await response.json();
-        console.log("Datos de la respuesta al actualizar cantidad:", data);
+   
 
         // Recargar el carrito para reflejar cambios
         loadCart();
@@ -131,7 +256,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target.classList.contains("delete-item-btn")) {
       const carritoId = e.target.dataset.id;
 
-      console.log(`Eliminando producto del carrito. ID: ${carritoId}`);
+
 
       try {
         // Eliminar producto del carrito
@@ -163,53 +288,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 });
-document.addEventListener("DOMContentLoaded", function () {
-  fetch("/api/direcciones")
-    .then(response => response.json())
-    .then(data => {
-      if (data.length === 0) {
-        document.getElementById("selected-address").innerHTML = "<p>No tienes direcciones guardadas.</p>";
-        return;
-      }
-
-      // Guardar la dirección seleccionada en el sessionStorage
-      const savedAddress = sessionStorage.getItem("selectedAddress");
-      let selected = savedAddress ? JSON.parse(savedAddress) : data[0];
-
-      // Mostrar la dirección seleccionada
-      document.getElementById("address-name").textContent = selected.nombre_direccion;
-      document.getElementById("address-details").textContent = 
-        `${selected.calle}, ${selected.colonia}, ${selected.ciudad}, ${selected.estado}, ${selected.cp}`;
-
-      // Guardar en sessionStorage
-      sessionStorage.setItem("selectedAddress", JSON.stringify(selected));
-
-      // Mostrar todas las direcciones en el modal
-      const addressList = document.getElementById("address-list");
-      data.forEach(direccion => {
-        const li = document.createElement("li");
-        li.textContent = `${direccion.nombre_direccion} - ${direccion.calle}, ${direccion.colonia}`;
-        li.addEventListener("click", () => {
-          sessionStorage.setItem("selectedAddress", JSON.stringify(direccion));
-          document.getElementById("address-name").textContent = direccion.nombre_direccion;
-          document.getElementById("address-details").textContent = 
-            `${direccion.calle}, ${direccion.colonia}, ${direccion.ciudad}, ${direccion.estado}, ${direccion.cp}`;
-          document.getElementById("address-modal").style.display = "none";
-        });
-        addressList.appendChild(li);
-      });
-    })
-    .catch(error => console.error("Error al cargar direcciones:", error));
-});
-
-// Manejo del modal
-document.getElementById("change-address").addEventListener("click", function () {
-  document.getElementById("address-modal").style.display = "flex";
-});
 
 
-window.addEventListener("click", function (event) {
-  if (event.target === document.getElementById("address-modal")) {
-    document.getElementById("address-modal").style.display = "none";
-  }
-});
+
+
+

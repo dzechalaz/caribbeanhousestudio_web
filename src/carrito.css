@@ -248,6 +248,7 @@ h2 {
   display: flex;
   align-items: center;
   justify-content: center;
+  justify-self: center;
 }
 
 .modal-content {
@@ -255,7 +256,14 @@ h2 {
   padding: 20px;
   border-radius: 8px;
   width: 40%;
+  max-width: 800px; /* Para que no sea demasiado grande en pantallas grandes */
   text-align: center;
+  position: fixed; /* Fija el modal en la pantalla */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Centra el modal perfectamente */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Sombra para un mejor diseño */
+  z-index: 1000; /* Asegura que esté encima de otros elementos */
 }
 
 #address-list {
@@ -271,4 +279,51 @@ h2 {
 
 #address-list li:hover {
   background-color: #f1f1f1;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 24px; /* Tamaño más grande */
+  font-weight: bold;
+  cursor: pointer; /* Cambia el cursor a una mano */
+  color: #333; /* Color oscuro para que resalte */
+  background: none;
+  border: none;
+  outline: none;
+}
+
+.close:hover {
+  color: red; /* Cambia a rojo cuando pasas el mouse */
+}
+
+
+/* ==================== REFERENCIA DE COMPRA ==================== */
+.reference-container {
+  text-align: left;
+  margin-bottom: 15px;
+}
+
+.reference-container label {
+  font-weight: 600;
+  font-size: 16px;
+  color: #34495e;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.reference-container input {
+  width: 30%;
+  padding: 10px;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.reference-container input:focus {
+  border-color: #3498db;
+  outline: none;
+  box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
 }
