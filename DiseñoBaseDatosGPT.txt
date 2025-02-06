@@ -66,19 +66,31 @@ mysql> DESCRIBE Compras;
 11 rows in set (0.12 sec)
 
 
-Descripción de la tabla 'Registros':
-('id', 'int', 'NO', 'PRI', None, 'auto_increment')
-('product_id', 'int', 'NO', 'MUL', None, '')
-('evento', "enum('visita','compra')", 'NO', '', None, '')
-('fecha', 'datetime', 'NO', '', None, '')
-('precio', 'decimal(10,2)', 'YES', '', None, '')
+mysql> DESCRIBE Registros; 
++------------+-------------------------------+------+-----+---------+----------------+
+| Field      | Type                          | Null | Key | Default | Extra          |
++------------+-------------------------------+------+-----+---------+----------------+
+| id         | int                           | NO   | PRI | NULL    | auto_increment |
+| product_id | int                           | NO   | MUL | NULL    |                |
+| evento     | enum('visita','compra','sim') | NO   |     | NULL    |                |
+| fecha      | date                          | NO   |     | NULL    |                |
+| precio     | decimal(10,2)                 | YES  |     | NULL    |                |
++------------+-------------------------------+------+-----+---------+----------------+
+5 rows in set (0.12 sec)
 
-Descripción de la tabla 'ordenes':
-('orden_id', 'int', 'NO', 'PRI', None, 'auto_increment')
-('numero_orden', 'varchar(50)', 'NO', 'UNI', None, '')
-('usuario_id', 'int', 'NO', 'MUL', None, '')
-('referencia', 'varchar(255)', 'YES', '', None, '')
-('fecha_orden', 'datetime', 'NO', '', 'CURRENT_TIMESTAMP', 'DEFAULT_GENERATED')
+mysql> DESCRIBE ordenes;   
++--------------+--------------+------+-----+-------------------+-------------------+
+| Field        | Type         | Null | Key | Default           | Extra             |
++--------------+--------------+------+-----+-------------------+-------------------+
+| orden_id     | int          | NO   | PRI | NULL              | auto_increment    |
+| numero_orden | varchar(50)  | NO   | UNI | NULL              |                   |
+| usuario_id   | int          | NO   | MUL | NULL              |                   |
+| referencia   | varchar(255) | YES  |     | NULL              |                   |
+| fecha_orden  | datetime     | NO   |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
+| precioTotal  | int          | YES  |     | NULL              |                   |
++--------------+--------------+------+-----+-------------------+-------------------+
+6 rows in set (0.13 sec)
+
 
 mysql>  DESCRIBE carrito;
 +-------------+-------------+------+-----+-------------------+-------------------+
