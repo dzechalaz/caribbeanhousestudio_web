@@ -311,8 +311,7 @@
           const firstProductColor = firstProduct.getAttribute('data-color');
           await updateChart(firstProductId, firstProductColor);
         }
-      
-        // Agregar eventos a las tarjetass
+       
         productos.forEach((producto) => {
           producto.addEventListener('click', async () => {
             const productoId = producto.getAttribute('data-id');
