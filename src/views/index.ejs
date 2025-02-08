@@ -234,73 +234,127 @@
       // Llamar la función al cargar la página
       cargarAnuncio();
 
-
-          document.addEventListener('DOMContentLoaded', async () => {
-          const productos = document.querySelectorAll('.product-card');
-          const chartContainer = document.getElementById('price-chart-container');
-          const productoLink = document.getElementById('producto-link');
-
-          let chart = LightweightCharts.createChart(chartContainer, {
-            width: chartContainer.offsetWidth,
-            height: chartContainer.offsetHeight,
-            layout: {
-              backgroundColor: 'rgba(0, 0, 0, 0)',
-              textColor: '#000',
-              fontSize: 20,
-            },
-            grid: {
-              vertLines: { color: '#eeeeee' },
-              horzLines: { color: '#eeeeee' },
-            },
-            priceScale: {
-              borderColor: '#cccccc',
-            },
-            timeScale: {
-              borderColor: '#cccccc',
-              timeVisible: true,
-            },
-          });
-
-          let lineSeries = chart.addLineSeries();
-
-          const updateChart = async (productoId, color) => {
-            try {
-              const response = await fetch(`/producto-historial/${productoId}`);
-              const chartData = await response.json();
-
-              // Cambiar el color de la línea
-              lineSeries.applyOptions({ color });
-
-              // Actualizar la gráfica
-              lineSeries.setData(chartData);
-              chart.timeScale().fitContent();
-
-              productoLink.href = `/producto?id=${productoId}`;
-
-            } catch (err) {
-              console.error('Error al actualizar la gráfica:', err);
+      document.addEventListener('DOMContentLoaded', async () => {
+        const productos = document.querySelectorAll('.product-card');
+        const chartContainer = document.getElementById('price-chart-container');
+        const productoLink = document.getElementById('producto-link');
+      
+        let chart = LightweightCharts.createChart(chartContainer, {
+          width: chartContainer.offsetWidth,
+          height: chartContainer.offsetHeight,
+          layout: {
+            backgroundColor: 'rgba(0, 0, 0, 0)',
+            textColor: '#000',
+            fontSize: 20,
+          },
+          grid: {
+            vertLines: { color: '#eeeeee' },
+            horzLines: { color: '#eeeeee' },
+          },
+          priceScale: {
+            borderColor: '#cccccc',
+            autoScale: true, // 🔥 Asegurar que el precio se escale automáticamente
+          },
+          timeScale: {
+            borderColor: '#cccccc',
+            timeVisible: true,
+          },
+        });
+      
+        let lineSeries = chart.addLineSeries({
+          lineWidth: 3,
+        });
+      
+        const updateChart = async (productoId, color) => {
+          try {
+            const response = await fetch(`/producto-historial/${productoId}`);
+            let chartData = await response.json();
+      
+            if (!chartData || chartData.length === 0) {
+              console.warn(`No hay datos para el producto ${productoId}`);
+              lineSeries.setData([]); // Limpiar el gráfico si no hay datos
+              return;
             }
-          };
-
-          // Cargar el primer producto destacado por defecto
-          if (productos.length > 0) {
-            const firstProduct = productos[0];
-            const firstProductId = firstProduct.getAttribute('data-id');
-            const firstProductColor = firstProduct.getAttribute('data-color');
-            await updateChart(firstProductId, firstProductColor);
-          }
-
-          // Agregar eventos a las tarjetas
-          productos.forEach((producto) => {
-            producto.addEventListener('click', async () => {
-              
-              const productoId = producto.getAttribute('data-id');
-              const color = producto.getAttribute('data-color');
-              await updateChart(productoId, color);
+      
+            // Transformar los datos a un formato numérico adecuado
+            chartData = chartData.map(data => ({
+              time: data.time,
+              value: parseFloat(data.value),
+            }));
+      
+            // Aplicar interpolación si es necesario
+            chartData = interpolateData(chartData);
+      
+            // Cambiar el color de la línea
+            lineSeries.applyOptions({ color });
+      
+            // Actualizar la gráfica
+            lineSeries.setData(chartData);
+      
+            // 🔥 Ajustar la escala de precios automáticamente
+            chart.priceScale().applyOptions({
+              autoScale: true,
             });
+      
+            chart.timeScale().fitContent();
+      
+            productoLink.href = `/producto?id=${productoId}`;
+          } catch (err) {
+            console.error('Error al actualizar la gráfica:', err);
+          }
+        };
+      
+        // Cargar el primer producto destacado por defecto
+        if (productos.length > 0) {
+          const firstProduct = productos[0];
+          const firstProductId = firstProduct.getAttribute('data-id');
+          const firstProductColor = firstProduct.getAttribute('data-color');
+          await updateChart(firstProductId, firstProductColor);
+        }
+      
+        // Agregar eventos a las tarjetas
+        productos.forEach((producto) => {
+          producto.addEventListener('click', async () => {
+            const productoId = producto.getAttribute('data-id');
+            const color = producto.getAttribute('data-color');
+            await updateChart(productoId, color);
           });
         });
-
+      
+        // Función de interpolación de datos (asegura que no haya huecos en la gráfica)
+        function interpolateData(data) {
+          const interpolated = [];
+      
+          for (let i = 0; i < data.length - 1; i++) {
+            const current = data[i];
+            const next = data[i + 1];
+      
+            interpolated.push(current);
+      
+            const currentDate = new Date(current.time);
+            const nextDate = new Date(next.time);
+            const diffDays = Math.floor((nextDate - currentDate) / (1000 * 60 * 60 * 24));
+      
+            if (diffDays > 1) {
+              const priceStep = (next.value - current.value) / diffDays;
+      
+              for (let j = 1; j < diffDays; j++) {
+                const interpolatedDate = new Date(currentDate);
+                interpolatedDate.setDate(currentDate.getDate() + j);
+      
+                interpolated.push({
+                  time: interpolatedDate.toISOString().split('T')[0],
+                  value: current.value + priceStep * j,
+                });
+              }
+            }
+          }
+      
+          interpolated.push(data[data.length - 1]);
+          return interpolated;
+        }
+      });
+      
 
             
     
