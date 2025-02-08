@@ -233,93 +233,104 @@
     
       // Llamar la función al cargar la página
       cargarAnuncio();
-
+      
+      
+      
       document.addEventListener('DOMContentLoaded', async () => {
-        const productos = document.querySelectorAll('.product-card');
-        const chartContainer = document.getElementById('price-chart-container');
-        const productoLink = document.getElementById('producto-link');
-      
-        let chart = LightweightCharts.createChart(chartContainer, {
-          width: chartContainer.offsetWidth,
-          height: chartContainer.offsetHeight,
-          layout: {
-            backgroundColor: 'rgba(0, 0, 0, 0)',
-            textColor: '#000',
-            fontSize: 20,
-          },
-          grid: {
-            vertLines: { color: '#eeeeee' },
-            horzLines: { color: '#eeeeee' },
-          },
-          priceScale: {
-            borderColor: '#cccccc',
-            autoScale: true, // 🔥 Asegurar que el precio se escale automáticamente
-          },
-          timeScale: {
-            borderColor: '#cccccc',
-            timeVisible: true,
-          },
-        });
-      
-        let lineSeries = chart.addLineSeries({
-          lineWidth: 3,
-        });
-      
-        const updateChart = async (productoId, color) => {
-          try {
-            const response = await fetch(`/producto-historial/${productoId}`);
-            let chartData = await response.json();
-      
-            if (!chartData || chartData.length === 0) {
-              console.warn(`No hay datos para el producto ${productoId}`);
-              lineSeries.setData([]); // Limpiar el gráfico si no hay datos
-              return;
-            }
-      
-            // Transformar los datos a un formato numérico adecuado
-            chartData = chartData.map(data => ({
-              time: data.time,
-              value: parseFloat(data.value),
-            }));
-      
-            // Aplicar interpolación si es necesario
-            chartData = interpolateData(chartData);
-      
-            // Cambiar el color de la línea
-            lineSeries.applyOptions({ color });
-      
-            // Actualizar la gráfica
-            lineSeries.setData(chartData);
-      
-            // 🔥 Ajustar la escala de precios automáticamente
-            chart.priceScale().applyOptions({
+          const productos = document.querySelectorAll('.product-card');
+          const chartContainer = document.getElementById('price-chart-container');
+          const productoLink = document.getElementById('producto-link');
+
+          let chart = LightweightCharts.createChart(chartContainer, {
+            width: chartContainer.offsetWidth,
+            height: chartContainer.offsetHeight,
+            layout: {
+              backgroundColor: 'rgba(0, 0, 0, 0)',
+              textColor: '#000',
+              fontSize: 20,
+            },
+            grid: {
+              vertLines: { color: '#eeeeee' },
+              horzLines: { color: '#eeeeee' },
+            },
+            priceScale: {
+              borderColor: '#cccccc',
               autoScale: true,
-            });
-      
-            chart.timeScale().fitContent();
-      
-            productoLink.href = `/producto?id=${productoId}`;
-          } catch (err) {
-            console.error('Error al actualizar la gráfica:', err);
-          }
-        };
-      
-        // Cargar el primer producto destacado por defecto
-        if (productos.length > 0) {
-          const firstProduct = productos[0];
-          const firstProductId = firstProduct.getAttribute('data-id');
-          const firstProductColor = firstProduct.getAttribute('data-color');
-          await updateChart(firstProductId, firstProductColor);
-        }
-       
-        productos.forEach((producto) => {
-          producto.addEventListener('click', async () => {
-            const productoId = producto.getAttribute('data-id');
-            const color = producto.getAttribute('data-color');
-            await updateChart(productoId, color);
+            },
+            timeScale: {
+              borderColor: '#cccccc',
+              timeVisible: true,
+            },
           });
-        });
-      
+
+          let seriesMap = new Map(); // Mapa para almacenar las series por producto
+          let productColors = new Map(); // Mapa para almacenar los colores originales
+
+          // Función para actualizar la gráfica
+          const updateChart = async (productoId, color, isSelected) => {
+            try {
+              const response = await fetch(`/producto-historial/${productoId}`);
+              let chartData = await response.json();
+
+              if (!chartData || chartData.length === 0) {
+                console.warn(`No hay datos para el producto ${productoId}`);
+                return;
+              }
+
+              chartData = chartData.map(data => ({
+                time: data.time,
+                value: parseFloat(data.value),
+              }));
+
+              if (!seriesMap.has(productoId)) {
+                // Si no existe una serie para este producto, la creamos
+                let lineSeries = chart.addLineSeries({
+                  lineWidth: 3,
+                  color: color, // Usamos el color original del backend
+                });
+
+                lineSeries.setData(chartData);
+                seriesMap.set(productoId, lineSeries);
+                productColors.set(productoId, color); // Guardamos el color original
+              } else {
+                // Si ya existe, solo actualizamos los datos
+                seriesMap.get(productoId).setData(chartData);
+              }
+
+              chart.timeScale().fitContent();
+
+              // Ajustar opacidad: Producto seleccionado = 100%, los demás = 20%
+              seriesMap.forEach((series, id) => {
+                let originalColor = productColors.get(id);
+                series.applyOptions({
+                  lineWidth: 3,
+                  priceLineVisible: false,
+                  color: id === productoId ? originalColor : `${originalColor}53`, // 🔥 Aplica opacidad 20% (`33` en hex)
+                });
+              });
+
+              productoLink.href = `/producto?id=${productoId}`;
+            } catch (err) {
+              console.error('Error al actualizar la gráfica:', err);
+            }
+          };
+
+          // Cargar todas las gráficas al inicio
+          productos.forEach(async (producto) => {
+            const productoId = producto.getAttribute('data-id');
+            const color = producto.getAttribute('data-color'); // Usamos el color del backend
+            await updateChart(productoId, color, false);
+          });
+
+          // Evento para cambiar la opacidad cuando un producto es seleccionado
+          productos.forEach((producto) => {
+            producto.addEventListener('click', async () => {
+              const productoId = producto.getAttribute('data-id');
+              await updateChart(productoId, producto.getAttribute('data-color'), true);
+            });
+          });
+
+
         // Función de interpolación de datos (asegura que no haya huecos en la gráfica)
         function interpolateData(data) {
           const interpolated = [];

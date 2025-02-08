@@ -12,6 +12,7 @@ const MySQLStore = require('express-mysql-session')(session);
 const fetch = require('node-fetch'); 
 const nodemailer = require('nodemailer');
 const cookieParser = require('cookie-parser');
+const router = express.Router();
 
 const archiver = require('archiver');
 
@@ -496,7 +497,7 @@ app.post('/colaborador/productos/actualizar-destacado', authMiddleware, (req, re
 
 
 
-//########################################## CREAR PRODUCTOS ######################################
+//########################################## CREAR PRODUCTOS ###################################### crear productos
 // Middleware Multer configurado para manejar colores alternos dinámicamente
 app.post('/colaborador/productos/crear', upload.fields([
   { name: 'imagen_a', maxCount: 1 },
@@ -547,8 +548,8 @@ app.post('/colaborador/productos/crear', upload.fields([
 
   try {
     // Crear el producto principal
-    const productoQuery = `INSERT INTO Productos (nombre, precio, categoria, codigo, stock) VALUES (?, ?, ?, ?, ?)`;
-    const productoValues = [nombre, precio, categoria, codigo, stock];
+    const productoQuery = `INSERT INTO Productos (nombre, precio, categoria, codigo, stock, precioOG) VALUES (?, ?, ?, ?, ?,?)`;
+    const productoValues = [nombre, precio, categoria, codigo, stock, precio];
 
     const [results] = await db.promise().query(productoQuery, productoValues);
     const productId = results.insertId;
@@ -694,7 +695,7 @@ app.get('/colaborador/productos/generar-codigo', (req, res) => {
   });
 });
 
-
+//############################################# modificar producto #########################################
 
 app.post(
   "/colaborador/productos/modificar/:codigo",
@@ -758,7 +759,7 @@ app.post(
       // Actualizar datos del producto principal, incluyendo el nuevo código
       const updateProductoQuery = `
         UPDATE Productos 
-        SET nombre = ?, precio = ?, categoria = ?, codigo = ?, stock = ? 
+        SET nombre = ?, precio = ?, categoria = ?, codigo = ?, stock = ? ,precioOG = ?
         WHERE producto_id = ?
       `;
       await db
@@ -769,6 +770,7 @@ app.post(
           categoria,
           codigo,
           stock,
+          precio,
           productoId,
         ]);
 
@@ -2110,9 +2112,9 @@ app.get('/producto', async (req, res) => {
       `SELECT DATE(fecha) AS fecha, MAX(precio) AS precio
        FROM Registros
        WHERE product_id = ? 
-         AND fecha IS NOT NULL 
-         AND fecha >= ?
-         AND (evento = 'compra' OR evento = 'sim')
+         AND fecha IS NOT NULL
+         AND fecha >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) -- 🔥 Solo últimos 30 días
+         AND (evento = 'compra' OR evento = 'sim') -- Filtra por compra o sim
        GROUP BY DATE(fecha)
        ORDER BY fecha ASC`,
       [productoId, lastMonthDate]
@@ -2593,6 +2595,7 @@ app.get('/producto-historial/:id', async (req, res) => {
        FROM Registros
        WHERE product_id = ? 
          AND fecha IS NOT NULL
+         AND fecha >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) -- 🔥 Solo últimos 30 días
          AND (evento = 'compra' OR evento = 'sim') -- Filtra por compra o sim
        GROUP BY DATE(fecha)
        ORDER BY fecha ASC`,
@@ -3510,6 +3513,223 @@ app.post('/api/notificacion/empresa', async (req, res) => {
 });
 
 
+//#################################################### bolsa de valores  ##############################################
+
+const cron = require('node-cron');
+
+// Función para registrar el precio de cada producto en la tabla Registros
+async function registrarPreciosDiarios() {
+  try {
+    // Obtener todos los productos con su precio actual
+    const [productos] = await db.promise().query(`
+      SELECT producto_id, precio FROM Productos
+    `);
+
+    if (productos.length === 0) {
+      console.log("No hay productos para registrar.");
+      return;
+    }
+
+    // Obtener la fecha de hoy en formato YYYY-MM-DD
+    const hoy = new Date().toISOString().split('T')[0];
+
+    // Crear registros de tipo "sim" para cada producto
+    const registros = productos.map(producto => [
+      producto.producto_id,
+      'sim',
+      hoy,
+      producto.precio
+    ]);
+
+    // Insertar los registros en la tabla Registros
+    const query = `
+      INSERT INTO Registros (product_id, evento, fecha, precio)
+      VALUES ?
+    `;
+
+    await db.promise().query(query, [registros]);
+
+    console.log(`Se registraron ${productos.length} precios del día ${hoy}.`);
+  } catch (err) {
+    console.error('Error al registrar los precios diarios:', err);
+  }
+}
+
+// 🔥 Programar la ejecución automática **cada día a las 23:59**
+cron.schedule('59 23 * * *', async () => {
+  console.log("⏳ Ejecutando registro automático de precios diarios...");
+  await registrarPreciosDiarios();
+}, {
+  timezone: "America/Mexico_City" // Asegurar que se ejecuta en el huso horario correcto
+});
+
+
+
+
+
+// Configuración de parámetros ajustables
+const CONFIG = {
+  COEFICIENTE_AUMENTO: 0.005, // Factor de aumento por demanda
+  PORCENTAJE_BAJA: 0.02, // Factor de reducción si no hay ventas
+  MARGEN_MAXIMO: 1.1, // 10% sobre el precio original
+  MARGEN_MINIMO: 0.9, // 10% bajo el precio original
+  VENTAS_UMBRAL_ALTO: 5, // Ventas necesarias para aumentar el precio
+  VENTAS_UMBRAL_BAJO: 1, // Ventas necesarias para mantener el precio
+};
+
+// **Tarea programada para ejecutarse cada 24 horas (a la medianoche)**
+cron.schedule('0 0 * * *', async () => {
+  console.log("🔄 Iniciando ajuste de precios según las compras del mes...");
+
+  try {
+    // Obtener todos los productos con su precio actual y precioOG
+    const [productos] = await db.promise().query(
+      `SELECT producto_id, precio, precioOG FROM Productos`
+    );
+
+    if (productos.length === 0) {
+      console.log("❌ No hay productos registrados en la base de datos.");
+      return;
+    }
+
+    for (let producto of productos) {
+      const productoId = producto.producto_id;
+      const precioActual = parseFloat(producto.precio);
+      const precioBase = parseFloat(producto.precioOG);
+
+      // Obtener el número de compras en los últimos 30 días
+      const [[ventas]] = await db.promise().query(
+        `SELECT COUNT(*) AS ventas_mes FROM Registros 
+         WHERE product_id = ? AND evento = 'compra' 
+         AND fecha >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)`,
+        [productoId]
+      );
+
+      const ventasMes = ventas.ventas_mes || 0;
+      console.log(`📊 Producto ID ${productoId}: ${ventasMes} compras en los últimos 30 días.`);
+
+      let nuevoPrecio = precioActual;
+
+      if (ventasMes > CONFIG.VENTAS_UMBRAL_ALTO) {
+        // Si hay muchas ventas, incrementar con la fórmula logarítmica
+        nuevoPrecio = Math.min(
+          precioBase * CONFIG.MARGEN_MAXIMO,  
+          precioActual * (1 + CONFIG.COEFICIENTE_AUMENTO * Math.log(1 + ventasMes))
+        );
+      } else if (ventasMes >= CONFIG.VENTAS_UMBRAL_BAJO) {
+        // Si hay pocas ventas, mantener el precio actual
+        nuevoPrecio = precioActual;
+      } else {
+        // Si no hubo ventas, reducir el precio un porcentaje fijo
+        nuevoPrecio = Math.max(
+          precioBase * CONFIG.MARGEN_MINIMO,  
+          precioActual * (1 - CONFIG.PORCENTAJE_BAJA)
+        );
+      }
+
+      // Asegurar que el precio es válido antes de actualizar
+      if (!isNaN(nuevoPrecio) && nuevoPrecio !== precioActual) {
+        await db.promise().query(
+          `UPDATE Productos SET precio = ? WHERE producto_id = ?`,
+          [nuevoPrecio, productoId]
+        );
+
+        console.log(`✅ Producto ID ${productoId}: Precio actualizado a $${nuevoPrecio.toFixed(2)}`);
+
+        // **Registrar el nuevo precio en la tabla Registros como "sim"**
+        await db.promise().query(
+          `INSERT INTO Registros (product_id, evento, fecha, precio) VALUES (?, 'sim', CURDATE(), ?)`,
+          [productoId, nuevoPrecio]
+        );
+
+        console.log(`📝 Evento "sim" registrado para el producto ${productoId} con precio $${nuevoPrecio.toFixed(2)}`);
+      } else {
+        console.log(`🔹 Producto ID ${productoId}: No se realizaron cambios en el precio.`);
+      }
+    }
+  } catch (error) {
+    console.error("❌ Error al ajustar precios:", error);
+  }
+});
+
+console.log("🚀 Cron job de ajuste de precios activado cada 24 horas!");
+
+
+
+//test de valores
+app.post('/api/actualizar-precio/130', async (req, res) => {
+  const productoId = 130;
+
+  try {
+      // Obtener el precio actual y el precio base
+      const [[producto]] = await db.promise().query(
+          `SELECT precio, precioOG FROM Productos WHERE producto_id = ?`, 
+          [productoId]
+      );
+
+      if (!producto) {
+          console.error(`❌ Producto con ID ${productoId} no encontrado.`);
+          return res.status(404).json({ success: false, error: 'Producto no encontrado.' });
+      }
+
+      console.log(`📌 Producto encontrado: ID ${productoId}, Precio Actual: $${producto.precio}, Precio Base (OG): $${producto.precioOG}`);
+
+      // Obtener cuántas ventas ha tenido en el último mes
+      const [[ventas]] = await db.promise().query(
+          `SELECT COUNT(*) AS ventas_mes, MIN(fecha) AS fecha_inicio, MAX(fecha) AS fecha_fin 
+           FROM Registros 
+           WHERE product_id = ? AND evento = 'compra' 
+           AND fecha >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)`, 
+          [productoId]
+      );
+
+      const ventasMes = ventas.ventas_mes || 0;
+      const fechaInicio = ventas.fecha_inicio || 'No hay registros';
+      const fechaFin = ventas.fecha_fin || 'No hay registros';
+
+      console.log(`📊 Ventas en el último mes para el producto ${productoId}: ${ventasMes} compras registradas entre ${fechaInicio} y ${fechaFin}`);
+
+      // Calcular el nuevo precio basado en el algoritmo
+      let nuevoPrecio = parseFloat(producto.precio); // Asegurar que sea un número
+
+      if (ventasMes > 5) {
+          nuevoPrecio = Math.min(
+              parseFloat(producto.precioOG) * 1.1, // Máximo 10% sobre precioOG
+              parseFloat(producto.precio) * (1 + 0.078 * Math.log(1 + ventasMes))
+          );
+      }
+
+      console.log(`🔢 Nuevo precio calculado: $${nuevoPrecio.toFixed(2)}`);
+
+      // Validar que nuevoPrecio es un número válido antes de guardarlo
+      if (isNaN(nuevoPrecio)) {
+          console.error("❌ Error: nuevoPrecio es NaN, no se puede actualizar.");
+          return res.status(500).json({ success: false, error: "Cálculo de precio inválido." });
+      }
+
+      // Guardar el nuevo precio en la base de datos
+      await db.promise().query(
+          `UPDATE Productos SET precio = ? WHERE producto_id = ?`,
+          [nuevoPrecio, productoId]
+      );
+
+      console.log(`✅ Precio del producto ID ${productoId} actualizado a $${nuevoPrecio.toFixed(2)} correctamente.`);
+
+      // 🔥 **Registrar el cambio en la tabla Registros**
+      await db.promise().query(
+          `INSERT INTO Registros (product_id, evento, fecha, precio) VALUES (?, 'sim', CURDATE(), ?)`,
+          [productoId, nuevoPrecio]
+      );
+
+      console.log(`📝 Evento "sim" registrado en Registros con el nuevo precio de $${nuevoPrecio.toFixed(2)}`);
+
+      res.json({ success: true, nuevo_precio: nuevoPrecio.toFixed(2) });
+
+  } catch (error) {
+      console.error("❌ Error al actualizar el precio:", error);
+      res.status(500).json({ success: false, error: "Error al actualizar el precio." });
+  }
+});
 
 
 
