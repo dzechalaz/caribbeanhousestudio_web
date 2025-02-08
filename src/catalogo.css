@@ -114,7 +114,7 @@
   background-color: #C19A6B; /* Color estilo chukum */
   padding: 20px;
   border-radius: 8px;
-  max-height: 400px;
+  max-height: 430px;
   margin-right: 20px;
   
 }
@@ -241,51 +241,6 @@ body {
 
 
 
-/* Cuando el menú esté activo */
-
-
-.no-stock {
-  border: 1px solid #f77878; /* Borde gris claro */
-  border-radius: 8px;
-  padding: calc(15%);
-  width: calc(65%);
-  height: 320px;
-  background-color: #a5d1ce; /* Fondo gris claro */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  opacity: 0.6; /* Opacidad reducida */
-  position: relative;
-  text-align: center;
-  cursor:pointer; /* Cursor indica que no se puede hacer clic */
-}
-
-/* Texto superpuesto "No disponible" */
-.no-stock-overlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(255, 0, 0, 0.8); /* Fondo rojo semitransparente */
-  color: white;
-  padding: 10px 20px;
-  font-size: 1.2em;
-  font-weight: bold;
-  border-radius: 5px;
-  z-index: 10;
-  text-align: center;
-  
-}
-
-/* Ajustes para imágenes dentro de las tarjetas sin stock */
-.no-stock .product-image {
-  filter: grayscale(10%); /* Imagen en escala de grises */
-}
-
-/* No se permite interacción en los productos sin stock */
-.no-stock:hover {
-  transform: scale(1.05); /* Pequeña ampliación al hacer hover */
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  box-shadow: none;
-}
 
 
 /*pedido costum */

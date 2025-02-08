@@ -133,3 +133,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
   fetchRegistros();
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const botonActualizar = document.getElementById("actualizar-precio-btn");
+
+  if (!botonActualizar) {
+      console.error("❌ Botón no encontrado en el DOM.");
+      return;
+  }
+
+  botonActualizar.addEventListener("click", async () => {
+      try {
+          console.log("🔄 Enviando solicitud para actualizar el precio del producto ID 130...");
+
+          const response = await fetch("/api/actualizar-precio/130", {
+              method: "POST",
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+              console.log("✅ Precio actualizado correctamente:", data.nuevo_precio);
+              alert(`Precio actualizado a: $${data.nuevo_precio}`);
+              location.reload(); // 🔄 Recargar la página para ver el nuevo precio
+          } else {
+              console.error("❌ Error al actualizar el precio:", data.error);
+          }
+      } catch (error) {
+          console.error("❌ Error en la solicitud:", error);
+      }
+  });
+});

@@ -82,7 +82,7 @@
           <div class="product-list">
             <% productos.forEach(function(producto) { %>
               <!-- Comprobamos si el stock es 0 para usar no-stock en lugar de product-card -->
-              <% if (producto.stock > 0) { %>
+             
                 <a href="/producto?id=<%= producto.producto_id %>" class="product-link">
                   <div class="product-card">
                     <img src="<%= producto.imagePath %>" alt="<%= producto.nombre %>" class="product-image">
@@ -95,21 +95,8 @@
                     </div>
                   </div>
                 </a>
-              <% } else { %>
-                <a href="/producto?id=<%= producto.producto_id %>" class="product-link">
-                  <div class="no-stock">
-                    <img src="<%= producto.imagePath %>" alt="<%= producto.nombre %>" class="product-image">
-                    <div class="product-details">
-                      <h3 class="product-title"><%= producto.nombre %></h3>
-                      <p class="product-sku">SKU <%= producto.codigo %></p>
-                      <div class="product-price">
-                        <p class="discounted-price">$<%= producto.precio %></p>
-                      </div>
-                      <div class="no-stock-overlay">No disponible por el momento</div>
-                    </div>
-                  </div>
-                </a>
-              <% } %>
+              
+             
             <% }); %>
           </div>
           
