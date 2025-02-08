@@ -1,7 +1,7 @@
 
 .barra-pestaas5 {
     position: fixed;
-    z-index: 7;
+    z-index: 6;
     width: calc(100% + 2.1px);
     top: -0.5px;
     right: -2.1px;
