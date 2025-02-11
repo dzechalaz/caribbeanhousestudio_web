@@ -176,16 +176,6 @@
 
 
 
-.frase {
-  position: absolute;
-  top: 5.7%;
-  left: 13.27%;
-  font-size: 39px;
-  line-height: 18px;
-  top: 300px;
-}
-
-
 .product-grid2 {
   display: flex;
   flex-wrap: wrap; /* Permite que los productos se ajusten a diferentes tamaños de pantalla */
@@ -401,12 +391,13 @@
   width: 100%;
   height: 100%;
   position: fixed;
-  background-image: url(./public/portada.webp);
+  background-image: url(./public/homeImage.webp);
   background-size: cover;
   background-repeat: no-repeat;
   z-index: -2;
   background-position: bottom;
   top: 80px;
+  opacity: 60%;
 }
 
 #main-content {
