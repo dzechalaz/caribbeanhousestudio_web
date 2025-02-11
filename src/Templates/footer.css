@@ -31,7 +31,15 @@ footer {
     display: flex;
     justify-content: flex-end; /* Alinea las secciones a la derecha */
     gap: 50px; /* Espacio entre las secciones */
+    
   }
+
+  .footer-section.links p {
+  white-space: nowrap; /* Evita el salto de línea */
+  display: inline-block; /* Hace que los elementos estén en línea */
+  margin-right: 20px; /* Agrega un espacio entre los elementos */
+}
+
   
   .footer-section h1 {
     color: #fff; /* Color blanco */
@@ -51,7 +59,13 @@ footer {
   .footer-section p {
     margin: 5px 0;
     color: #b2b2b2;
+    cursor: pointer;
   }
+  .footer-section a {
+    color: inherit; /* Esto hará que el enlace herede el color del texto */
+    text-decoration: none; /* Esto elimina el subrayado del enlace */
+  }
+  
   
   @media screen and (max-width: 1000px) {
     footer {
@@ -65,10 +79,6 @@ footer {
       align-items: center;
     }
   
-    .footer-section.brand {
-      justify-content: center;
-      margin-bottom: 20px;
-    }
   
     .footer-section.links {
       flex-direction: column;
