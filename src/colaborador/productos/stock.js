@@ -32,6 +32,9 @@ $(document).ready(function () {
                             <td>
                                 
                             </td>
+                             <td>
+                                
+                            </td>
                         `;
                     } else {
                         row.innerHTML = `
@@ -52,6 +55,11 @@ $(document).ready(function () {
                                 <input type="checkbox" class="destacado-checkbox" 
                                     data-id="${producto.codigo}" 
                                     ${producto.destacado === 1 ? 'checked' : ''}>
+                            </td>
+                             <td>
+                                <input type="checkbox" class="bv-checkbox" 
+                                    data-id="${producto.codigo}" 
+                                    ${producto.BV === 1 ? 'checked' : ''}>
                             </td>
                         `;
                     }
@@ -112,6 +120,28 @@ $(document).ready(function () {
                 }
             })
             .catch(error => console.error('Error al actualizar destacado:', error));
+    });
+    $(document).on('change', '.bv-checkbox', function () {
+        const checkbox = $(this);
+        const codigoProducto = checkbox.data('id');
+        const BV = checkbox.is(':checked') ? 1 : 0;
+
+        // Enviar la actualización al servidor
+        fetch('/colaborador/productos/actualizar-bv', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ codigo: codigoProducto, BV }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    alert('Error al actualizar BV.');
+                    checkbox.prop('checked', !checkbox.is(':checked')); // Revertir el cambio en caso de error
+                }
+            })
+            .catch(error => console.error('Error al actualizar BV:', error));
     });
 
     
@@ -283,7 +313,3 @@ $('#grafica').click(function () {
   
 
 });
-
-
-
-

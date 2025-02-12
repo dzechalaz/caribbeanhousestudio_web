@@ -266,7 +266,8 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
           COALESCE(c.color_hex, NULL) AS color_hex_alterno, 
           c.color_id AS color_alterno_id,
           c.stock AS stock_alterno, 
-          p.destacado 
+          p.destacado,
+          p.BV  -- 🔥 Asegurar que BV sea parte de la consulta
       FROM Productos p
       LEFT JOIN Productos_detalles pd ON p.producto_id = pd.producto_id
       LEFT JOIN ColoresAlternos c ON p.producto_id = c.producto_id
@@ -274,47 +275,49 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
   `;
 
   db.query(query, (err, results) => {
-      if (err) {
-          console.error('Error fetching products:', err);
-          return res.status(500).json({ error: 'Error fetching products' });
-      }
+    if (err) {
+        console.error('❌ Error fetching products:', err);
+        return res.status(500).json({ error: 'Error fetching products' });
+    }
 
-      const productos = [];
-      const productosMap = {};
+    const productos = [];
+    const productosMap = {};
 
-      results.forEach(row => {
-          if (!productosMap[row.codigo]) {
-              // Agregar el producto principal solo una vez
-              productosMap[row.codigo] = {
-                  producto_id: row.producto_id,
-                  codigo: row.codigo,
-                  nombre: row.nombre,
-                  precio: row.precio,
-                  categoria: row.categoria || 'Sin categoría',
-                  color: row.color_principal,
-                  color_hex: row.color_hex_principal,
-                  stock: row.stock_total || 0,
-                  destacado: row.destacado,
-                  alternos: []
-              };
-          }
+    results.forEach(row => {
+        if (!productosMap[row.codigo]) {
+            // Agregar el producto principal solo una vez
+            productosMap[row.codigo] = {
+                producto_id: row.producto_id,
+                codigo: row.codigo,
+                nombre: row.nombre,
+                precio: row.precio,
+                categoria: row.categoria || 'Sin categoría',
+                color: row.color_principal,
+                color_hex: row.color_hex_principal,
+                stock: row.stock_total || 0,
+                destacado: row.destacado,
+                BV: row.BV || 0,  // 🔥 Agregar el campo BV con valor por defecto 0 si es NULL
+                alternos: []
+            };
+        }
 
-          // Agregar colores alternos al producto correspondiente
-          if (row.color_alterno) {
-              productosMap[row.codigo].alternos.push({
-                  producto_id: row.producto_id,
-                  codigo: row.codigo,
-                  nombre: `↳ ${row.nombre} ALT${row.color_alterno_id}`,
-                  precio: row.precio,
-                  categoria: row.categoria || 'Sin categoría',
-                  color: row.color_alterno,
-                  color_hex: row.color_hex_alterno,
-                  stock: row.stock_alterno || 0,
-                  destacado: row.destacado,
-                  esAlterno: true
-              });
-          }
-      });
+        // Agregar colores alternos al producto correspondiente
+        if (row.color_alterno) {
+            productosMap[row.codigo].alternos.push({
+                producto_id: row.producto_id,
+                codigo: row.codigo,
+                nombre: `↳ ${row.nombre} ALT${row.color_alterno_id}`,
+                precio: row.precio,
+                categoria: row.categoria || 'Sin categoría',
+                color: row.color_alterno,
+                color_hex: row.color_hex_alterno,
+                stock: row.stock_alterno || 0,
+                destacado: row.destacado,
+                BV: row.BV || 0,  // 🔥 Agregar BV también en los productos alternos
+                esAlterno: true
+            });
+        }
+    });
 
       // Convertir el mapa a una lista ordenada
       Object.values(productosMap).forEach(producto => {
@@ -324,6 +327,29 @@ app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
 
       res.json({ productos });
   });
+});
+
+
+
+
+// **Ruta para actualizar el valor de BV (Bolsa de Valores)**
+app.post("/colaborador/productos/actualizar-bv", async (req, res) => {
+  const { codigo, BV } = req.body;
+
+  if (BV !== 0 && BV !== 1) {
+      return res.status(400).json({ success: false, error: "Valor de BV inválido." });
+  }
+
+  try {
+      await db.promise().query(
+          "UPDATE Productos SET BV = ? WHERE codigo = ?",
+          [BV, codigo]
+      );
+      res.json({ success: true, message: "BV actualizado correctamente." });
+  } catch (error) {
+      console.error("❌ Error al actualizar BV:", error);
+      res.status(500).json({ success: false, error: "Error al actualizar BV." });
+  }
 });
 
 
@@ -2590,25 +2616,36 @@ app.get('/producto-historial/:id', async (req, res) => {
   const productoId = req.params.id;
 
   try {
+    // 🔥 Nueva consulta con JOIN para obtener el nombre del producto
     const [historial] = await db.promise().query(
-      `SELECT DATE(fecha) AS fecha, MAX(precio) AS precio
-       FROM Registros
-       WHERE product_id = ? 
-         AND fecha IS NOT NULL
-         AND fecha >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) -- 🔥 Solo últimos 30 días
-         AND (evento = 'compra' OR evento = 'sim') -- Filtra por compra o sim
-       GROUP BY DATE(fecha)
-       ORDER BY fecha ASC`,
-      [productoId]
+      `SELECT 
+        DATE(r.fecha) AS fecha, 
+        MAX(r.precio) AS precio, 
+        (
+            SELECT nombre 
+            FROM Productos 
+            WHERE producto_id = ? 
+              AND nombre NOT LIKE '%ALT%' -- 🔥 Filtra nombres que NO contengan "ALT"
+            LIMIT 1
+        ) AS nombre_producto
+    FROM Registros r
+    WHERE r.product_id = ? 
+      AND r.fecha IS NOT NULL
+      AND r.fecha >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) -- Solo últimos 30 días
+      AND (r.evento = 'compra' OR r.evento = 'sim') -- Filtra por compra o sim
+    GROUP BY DATE(r.fecha)
+    ORDER BY fecha ASC;
+`,
+      [productoId, productoId]
     );
     
-    // Formatear los datos para la gráfica
+
+    // Formatear los datos para la gráfica con el nombre incluido
     const chartData = historial.map(registro => ({
       time: registro.fecha.toISOString().split('T')[0],
       value: registro.precio,
+      nombre: registro.nombre_producto // 🔥 Ahora enviamos el nombre del producto
     }));
-
-    //console.log(`Datos para producto ${productoId}:`, chartData); // Imprimir en el servidor
 
     res.json(chartData); // Enviar los datos de la gráfica como JSON
   } catch (err) {
@@ -3567,6 +3604,7 @@ cron.schedule('59 23 * * *', async () => {
 
 
 
+
 // Configuración de parámetros ajustables
 const CONFIG = {
   COEFICIENTE_AUMENTO: 0.005, // Factor de aumento por demanda
@@ -3577,18 +3615,18 @@ const CONFIG = {
   VENTAS_UMBRAL_BAJO: 1, // Ventas necesarias para mantener el precio
 };
 
-// **Tarea programada para ejecutarse cada 24 horas (a la medianoche)**
-cron.schedule('0 0 * * *', async () => {
+// **Tarea programada para ejecutarse el primer día de cada mes a las 00:00:01**
+cron.schedule('1 0 1 * *', async () => {
   console.log("🔄 Iniciando ajuste de precios según las compras del mes...");
 
   try {
-    // Obtener todos los productos con su precio actual y precioOG
+    // Obtener todos los productos con BV = 1 (solo los que deben cambiar de precio)
     const [productos] = await db.promise().query(
-      `SELECT producto_id, precio, precioOG FROM Productos`
+      `SELECT producto_id, precio, precioOG FROM Productos WHERE BV = 1`
     );
 
     if (productos.length === 0) {
-      console.log("❌ No hay productos registrados en la base de datos.");
+      console.log("❌ No hay productos con BV = 1 para actualizar.");
       return;
     }
 
@@ -3652,7 +3690,7 @@ cron.schedule('0 0 * * *', async () => {
   }
 });
 
-console.log("🚀 Cron job de ajuste de precios activado cada 24 horas!");
+console.log("🚀 Cron job de ajuste de precios programado para el 1ero de cada mes a las 00:00:01!");
 
 
 

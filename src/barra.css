@@ -101,7 +101,7 @@
     display: flex;
     align-items: center;
     gap: 50px;
-    margin-top: 3.5vh; /* Ajusta la altura */
+    margin-top: 2.9vh; /* Ajusta la altura */
     width: 60%; /* Define el ancho del contenedor como el 60% de la página */
     transform: translateX(60%); /* Mueve el menú hacia el 60% del ancho */
     justify-content: flex-start; /* Mantén los elementos alineados desde el principio del contenedor */
@@ -111,13 +111,14 @@
     .menu-items {
         width: 80%; /* Define el ancho del contenedor para alinearse mejor con el 30% del grosor */
         transform: translateX(20%); /* Mueve el menú hacia el 30% del ancho */
-        margin-top: 37px; /* Ajusta la altura */
+        margin-top: 2.8vh; /* Ajusta la altura */
     }
     .logo5 {
       display: none;
   }
   .barra-pestaas5{
     font-size: var(--font-size-base);
+    height: 8%;
   }
   .cart-text{
     

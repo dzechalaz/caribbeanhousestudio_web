@@ -22,117 +22,63 @@
   <body>
     <div id="barra"></div>
     
-    <div class="aboutus">
-      <div class="canvas"></div>
-      <img
-        class="imagenportada-icon"
-        alt=""
-        src="./public/imagenportada@2x.png"
-      />
-
-      <img class="fondo-icon1" alt="" src="./public/fondo@2x.png" />
-
+   
      
-      <img class="imagen4-icon" alt="" src="./public/imagen4@2x.png" />
+    <div class="portada">
+      <div class="overlay"></div>
+      <h1 class="titulo">Nuestra Historia</h1>
+      <p class="descripcion">
+          Caribbean House Studio nació en los años 2000 como un distribuidor de muebles en plena expansión de Playa del Carmen. 
+          Con el tiempo, comenzamos a fabricar muebles a la medida, respondiendo a las necesidades de nuestros clientes que 
+          buscaban soluciones prácticas y personalizadas para sus hogares.
+      </p>
+  </div>
 
-      <div class="aboutus-child"></div>
-      <img class="imagen3-icon" alt="" src="./public/imagen3@2x.png" />
-
-      <div class="la-familia-de-container">
-        <p class="la-familia-de">
-          La familia de Playa Caribbean House se inicio con el crecimiento
-          vertiginoso de Playa del Carmen que desde el 2000
-        </p>
-        <p class="la-familia-de">&nbsp;</p>
-        <p class="la-familia-de">
-          Iniciando sus operaciones con modelos clásicos rústicos prefabricados
-        </p>
-        <p class="la-familia-de">
-          Cambiando poco a poco a la modalidad de fabrica sobre diseño - a
-          medida
-        </p>
-        <p class="la-familia-de">&nbsp;</p>
-        <p class="la-familia-de">
-          Hoy la actividad de ambientar las casas caribeñas no solo abarca el
-          mercado de extranjeros, si no lindas familias mexicanas con
-          especificaciones para sus espacios, ya sea en estilos, colores y
-          texturas. Nos encanta ser parte del estilo de vida de todo tipo de
-          gustos, y necesidades.
-        </p>
-      </div>
-      <div class="nuestra-historia2">Nuestra Historia</div>
-      <div class="aboutus-item"></div>
-      <div class="opiniones">Opiniones</div>
-      <div class="detalles-cuidadosamente-consid">
-        <p class="la-familia-de">Detalles</p>
-        <p class="la-familia-de">cuidadosamente</p>
-        <p class="la-familia-de">considerados y</p>
-        <p class="la-familia-de">combinación</p>
-        <p class="la-familia-de">de belleza</p>
-      </div>
-      <div class="lorem-ipsum-dolor3">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat.
-      </div>
-      <div class="explorarmasbutt">
-        <div class="explorar-mas">Explorar Mas</div>
-      </div>
-      <div class="professional-team">
-        <p class="la-familia-de">Professional</p>
-        <p class="la-familia-de">Team</p>
-      </div>
-      <div class="lorem-ipsum-dolor4">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat.
-      </div>
-      <div class="repeat-grid-2">
-        <div class="div14">
-          <div class="caribbean-house-made">
-            Caribbean House made a beautiful custom sofa for me with material I
-            supplied. Fabulous workmanship and quality - it’s the most
-            comfortable piece of furniture i’ve ever had! Thank you so much!!
+  <!-- Sección de Opiniones -->
+  <div class="opiniones">
+      <h2>Opiniones</h2>
+      <div class="opiniones-container">
+          <div class="opinion">
+              <p><i>Caribbean House made a beautiful custom sofa for me with material I supplied. Fabulous workmanship and quality!</i></p>
+              <span class="autor">- Leslie Kelleher</span>
           </div>
-          <i class="leslie-kelleher">- Leslie Kelleher</i>
-        </div>
-        <div class="div15">
-          <div class="caribbean-house-made">
-            <p class="la-familia-de">
-              Beautiful Bed and Armoire, great craftsmanship and attention to
-              details. I love the way the bedroom looks now. Great Job! Thank
-              you.
-            </p>
-            <p class="la-familia-de">
-              <i class="i">&nbsp;</i>
-            </p>
-            <i class="i"> </i>
+          <div class="opinion">
+              <p><i>Beautiful Bed and Armoire, great craftsmanship and attention to details. I love the way the bedroom looks now. Great Job!</i></p>
+              <span class="autor">- Michelle Williams</span>
           </div>
-          <i class="michelle-williams">- Michelle Williams</i>
-        </div>
-        <div class="div16">
-          <div class="caribbean-house-made">
-            <p class="la-familia-de">
-              Beautiful Bed and Armoire, great craftsmanship and attention to
-              details. I love the way the bedroom looks now. Great Job! Thank
-              you.
-            </p>
-            <p class="la-familia-de">
-              <i class="i">&nbsp;</i>
-            </p>
-            <i class="i"> </i>
+          <div class="opinion">
+              <p><i>Caribbean House Studio crafted a perfect, custom sliding door that is truly a work of art. The result exceeded expectations.</i></p>
+              <span class="autor">- Maria Elisa Rendon</span>
           </div>
-          <i class="michelle-williams">- Maria Elisa Rendon</i>
-        </div>
-        
-     
       </div>
-      <div id="footer" style="position: relative; z-index: 3; top: 3100px;"></div>
+  </div>
 
+  <!-- Sección de Detalles -->
+  <div class="detalle">
+      <div class="texto">
+          <h2>Detalles cuidadosamente considerados y combinación de belleza.</h2>
+          <a href="/catalogo" class="boton">Explorar Más</a>
+      </div>
+      <div class="imagen-detalle"></div>
+  </div>
 
+  <div id="footer"></div>
       
+
+
+        <!-- Script de Parallax -->
+    <script>
+      document.addEventListener("scroll", function () {
+          const scrollPos = window.scrollY;
+          const portada = document.getElementById("portada");
+
+          // Ajusta la opacidad de la portada al hacer scroll
+          portada.style.opacity = 1 - scrollPos / 600;
+
+          // Ajusta la posición para simular efecto de parallax
+          portada.style.transform = `translateY(${scrollPos * 0.5}px)`;
+      });
+  </script>
 
       
     
@@ -141,7 +87,7 @@
 
       
     window.onload = function () {
-      let claseAResaltar = "vacio";
+      let claseAResaltar = "nuestra-historia";
 
       // Cargar barra.html dinámicamente
       fetch("/Templates/barra.html")
