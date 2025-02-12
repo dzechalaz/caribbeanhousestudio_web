@@ -251,7 +251,7 @@ app.get('/colaborador/productos/stock', authMiddleware, (req, res) => {
 });
 
 // Ruta para obtener los productos y enviar los datos al frontend
-app.get('/colaborador/productos/data', authMiddleware, (req, res) => {
+app.get('/colaborador/productos/data', (req, res) => {
   const query = `
       SELECT 
           p.producto_id,
