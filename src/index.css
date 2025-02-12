@@ -322,7 +322,14 @@
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     cursor: pointer; /* Cambia el cursor para indicar que es clicable */
   }
+
   
+  .product-card2 {
+    opacity: 0; /* Ocultas al inicio */
+    transform: translateX(-50px); /* Desplazadas a la izquierda */
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
 
   .product-link {
     text-decoration: none; /* Elimina el subrayado del enlace */
@@ -365,6 +372,10 @@
     cursor: pointer; /* Cambiar cursor para indicar interacción */
     position: relative; /* Necesario para el tooltip */
   }
+  #price-chart-container .tv-lightweight-charts__price-axis {
+    display: none !important;
+}
+
   
   
  
@@ -381,34 +392,47 @@
   color: var(--color-darkslategray-100);
   font-family: var(--font-josefin-sans);
   position: absolute;
-  
   width: 100%;
   height: 100%;
   text-align: left;
   font-size: var(--font-size-3xl);
 }
-.portada {
-  width: 100%;
-  height: 100%;
+
+.portada, .textos {
+  margin-top: 7vh;
+  width: 90%;
+  height: 100%; /* Para que cada capa cubra toda la pantalla */
   position: fixed;
-  background-image: url(./public/homeImage.webp);
   background-size: cover;
   background-repeat: no-repeat;
-  z-index: -2;
-  background-position: bottom;
-  top: 80px;
-  opacity: 60%;
+  background-position-x: left;
+  background-position-Y: top  ;
+  transition: transform 0.1s ease-out;
+  
 }
+
+.portada {
+  background-image: url(./public/homeImage.webp);
+  z-index: -2;
+  width: 100%;
+}
+
+.textos {
+  background-image: url(./public/homeText.webp);
+  z-index: -1;
+  opacity: 0.8; /* Para dar un ligero efecto translúcido */
+  
+
+}
+
+
+
 
 #main-content {
   transform: scale(1); /* No aplica escala aquí */
   transform-origin: top left;
 }
 
-.portadaSpace{
-  height:860px;
- 
-}
 
 
 .chart-button-container {
