@@ -299,6 +299,68 @@
               await updateChart(productoId, color);
             });
           });
+<<<<<<< Updated upstream
+=======
+          
+          // **Crear Tooltip para mostrar el Nombre del Producto y Precio Real**
+          const toolTip = document.createElement('div');
+          toolTip.style.position = 'absolute';
+          toolTip.style.background = '#bfdcd8';
+          toolTip.style.padding = '6px 10px';
+          toolTip.style.border = '1px solid #ccc';
+          toolTip.style.borderRadius = '4px';
+          toolTip.style.fontSize = '20px';
+          toolTip.style.color = '#333';
+          toolTip.style.display = 'none';
+          toolTip.style.pointerEvents = 'none';
+          toolTip.style.whiteSpace = 'nowrap';
+          toolTip.style.zIndex = '5';
+          
+          chartContainer.appendChild(toolTip);
+          
+    // **Mostrar valor real y nombre en el tooltip**
+          chart.subscribeCrosshairMove((param) => {
+            if (!param || !param.time || param.seriesData.size === 0) {
+                toolTip.style.display = 'none';
+                return;
+            }
+
+            let text = '';
+            let hasData = false;
+
+            param.seriesData.forEach((data, series) => {
+              // Buscar el producto_id basado en la serie
+              const productoId = [...seriesMap.entries()].find(([id, s]) => s === series)?.[0];
+          
+              if (productoId && originalDataMap.has(productoId)) {
+                  // Obtener el valor real del producto en la fecha seleccionada
+                  const realData = originalDataMap.get(productoId).find(d => d.time === param.time);
+          
+                  // 🔥 Obtener el nombre del producto y limpiarlo
+                  let productName = productNamesMap.get(parseInt(productoId)) || "Producto Desconocido";
+          
+                  // Limpiar el nombre para quitar "ALT" y la flecha "↳"
+                  productName = productName.replace(/↳/g, '').replace(/ ALT\d+/g, '').trim();
+          
+                  if (realData) {
+                      text += `<strong>${productName}:</strong> $${realData.value.toFixed(2)}<br>`;
+                      hasData = true;
+                  }
+              }
+          });
+          
+
+            if (!hasData) {
+                toolTip.style.display = 'none';
+                return;
+            }
+
+            toolTip.innerHTML = text;
+            toolTip.style.left = `${param.point.x + 10}px`;
+            toolTip.style.top = `${param.point.y - 30}px`;
+            toolTip.style.display = 'block';
+
+>>>>>>> Stashed changes
         });
 
 

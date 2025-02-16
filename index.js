@@ -2584,10 +2584,12 @@ app.get('/', async (req, res) => {
 });
 
 //############################### HISTORIAL DE PRODUCTO #############################
+//############################### HISTORIAL DE PRODUCTO #############################
 app.get('/producto-historial/:id', async (req, res) => {
   const productoId = req.params.id;
 
   try {
+<<<<<<< Updated upstream
     const [historial] = await db.promise().query(
       `SELECT DATE(fecha) AS fecha, MAX(precio) AS precio
        FROM Registros
@@ -2603,13 +2605,39 @@ app.get('/producto-historial/:id', async (req, res) => {
     const chartData = historial.map(registro => ({
       time: registro.fecha.toISOString().split('T')[0],
       value: registro.precio,
+=======
+    // 🔥 Consulta corregida para traer datos de los últimos 6 meses
+    const [historial] = await db.promise().query(
+      `SELECT 
+        DATE(r.fecha) AS fecha, 
+        MAX(r.precio) AS precio, 
+        p.nombre AS nombre_producto
+      FROM Registros r
+      JOIN Productos p ON r.product_id = p.producto_id
+      WHERE r.product_id = ? 
+        AND r.fecha IS NOT NULL
+        AND r.fecha >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) -- 🔥 Ahora trae 6 meses
+        AND (r.evento = 'compra' OR r.evento = 'sim') -- 🔥 Solo eventos "compra" o "sim"
+        AND p.nombre NOT LIKE '%ALT%' -- 🔥 Filtra nombres que NO contengan "ALT"
+      GROUP BY DATE(r.fecha), p.nombre
+      ORDER BY fecha ASC;
+      `,
+      [productoId]
+    );
+
+    // 🔥 Formatear los datos correctamente para la gráfica
+    const chartData = historial.map(registro => ({
+      time: registro.fecha, // 🔥 Ya viene en formato DATE, no necesitas .toISOString()
+      value: parseFloat(registro.precio), // 🔥 Asegurar que el precio es un número
+      nombre: registro.nombre_producto // 🔥 Nombre del producto
+>>>>>>> Stashed changes
     }));
 
     //console.log(`Datos para producto ${productoId}:`, chartData); // Imprimir en el servidor
 
     res.json(chartData); // Enviar los datos de la gráfica como JSON
   } catch (err) {
-    console.error('Error al obtener historial de precios:', err);
+    console.error('❌ Error al obtener historial de precios:', err);
     res.status(500).send('Error interno del servidor');
   }
 });
