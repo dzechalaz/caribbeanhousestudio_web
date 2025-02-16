@@ -2590,6 +2590,7 @@ app.get('/producto-historial/:id', async (req, res) => {
 
   try {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     const [historial] = await db.promise().query(
       `SELECT DATE(fecha) AS fecha, MAX(precio) AS precio
        FROM Registros
@@ -2606,6 +2607,8 @@ app.get('/producto-historial/:id', async (req, res) => {
       time: registro.fecha.toISOString().split('T')[0],
       value: registro.precio,
 =======
+=======
+>>>>>>> Stashed changes
     // 🔥 Consulta corregida para traer datos de los últimos 6 meses
     const [historial] = await db.promise().query(
       `SELECT 
@@ -2630,6 +2633,9 @@ app.get('/producto-historial/:id', async (req, res) => {
       time: registro.fecha, // 🔥 Ya viene en formato DATE, no necesitas .toISOString()
       value: parseFloat(registro.precio), // 🔥 Asegurar que el precio es un número
       nombre: registro.nombre_producto // 🔥 Nombre del producto
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }));
 
