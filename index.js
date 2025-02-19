@@ -3769,6 +3769,23 @@ app.post('/api/actualizar-precio/130', async (req, res) => {
   }
 });
 
+// ############################################## mercado pago ##############################################
+
+
+
+
+app.get("/metodos-de-pago", (req, res) => {
+  // Verificar que el usuario esté autenticado
+  const userId = req.session.userId;
+
+  // Verificar que el usuario esté autenticado
+  if (!userId) {
+    return res.redirect('/login');
+  }
+  res.render("pago"); // Renderiza pago.ejs
+});
+
+
 
 
 app.listen(PORT, () => {
