@@ -21,6 +21,7 @@
   />
   
   <script src="https://sdk.mercadopago.com/js/v2"></script>
+  
   <title>Método de pago</title>
 </head>
 <body>
@@ -28,9 +29,34 @@
 
   
 
-    <div class="container">
+    <div class="pago">
+     
+      <h1>Selecciona tu Método de Pago</h1>
       
-      <div id="cardPaymentBrick_container"></div>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+          
+          
+          const mp = new MercadoPago('TEST-55cc3902-654d-43e4-a9fb-8f69981a6e60');
+          const bricksBuilder = mp.bricks();
+
+
+        
+          mp.bricks().create("wallet", "wallet_container", {
+            initialization: {
+                preferenceId: "<PREFERENCE_ID>",
+            },
+          customization: {
+          texts: {
+          valueProp: 'smart_option',
+          },
+          },
+          });
+
+      </script>
+
+      <div id="wallet_container"></div>
 
     </div>
 
@@ -39,65 +65,8 @@
   <div id="footer" class="footer"></div>
   <div id="img" class="img"></div>
   
-  <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      const mp = new MercadoPago('TEST-55cc3902-654d-43e4-a9fb-8f69981a6e60', {
-          locale: 'es-MX'
-        });
-      const bricksBuilder = mp.bricks();
 
-      
-      const renderCardPaymentBrick = async (bricksBuilder) => {
-      const settings = {
-        initialization: {
-          amount: 100, // monto total a pagar
-        },
-        callbacks: {
-          onReady: () => {
-            /*
-              Callback llamado cuando Brick está listo.
-              Aquí puedes ocultar cargamentos de su sitio, por ejemplo.
-            */
-          },
-          onSubmit: (formData) => {
-            // callback llamado al hacer clic en el botón enviar datos
-            return new Promise((resolve, reject) => {
-              fetch('/process_payment', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-              })
-                .then((response) => response.json())
-                .then((response) => {
-                  // recibir el resultado del pago
-                  resolve();
-                })
-                .catch((error) => {
-                  // manejar la respuesta de error al intentar crear el pago
-                  reject();
-                });
-            });
-          },
-          onError: (error) => {
-            // callback llamado para todos los casos de error de Brick
-            console.error(error);
-          },
-        },
-        };
-        window.cardPaymentBrickController = await bricksBuilder.create(
-        'cardPayment',
-        'cardPaymentBrick_container',
-        settings,
-        );  
-      };
-      renderCardPaymentBrick(bricksBuilder);
-
-
-    });
-  </script>
-
+  
   <script>
     // barra y footer
     window.onload = function () {

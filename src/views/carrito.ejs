@@ -19,6 +19,7 @@
     rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
   />
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
   <title>Carrito</title>
 </head>
 <body>
@@ -78,6 +79,61 @@
             });
           </script>
         </div>
+        
+        <div class="pago">
+          <h1>Selecciona tu Método de Pago</h1>
+          <div id="wallet_container"></div>
+        
+          <script src="https://sdk.mercadopago.com/js/v2"></script>
+          <script>
+            const mp = new MercadoPago("TEST-55cc3902-654d-43e4-a9fb-8f69981a6e60", {
+              locale: "es-MX",
+            });
+        
+            async function loadPaymentButton() {
+              try {
+                // ✅ Obtener la `preferenceId` desde el backend
+                const response = await fetch("/create_preference", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                });
+                const data = await response.json();
+                const preferenceId = data.preferenceId;
+        
+                if (!preferenceId) {
+                  throw new Error("No se recibió preferenceId");
+                }
+        
+                // ✅ Configurar el botón de pago con la `preferenceId`
+                mp.bricks().create("wallet", "wallet_container", {
+                  initialization: {
+                    preferenceId: preferenceId,
+                  },
+                  customization: {
+                    texts: {
+                      valueProp: "smart_option", // Otras opciones: 'default', 'none'
+                      action: "pay", // Texto del botón de pago
+                    },
+                    visual: {
+                      style: {
+                        theme: "default", // Opciones: 'default', 'dark', 'custom'
+                      },
+                    },
+                  },
+                });
+              } catch (error) {
+                console.error("Error al cargar el botón de pago:", error);
+                document.getElementById("wallet_container").innerHTML =
+                  "<p style='color: red;'>Error al cargar el botón de pago</p>";
+              }
+            }
+        
+            loadPaymentButton();
+          </script>
+        </div>
+        
+
+
       </div>
     </div>
     </div>

@@ -2,6 +2,7 @@
   "name": "caribbeanhousestudio_web",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js"
   },
@@ -11,6 +12,7 @@
   "dependencies": {
     "16": "^0.0.2",
     "@aws-sdk/client-s3": "^3.38.0",
+    "@mercadopago/sdk-react": "^0.0.24",
     "archiver": "^7.0.1",
     "aws-sdk": "^2.1692.0",
     "bcrypt": "^5.1.1",
