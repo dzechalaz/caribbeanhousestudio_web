@@ -3795,6 +3795,8 @@ app.post('/api/actualizar-precio/130', async (req, res) => {
 
 // ############################################## mercado pago ##############################################
 
+import { MercadoPagoConfig, Preference } from 'mercadopago';
+
 // ✅ Configuración de Mercado Pago
 const client = new MercadoPagoConfig({
   accessToken: "TEST-1299034383805810-021907-5cf1d021ec7d3f46fbc9fd89a91fcd4b-257040664",
@@ -3809,23 +3811,22 @@ app.post("/create_preference", async (req, res) => {
     const response = await preferenceClient.create({
        body: {
         items: [
-          {
-            id: "PROD-001",
-            title: "My product",
-            description: "Descripción detallada del producto.",
-            picture_url: "https://tuweb.com/imagenes/producto.jpg",
-            category_id: "electronics",
+          { title: 'Mi producto',
             quantity: 1,
-            unit_price: 2000,
-            currency_id: "MXN",
-          },
+            currency_id: 'MXN',
+            unit_price: 75.56 },
+            { title: 'Mi producto 2',
+              quantity: 1,
+              currency_id: 'MXN',
+              unit_price: 200.56 },
+          
+            
         ],
         payer: {
           name: "Juan",
           surname: "Pérez",
           email: "juanperez@email.com",
           phone: { area_code: "55", number: "123456789" },
-          identification: { type: "DNI", number: "12345678" },
           address: {
             zip_code: "11000",
             street_name: "Avenida Reforma",
@@ -3834,9 +3835,10 @@ app.post("/create_preference", async (req, res) => {
         },
         back_urls: {
           success: "http://localhost:3000/compras",
-          failure: "http://localhost:3000/error",
-          pending: "http://localhost:3000/pendiente",
+          failure: "http://localhost:3000/carrito",
+          pending: "http://localhost:3000/carrito",
         },
+        
         
         auto_return: "approved", // ✅ Redirección automática si el pago es exitoso
       },

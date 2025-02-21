@@ -69,19 +69,8 @@
               
         <!-- Botones de acción -->
         <div class="cart-actions">
-          <button id="proceed-to-checkout" class="checkout-btn">Proceder al Pago</button>
-          <button id="continue-shopping" class="continue-btn">Seguir Comprando</button>
-          <script>
-            // Seleccionamos el botón por su ID
-            document.getElementById('continue-shopping').addEventListener('click', () => {
-              // Redirige al usuario a la ruta /catalogo
-              window.location.href = '/catalogo';
-            });
-          </script>
-        </div>
+          
         
-        <div class="pago">
-          <h1>Selecciona tu Método de Pago</h1>
           <div id="wallet_container"></div>
         
           <script src="https://sdk.mercadopago.com/js/v2"></script>
@@ -111,13 +100,20 @@
                   },
                   customization: {
                     texts: {
-                      valueProp: "smart_option", // Otras opciones: 'default', 'none'
+                      valueProp: "security_safety", // Otras opciones: 'default', 'none'
                       action: "pay", // Texto del botón de pago
                     },
                     visual: {
+                      buttonBackground: 'black',
                       style: {
-                        theme: "default", // Opciones: 'default', 'dark', 'custom'
+                        theme: "costum", // Opciones: 'default', 'dark', 'custom'
                       },
+                    },
+                    checkout: {
+                        theme: {
+                            elementsColor: "#1Ed41E",
+                            headerColor: "#F70552",
+                        },
                     },
                   },
                 });
@@ -129,6 +125,15 @@
             }
         
             loadPaymentButton();
+          </script>
+
+          <button id="continue-shopping" class="continue-btn">Seguir Comprando</button>
+          <script>
+            // Seleccionamos el botón por su ID
+            document.getElementById('continue-shopping').addEventListener('click', () => {
+              // Redirige al usuario a la ruta /catalogo
+              window.location.href = '/catalogo';
+            });
           </script>
         </div>
         
