@@ -1,29 +1,34 @@
-const express = require('express');
-const app = express();
-const mysql = require('mysql2');
-const path = require('path');
-const fs = require('fs');
-const bodyParser = require('body-parser');
-const { PORT, DB_HOST, DB_NAME, DB_PASSWORD, DB_USER, DB_PORT } = require('./config');
-const multer = require('multer'); // Asegúrate de tener esto aquí
-const bcrypt = require('bcrypt'); // Asegúrate de tener esta línea
-const session = require('express-session');
-const MySQLStore = require('express-mysql-session')(session);
-const fetch = require('node-fetch'); 
-const nodemailer = require('nodemailer');
-const cookieParser = require('cookie-parser');
-const router = express.Router();
+import express from "express";
+import mysql from "mysql2";
+import path from "path";
+import fs from "fs";
+import bodyParser from "body-parser";
+import { PORT, DB_HOST, DB_NAME, DB_PASSWORD, DB_USER, DB_PORT } from "./config.js";
+import multer from "multer"; // Manejo de archivos
+import bcrypt from "bcrypt"; // Encriptación
+import session from "express-session";
+import MySQLStoreFactory from "express-mysql-session"; // Sesiones en MySQL
+import fetch from "node-fetch";
+import nodemailer from "nodemailer";
+import cookieParser from "cookie-parser";
+import { fileURLToPath } from "url";
+import archiver from "archiver";
 
-const archiver = require('archiver');
 
 const EMPRESA_EMAIL = "diochoglez@gmail.com"; // Aquí defines el correo de la empresa contacto@caribbeanhousestudio.com
 
-const cors = require('cors');
-app.use(cors());
+import cors from "cors";
 
+
+const app = express(); // ✅ Definir app antes de usarlo
+// Middleware
+app.use(cors());
 app.use(cookieParser());
 
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+
+
 
 // Configuración del cliente S3 con las nuevas credenciales
 const s3 = new S3Client({
@@ -42,7 +47,9 @@ const upload = multer({ storage: storage });
 // Archivo: index.js (o tu archivo principal del servidor)
 
 // Cargar variables de entorno
-require('dotenv').config(); // Si usas un archivo .env
+import dotenv from "dotenv";
+dotenv.config();
+
 
 // Constante para el bucket de imágenes de Cloudflare
 const CFI = process.env.CFI || "https://pub-9eb3385798dc4bcba46fb69f616dc1a0.r2.dev";
@@ -53,6 +60,7 @@ app.use((req, res, next) => {
   next();
 });
 
+const MySQLStore = MySQLStoreFactory(session);
 const db = mysql.createConnection({
   host: DB_HOST,
   user: DB_USER,
@@ -100,10 +108,17 @@ setInterval(() => {
   });
 }, 300000); // 5 minutos en milisegundos
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'src/views'));
 
-app.use(express.static(path.join(__dirname, 'src')));
+
+// ✅ Definir `__dirname` manualmente en ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ✅ Usar __dirname correctamente
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "src/views"));
+
+app.use(express.static(path.join(__dirname, "src")));
 app.use(bodyParser.json());
 
 
@@ -141,12 +156,13 @@ app.get('/colaborador/productos/crear', authMiddleware, (req, res) => {
 let anuncioHabilitado = false; // Por defecto deshabilitado
 // Endpoint para /colaborador/anuncios (renderización del HTML)
 // Endpoint para /colaborador/anuncios (renderización del HTML)
+
 app.get('/colaborador/anuncios', authMiddleware, (req, res) => {
   const timestamp = Date.now();
   const anuncioPath = `https://pub-9eb3385798dc4bcba46fb69f616dc1a0.r2.dev/Anuncios/anuncio.webp?t=${timestamp}`;
 
   // Leer el archivo HTML y reemplazar un marcador con la URL del anuncio y habilitación
-  const fs = require('fs');
+  
   const htmlPath = path.join(__dirname, 'src/colaborador/anuncios.html');
   fs.readFile(htmlPath, 'utf8', (err, data) => {
     if (err) {
@@ -354,7 +370,8 @@ app.post("/colaborador/productos/actualizar-bv", async (req, res) => {
 
 
 //########################################################### eliminar productos ##################################################
-const { DeleteObjectCommand, ListObjectsCommand } = require('@aws-sdk/client-s3');
+import { DeleteObjectCommand, ListObjectsCommand } from '@aws-sdk/client-s3';
+
 app.delete('/colaborador/productos/eliminar/:codigo', authMiddleware, async (req, res) => {
   const productoCodigo = req.params.codigo;
 
@@ -2913,8 +2930,9 @@ app.get('/api/direcciones', (req, res) => {
   const userId = req.session.userId;
 
   if (!userId) {
-    return res.status(401).json({ message: 'Usuario no autenticado' });
+    return res.redirect('/login');
   }
+
 
   const query = `SELECT direccion_id, nombre_direccion, calle, colonia, ciudad, estado, cp FROM Direcciones WHERE usuario_id = ?`;
 
@@ -3072,7 +3090,13 @@ app.post('/api/registros/:codigo/sync', async (req, res) => {
 //#################### carrito de compras ######################
 
 app.get('/carrito', (req, res) => {
+  const userId = req.session.userId;
+  if (!userId) {
+    return res.redirect('/login');
+  }
+
   res.render('carrito');
+  
 });
 
 
@@ -3552,7 +3576,7 @@ app.post('/api/notificacion/empresa', async (req, res) => {
 
 //#################################################### bolsa de valores  ##############################################
 
-const cron = require('node-cron');
+import cron from "node-cron";
 
 // Función para registrar el precio de cada producto en la tabla Registros
 async function registrarPreciosDiarios() {
@@ -3771,23 +3795,77 @@ app.post('/api/actualizar-precio/130', async (req, res) => {
 
 // ############################################## mercado pago ##############################################
 
+import { MercadoPagoConfig, Preference } from 'mercadopago';
+
+// ✅ Configuración de Mercado Pago
+const client = new MercadoPagoConfig({
+  accessToken: "TEST-1299034383805810-021907-5cf1d021ec7d3f46fbc9fd89a91fcd4b-257040664",
+});
 
 
 
-app.get("/metodos-de-pago", (req, res) => {
-  // Verificar que el usuario esté autenticado
-  const userId = req.session.userId;
+// ✅ Ruta para generar `preferenceId`
+app.post("/create_preference", async (req, res) => {
+  try {
+    const preferenceClient = new Preference(client);
+    const response = await preferenceClient.create({
+       body: {
+        items: [
+          { title: 'Mi producto',
+            quantity: 1,
+            currency_id: 'MXN',
+            unit_price: 75.56 },
+            { title: 'Mi producto 2',
+              quantity: 1,
+              currency_id: 'MXN',
+              unit_price: 200.56 },
+          
+            
+        ],
+        payer: {
+          name: "Juan",
+          surname: "Pérez",
+          email: "juanperez@email.com",
+          phone: { area_code: "55", number: "123456789" },
+          address: {
+            zip_code: "11000",
+            street_name: "Avenida Reforma",
+            street_number: 100,
+          },
+        },
+        back_urls: {
+          success: "http://localhost:3000/compras",
+          failure: "http://localhost:3000/carrito",
+          pending: "http://localhost:3000/carrito",
+        },
+        
+        
+        auto_return: "approved", // ✅ Redirección automática si el pago es exitoso
+      },
+    });
+      
+    
 
-  // Verificar que el usuario esté autenticado
-  if (!userId) {
-    return res.redirect('/login');
+    console.log("Respuesta completa de Mercado Pago:", response);
+
+    // ✅ Acceder correctamente a preferenceId
+    const preferenceId = response?.id || response?.body?.id;
+
+    if (!preferenceId) {
+      throw new Error("No se recibió preferenceId de Mercado Pago");
+    }
+
+    res.json({ preferenceId }); // ✅ Enviar `preferenceId` al frontend
+  } catch (error) {
+    console.error("Error al crear la preferencia:", error);
+    res.status(500).json({ error: error.message });
   }
-  res.render("pago"); // Renderiza pago.ejs
 });
 
 
 
 
-app.listen(PORT, () => {
-  console.log(`Server listening at http://localhost:${PORT}`);
+// Iniciar el servidor
+app.listen(3000, () => {
+  console.log("Servidor corriendo en http://localhost:3000");
 });
