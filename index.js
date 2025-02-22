@@ -3823,7 +3823,7 @@ app.post("/create_preference", async (req, res) => {
           failure: "http://localhost:3000/carrito",
           pending: "http://localhost:3000/carrito",
         },
-        auto_return: "approved", // ✅ Redirección automática si el pago es exitoso
+        auto_return: "approved", // ✅ Redirección automática si el pago es exitoso lol
       },
     });
 
