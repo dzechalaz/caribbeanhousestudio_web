@@ -3808,52 +3808,33 @@ const client = new MercadoPagoConfig({
 app.post("/create_preference", async (req, res) => {
   try {
     const preferenceClient = new Preference(client);
+    
     const response = await preferenceClient.create({
-       body: {
+      body: {
         items: [
-          { title: 'Mi producto',
+          { 
+            title: 'Mi producto 1',
             quantity: 1,
-            currency_id: 'MXN',
-            unit_price: 75.56 },
-            { title: 'Mi producto 2',
-              quantity: 1,
-              currency_id: 'MXN',
-              unit_price: 200.56 },
-          
-            
-        ],
-        payer: {
-          name: "Juan",
-          surname: "Pérez",
-          email: "juanperez@email.com",
-          phone: { area_code: "55", number: "123456789" },
-          address: {
-            zip_code: "11000",
-            street_name: "Avenida Reforma",
-            street_number: 100,
+            unit_price: 75.56
           },
-        },
+        ],
         back_urls: {
           success: "http://localhost:3000/compras",
           failure: "http://localhost:3000/carrito",
           pending: "http://localhost:3000/carrito",
         },
-        
-        
-        auto_return: "approved", // ✅ Redirección automática si el pago es exitoso
+        auto_return: "approved", // ✅ Redirección automática si el pago es exitoso lol
       },
     });
-      
-    
 
-    console.log("Respuesta completa de Mercado Pago:", response);
-
-    // ✅ Acceder correctamente a preferenceId
-    const preferenceId = response?.id || response?.body?.id;
+    // ✅ Acceder correctamente a `preferenceId`
+    const preferenceId = response.id;
 
     if (!preferenceId) {
       throw new Error("No se recibió preferenceId de Mercado Pago");
     }
+
+    console.log("Preference creada con éxito:", preferenceId);
 
     res.json({ preferenceId }); // ✅ Enviar `preferenceId` al frontend
   } catch (error) {
@@ -3861,8 +3842,6 @@ app.post("/create_preference", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-
 
 
 // Iniciar el servidor
