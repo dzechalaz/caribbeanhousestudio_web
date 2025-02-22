@@ -72,6 +72,7 @@
           
         
           <div id="wallet_container"></div>
+          
         
           <script src="https://sdk.mercadopago.com/js/v2"></script>
           <script>
@@ -98,23 +99,20 @@
                   initialization: {
                     preferenceId: preferenceId,
                   },
+                  
                   customization: {
                     texts: {
                       valueProp: "security_safety", // Otras opciones: 'default', 'none'
                       action: "pay", // Texto del botón de pago
                     },
+                    
                     visual: {
                       buttonBackground: 'black',
                       style: {
-                        theme: "costum", // Opciones: 'default', 'dark', 'custom'
+                        theme: "dark", // Opciones: 'default', 'dark', 'custom'
                       },
                     },
-                    checkout: {
-                        theme: {
-                            elementsColor: "#1Ed41E",
-                            headerColor: "#F70552",
-                        },
-                    },
+                    
                   },
                 });
               } catch (error) {

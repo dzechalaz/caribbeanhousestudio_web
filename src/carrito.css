@@ -22,7 +22,7 @@ body {
   top: 0;
   bottom: 0;
   min-height: calc(100vh+900px);
-  z-index: -1;
+  z-index: -1;  
 }
 
 
@@ -184,7 +184,10 @@ h2 {
   font-weight: bold;
   font-size: 1rem;
   transition: background-color 0.3s ease;
+  max-height: 48px;
+  margin-top: 13px;
 }
+
 
 .checkout-btn:hover,
 .continue-btn:hover {
