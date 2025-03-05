@@ -239,33 +239,30 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Manejar eliminación de productos
-  cartItemsContainer.addEventListener("click", async (e) => {
-    if (e.target.classList.contains("delete-item-btn")) {
-      const carritoId = e.target.dataset.id;
+// Manejar eliminación de productos
+cartItemsContainer.addEventListener("click", async (e) => {
+  if (e.target.classList.contains("delete-item-btn")) {
+    const carritoId = e.target.dataset.id;
 
+    try {
+      // Eliminar producto del carrito
+      const response = await fetch(`/api/carrito/${carritoId}`, {
+        method: "DELETE",
+      });
 
-
-      try {
-        // Eliminar producto del carrito
-        const response = await fetch(`/api/carrito/${carritoId}`, {
-          method: "DELETE",
-        });
-
-        //console.log("Respuesta al eliminar producto:", response);
-
-        if (!response.ok) {
-          throw new Error(`Error HTTP al eliminar producto: ${response.status}`);
-        }
-
-        // Recargar el carrito para reflejar cambios
-        loadCart();
-      } catch (error) {
-        //console.error("Error al eliminar producto:", error);
-        alert(error.message);
+      if (!response.ok) {
+        throw new Error(`Error HTTP al eliminar producto: ${response.status}`);
       }
+
+      // ✅ Refrescar toda la página para actualizar Mercado Pago y el carrito
+      location.reload();
+
+    } catch (error) {
+      console.error("Error al eliminar producto:", error);
+      alert(error.message);
     }
-  });
+  }
+});
 
 
 

@@ -89,8 +89,14 @@
                     <div class="product-details">
                       <h3 class="product-title"><%= producto.nombre %></h3>
                       <p class="product-sku">SKU <%= producto.codigo %></p>
+
+                      <% function formatPrice(price) { 
+                        return new Intl.NumberFormat("es-MX", { minimumFractionDigits: 2 }).format(price);
+                      } %>
+                      
                       <div class="product-price">
-                        <p class="discounted-price">$<%= producto.precio %></p>
+                        <p class="discounted-price">$<%= formatPrice(producto.precio) %></p>
+
                       </div>
                     </div>
                   </div>

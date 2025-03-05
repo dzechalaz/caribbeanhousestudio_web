@@ -2333,6 +2333,7 @@ app.get('/catalogo', (req, res) => {
 
       productos.forEach(producto => {
           producto.imagePath = `${CFI}/Products/${producto.producto_id}/a.webp`;
+          
       });
 
       // **Consulta de conteo corregida**
@@ -3754,7 +3755,7 @@ app.get("/api/orden/webhook", async (req, res) => {
     const response = await fetch("http://localhost:3000/api/orden/crear", { // <-- Usa la ruta absoluta
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ referencia: `Pago usuario ${userId}`, userId }) // <-- Pasar el userId
+      body: JSON.stringify({ referencia: `` }) // <-- Pasar el userId
     });
 
     const data = await response.json();
