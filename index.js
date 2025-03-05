@@ -13,6 +13,16 @@ import nodemailer from "nodemailer";
 import cookieParser from "cookie-parser";
 import { fileURLToPath } from "url";
 import archiver from "archiver";
+import vexor from 'vexor';
+import dotenv from 'dotenv';
+
+const {Vexor} = vexor;
+
+const vexorInstance = new Vexor({
+  publishableKey: 'vx_prod_pk_c790ff2dfd6eb2172756534fb80d022c_223327c8_07d1_413f_8f25_35eee92a3f75_1243e8',
+  projectId: '67c789efc8ec4f687cfca7f1',
+  apiKey: 'vx_prod_sk_b82ec74289fbe6dc8eff624732e14361_a706dec5_6b53_4238_949f_557439dd9c61_2d7af8'
+});
 
 
 const EMPRESA_EMAIL = "diochoglez@gmail.com"; // Aquí defines el correo de la empresa contacto@caribbeanhousestudio.com
@@ -46,8 +56,7 @@ const upload = multer({ storage: storage });
 
 // Archivo: index.js (o tu archivo principal del servidor)
 
-// Cargar variables de entorno
-import dotenv from "dotenv";
+
 dotenv.config();
 
 
@@ -3645,12 +3654,12 @@ const client = new MercadoPagoConfig({
 });
 
 
-
 // ✅ Ruta para generar `preferenceId`
 app.post("/create_preference", async (req, res) => {
   const userId = req.session.userId;
 
   if (!userId) {
+    console.error("❌ Usuario no autenticado");
     return res.status(401).json({ error: "Usuario no autenticado." });
   }
 
@@ -3665,6 +3674,7 @@ app.post("/create_preference", async (req, res) => {
     );
 
     if (carrito.length === 0) {
+      console.error("❌ El carrito está vacío");
       return res.status(400).json({ error: "El carrito está vacío." });
     }
 
@@ -3678,6 +3688,14 @@ app.post("/create_preference", async (req, res) => {
 
     // 🔹 Calcular el precio total de la compra
     const precioTotal = carrito.reduce((total, prod) => total + (prod.precio * prod.cantidad), 0);
+
+    console.log("✅ Productos en el carrito:", productosDescripcion);
+    console.log("💰 Precio total calculado:", precioTotal);
+
+    if (precioTotal <= 0) {
+      console.error("❌ Error: El precio total debe ser mayor a 0.");
+      return res.status(400).json({ error: "El precio total debe ser mayor a 0." });
+    }
 
     const preferenceClient = new Preference(client);
 
@@ -3703,17 +3721,20 @@ app.post("/create_preference", async (req, res) => {
     const preferenceId = response.id;
 
     if (!preferenceId) {
-      throw new Error("No se recibió preferenceId de Mercado Pago");
+      console.error("❌ No se recibió preferenceId de Mercado Pago");
+      return res.status(500).json({ error: "No se recibió preferenceId de Mercado Pago" });
     }
 
-    console.log("Preference creada con éxito:", preferenceId);
+    console.log("✅ Preference creada con éxito:", preferenceId);
 
     res.json({ preferenceId }); // ✅ Enviar `preferenceId` al frontend
+
   } catch (error) {
-    console.error("Error al crear la preferencia:", error);
+    console.error("❌ Error al crear la preferencia:", error);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 
 

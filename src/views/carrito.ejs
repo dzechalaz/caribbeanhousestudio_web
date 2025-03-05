@@ -85,6 +85,7 @@
           <div id="wallet_container"></div>
           
         
+         
           <script src="https://sdk.mercadopago.com/js/v2"></script>
           <script>
             const mp = new MercadoPago("APP_USR-911c67da-b81d-487f-96d0-5363482bc89d", {
@@ -93,7 +94,7 @@
         
             async function loadPaymentButton() {
               try {
-                // ✅ Obtener la `preferenceId` desde el backend
+                // ✅ Obtener la preferenceId desde el backend
                 const response = await fetch("/create_preference", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -105,7 +106,7 @@
                   throw new Error("No se recibió preferenceId");
                 }
         
-                // ✅ Configurar el botón de pago con la `preferenceId`
+                // ✅ Configurar el botón de pago con la preferenceId
                 mp.bricks().create("wallet", "wallet_container", {
                   initialization: {
                     preferenceId: preferenceId,
@@ -129,12 +130,13 @@
               } catch (error) {
                 console.error("Error al cargar el botón de pago:", error);
                 document.getElementById("wallet_container").innerHTML =
-                  "<p style='color: red;'>El carrito se encuentra vacío</p>";
+                  "<p style='color: red;'>Error al cargar el botón de pago</p>";
               }
             }
         
             loadPaymentButton();
           </script>
+
 
         </div>
         
