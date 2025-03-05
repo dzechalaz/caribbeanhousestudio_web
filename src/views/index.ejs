@@ -59,7 +59,10 @@
                     <img src="<%= producto.imagePath %>" alt="<%= producto.nombre %>" class="product-image">
                     <div class="product-details">
                       <h3 class="product-title"><%= producto.nombre %></h3>
-                      <p class="product-price">$<%= producto.precio %></p>
+                      <% function formatPrice(price) { 
+                        return new Intl.NumberFormat("es-MX", { minimumFractionDigits: 2 }).format(price);
+                      } %>
+                      <p class="product-price">$<%= formatPrice(producto.precio) %></p>
                     </div>
                   </div>
                 <% }); %>
