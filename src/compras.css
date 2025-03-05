@@ -178,7 +178,7 @@
 }
 .informacionBasica {
   position: absolute;
-  bottom: 15px;
+  bottom: 0px;
   left: 0;
   font-size: var(--font-size-mid);
   color: #707070;

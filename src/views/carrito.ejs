@@ -71,18 +71,30 @@
         <div class="cart-actions">
           
         
+          
+          <button id="continue-shopping" class="continue-btn">Seguir Comprando</button>
+          <script>
+            // Seleccionamos el botón por su ID
+            document.getElementById('continue-shopping').addEventListener('click', () => {
+              // Redirige al usuario a la ruta /catalogo
+              window.location.href = '/catalogo';
+            });
+          </script>
+
+
           <div id="wallet_container"></div>
           
         
+         
           <script src="https://sdk.mercadopago.com/js/v2"></script>
           <script>
-            const mp = new MercadoPago("TEST-55cc3902-654d-43e4-a9fb-8f69981a6e60", {
+            const mp = new MercadoPago("APP_USR-911c67da-b81d-487f-96d0-5363482bc89d", {
               locale: "es-MX",
             });
         
             async function loadPaymentButton() {
               try {
-                // ✅ Obtener la `preferenceId` desde el backend
+                // ✅ Obtener la preferenceId desde el backend
                 const response = await fetch("/create_preference", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -94,7 +106,7 @@
                   throw new Error("No se recibió preferenceId");
                 }
         
-                // ✅ Configurar el botón de pago con la `preferenceId`
+                // ✅ Configurar el botón de pago con la preferenceId
                 mp.bricks().create("wallet", "wallet_container", {
                   initialization: {
                     preferenceId: preferenceId,
@@ -125,14 +137,7 @@
             loadPaymentButton();
           </script>
 
-          <button id="continue-shopping" class="continue-btn">Seguir Comprando</button>
-          <script>
-            // Seleccionamos el botón por su ID
-            document.getElementById('continue-shopping').addEventListener('click', () => {
-              // Redirige al usuario a la ruta /catalogo
-              window.location.href = '/catalogo';
-            });
-          </script>
+
         </div>
         
 

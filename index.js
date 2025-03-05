@@ -13,6 +13,16 @@ import nodemailer from "nodemailer";
 import cookieParser from "cookie-parser";
 import { fileURLToPath } from "url";
 import archiver from "archiver";
+import vexor from 'vexor';
+import dotenv from 'dotenv';
+
+const {Vexor} = vexor;
+
+const vexorInstance = new Vexor({
+  publishableKey: 'vx_prod_pk_c790ff2dfd6eb2172756534fb80d022c_223327c8_07d1_413f_8f25_35eee92a3f75_1243e8',
+  projectId: '67c789efc8ec4f687cfca7f1',
+  apiKey: 'vx_prod_sk_b82ec74289fbe6dc8eff624732e14361_a706dec5_6b53_4238_949f_557439dd9c61_2d7af8'
+});
 
 
 const EMPRESA_EMAIL = "diochoglez@gmail.com"; // Aquí defines el correo de la empresa contacto@caribbeanhousestudio.com
@@ -46,8 +56,7 @@ const upload = multer({ storage: storage });
 
 // Archivo: index.js (o tu archivo principal del servidor)
 
-// Cargar variables de entorno
-import dotenv from "dotenv";
+
 dotenv.config();
 
 
@@ -1689,9 +1698,6 @@ app.post(
 
 
 
-
-
-
 //###################################### SEGUIMIENTO 
 app.get('/seguimiento', async (req, res) => {
   const userId = req.session.userId;
@@ -1704,7 +1710,7 @@ app.get('/seguimiento', async (req, res) => {
   const idCompra = req.query.id;
 
   try {
-    // Obtener la compra
+    // Obtener la compra incluyendo la cantidad
     const [compraResults] = await db.promise().query(
       'SELECT * FROM Compras WHERE compra_id = ?', [idCompra]
     );
@@ -1787,33 +1793,46 @@ app.get('/seguimiento', async (req, res) => {
       fechaEstimada = new Date(compra.FechaEstimada).toLocaleDateString('es-ES', opcionesFecha).toUpperCase();
     }
 
+    let direccionInfo = {};
+
+    if (compra.direccion_envio === "Recoger en tienda") {
+      direccionInfo = {
+        recogerEnTienda: true,
+        mensaje: "Recoger en tienda"
+      };
+    } else {
+      direccionInfo = {
+        recogerEnTienda: false,
+        calle: direccion.calle || 'No especificado',
+        colonia: direccion.colonia || 'No especificado',
+        ciudad: direccion.ciudad || 'No especificado',
+        estado: direccion.estado || 'No especificado',
+        codigoPostal: direccion.cp || 'No especificado'
+      };
+    }
+
     // Renderizar la página
     res.render('seguimiento', {
       idCompra,
       estado: compra.estado,
+      cantidad: compra.cantidad, // ✅ Ahora enviamos la cantidad
       producto: {
         ...producto,
-        path_imagen, // Aseguramos que el path_imagen correcto es pasado al frontend
+        path_imagen, 
       },
       info: {
         ...detalles,
-        color: compra.color || 'No disponible' // ✅ Ahora el color se toma directamente de Compras
+        color: compra.color || 'No disponible'
       },
-      direccion: {
-        calle: direccion.calle || 'No especificado',
-        colonia: direccion.colonia || 'No especificado', 
-        ciudad: direccion.ciudad || 'No especificado',
-        estado: direccion.estado || 'No especificado',
-        codigoPostal: direccion.cp || 'No especificado',
-      },
-      fechaEstimada, // Pasar FechaEstimada al frontend
+      direccion: direccionInfo, // Ahora el frontend sabrá si es "Recoger en tienda"
+      fechaEstimada,
     });
+
   } catch (error) {
     console.error(`Error en la ruta /seguimiento: ${error.message}`);
     res.status(500).send('Error interno del servidor');
   }
 });
-
 
 
 
@@ -1838,7 +1857,7 @@ app.get('/compras', (req, res) => {
         ordenes: [],
         compras: [],
         mensaje: 'No se encontraron órdenes para este usuario.',
-        searchQuery: '' // Asegurar `searchQuery` para evitar errores en el EJS
+        searchQuery: ''
       });
     }
 
@@ -1892,87 +1911,100 @@ app.get('/compras', (req, res) => {
           Compras.direccion_envio = Direcciones.direccion_id
         WHERE 
           Compras.orden_id IN (?)
-        ORDER BY Compras.orden_id DESC, Compras.compra_id DESC; -- 🔥 Aquí se ordenan primero las órdenes más recientes
+        ORDER BY Compras.orden_id DESC, Compras.compra_id DESC;
       `;
 
+    db.query(query, [ordenIds], (error, compras) => {
+      if (error) {
+        console.error('Error al consultar compras:', error);
+        return res.status(500).send('Error interno del servidor');
+      }
 
-      db.query(query, [ordenIds], (error, compras) => {
-        if (error) {
-          console.error('Error al consultar compras:', error);
-          return res.status(500).send('Error interno del servidor');
-        }
-      
-        if (compras.length === 0) {
-          return res.render('compras', {
-            ordenes,
-            compras: [],
-            mensaje: 'No se encontraron compras asociadas a las órdenes.',
-            searchQuery: ''
-          });
-        }
-      
-        // Ordenar las órdenes por ID de forma descendente antes de renderizar
-        ordenes.sort((a, b) => b.orden_id - a.orden_id);
-      
-        // Paso 3: Procesar las compras y renderizar
-        const comprasConInfo = compras.map(compra => {
-          let producto = {};
-      
-          // Determinar la ruta de la imagen
-          let path_imagen = compra.alterno_color_id
-            ? `${CFI}/Colors/${compra.producto_id}/${compra.alterno_color_id}/a.webp`
-            : `${CFI}/Products/${compra.producto_id}/a.webp`;
-      
-          if (compra.producto_id) {
-            // Producto normal o con color alterno
-            producto = {
-              nombre: compra.producto_nombre,
-              precio: compra.producto_precio,
-              categoria: compra.producto_categoria,
-              codigo: compra.producto_codigo,
-              path_imagen: path_imagen,
-              material: compra.producto_material || 'No disponible',
-              dimensiones: compra.producto_dimensiones || 'No disponible',
-              acabado: compra.producto_acabado || 'No disponible',
-              color: compra.alterno_color || compra.color || 'No disponible',
-              color_hex: compra.alterno_color_hex || 'No disponible'
-            };
-          } else if (compra.CostumProduct_id) {
-            // Producto customizado
-            producto = {
-              nombre: compra.costum_nombre,
-              precio: compra.costum_precio,
-              categoria: 'Costumizado',
-              codigo: `COSTUM-${compra.CostumProduct_id}`,
-              path_imagen: `${CFI}/CustomProducts/${compra.CostumProduct_id}/principal.webp`,
-              material: compra.costum_material || 'No disponible',
-              dimensiones: compra.costum_dimensiones || 'No disponible',
-              acabado: compra.costum_acabado || 'No disponible',
-              color: 'No disponible'
-            };
-          }
-      
-          return {
-            ...compra,
-            producto,
-            direccion: {
-              calle: compra.direccion_calle || 'N/A',
-              colonia: compra.direccion_colonia || 'N/A',
-              ciudad: compra.direccion_ciudad || 'N/A',
-              estado: compra.direccion_estado || 'N/A',
-              codigoPostal: compra.direccion_cp || 'N/A'
-            }
-          };
-        });
-      
-        res.render('compras', {
-          ordenes,  // Aquí ya están ordenadas
-          compras: comprasConInfo,
-          mensaje: null,
+      if (compras.length === 0) {
+        return res.render('compras', {
+          ordenes,
+          compras: [],
+          mensaje: 'No se encontraron compras asociadas a las órdenes.',
           searchQuery: ''
         });
+      }
+
+      // Ordenar las órdenes por ID de forma descendente antes de renderizar
+      ordenes.sort((a, b) => b.orden_id - a.orden_id);
+
+      // Paso 3: Procesar las compras y renderizar
+      const comprasConInfo = compras.map(compra => {
+        let producto = {};
+
+        // Determinar la ruta de la imagen
+        let path_imagen = compra.alterno_color_id
+          ? `${CFI}/Colors/${compra.producto_id}/${compra.alterno_color_id}/a.webp`
+          : `${CFI}/Products/${compra.producto_id}/a.webp`;
+
+        if (compra.producto_id) {
+          // Producto normal o con color alterno
+          producto = {
+            nombre: compra.producto_nombre,
+            precio: compra.producto_precio,
+            categoria: compra.producto_categoria,
+            codigo: compra.producto_codigo,
+            path_imagen: path_imagen,
+            material: compra.producto_material || 'No disponible',
+            dimensiones: compra.producto_dimensiones || 'No disponible',
+            acabado: compra.producto_acabado || 'No disponible',
+            color: compra.alterno_color || compra.color || 'No disponible',
+            color_hex: compra.alterno_color_hex || 'No disponible'
+          };
+        } else if (compra.CostumProduct_id) {
+          // Producto customizado
+          producto = {
+            nombre: compra.costum_nombre,
+            precio: compra.costum_precio,
+            categoria: 'Costumizado',
+            codigo: `COSTUM-${compra.CostumProduct_id}`,
+            path_imagen: `${CFI}/CustomProducts/${compra.CostumProduct_id}/principal.webp`,
+            material: compra.costum_material || 'No disponible',
+            dimensiones: compra.costum_dimensiones || 'No disponible',
+            acabado: compra.costum_acabado || 'No disponible',
+            color: 'No disponible'
+          };
+        }
+
+        // 🔹 Verificar si la dirección es "Recoger en tienda"
+        let direccionInfo = {};
+
+        if (compra.direccion_envio === "Recoger en tienda") {
+          direccionInfo = {
+            recogerEnTienda: true,
+            mensaje: "Recoger en tienda"
+          };
+        } else {
+          direccionInfo = {
+            recogerEnTienda: false,
+            calle: compra.direccion_calle || 'N/A',
+            colonia: compra.direccion_colonia || 'N/A',
+            ciudad: compra.direccion_ciudad || 'N/A',
+            estado: compra.direccion_estado || 'N/A',
+            codigoPostal: compra.direccion_cp || 'N/A'
+          };
+        }
+
+        return {
+          ...compra,
+          producto,
+          cantidad: compra.cantidad, // 🔹 Ahora se incluye la cantidad
+          direccion: direccionInfo
+        };
       });
-      
+
+      res.render('compras', {
+        ordenes,  // Aquí ya están ordenadas
+        compras: comprasConInfo,
+        mensaje: null,
+        searchQuery: ''
+      });
+    });
+
   });
 });
 
@@ -3198,6 +3230,8 @@ app.delete('/api/carrito/:carritoId', (req, res) => {
 });
 
 
+//disponibilidad
+
 
 app.put('/api/carrito/:carritoId',  (req, res) => {
   const { carritoId } = req.params;
@@ -3343,7 +3377,7 @@ app.get("/api/direccionesCarrito", (req, res) => {
 });
 
 
-// 🔹 Endpoint para seleccionar una dirección de envío en el carrito
+// 🔹 Endpoint para seleccionar una dirección de envío en el carrito (o "Recoger en tienda")
 app.put("/api/direccionesCarrito/seleccionar", (req, res) => {
   const userId = req.session.userId;
   const { direccion_id } = req.body;
@@ -3352,226 +3386,43 @@ app.put("/api/direccionesCarrito/seleccionar", (req, res) => {
     return res.status(401).json({ success: false, message: "Usuario no autenticado." });
   }
 
-  if (!direccion_id) {
-    return res.status(400).json({ success: false, message: "ID de dirección no proporcionado." });
-  }
-
-  // 🔹 Primero, poner todas las direcciones en 'f' (falso)
-  const queryReset = "UPDATE Direcciones SET Seleccionada = 'f' WHERE usuario_id = ?";
-  db.query(queryReset, [userId], (err) => {
-    if (err) {
-      console.error("❌ Error al actualizar direcciones (Carrito):", err);
-      return res.status(500).json({ success: false, message: "Error interno del servidor." });
-    }
-
-    // 🔹 Ahora, poner la dirección seleccionada en 't' (true)
-    const querySet = "UPDATE Direcciones SET Seleccionada = 't' WHERE direccion_id = ? AND usuario_id = ?";
-    db.query(querySet, [direccion_id, userId], (err) => {
+  if (direccion_id === "recoger-en-tienda") {
+    // 🔹 Si la opción es "Recoger en tienda", deseleccionamos todas las direcciones
+    const queryReset = "UPDATE Direcciones SET Seleccionada = 'f' WHERE usuario_id = ?";
+    db.query(queryReset, [userId], (err) => {
       if (err) {
-        console.error("❌ Error al seleccionar dirección (Carrito):", err);
+        console.error("❌ Error al actualizar direcciones (Recoger en tienda):", err);
         return res.status(500).json({ success: false, message: "Error interno del servidor." });
       }
-      res.json({ success: true });
+      res.json({ success: true, message: "Modo 'Recoger en tienda' activado." });
     });
-  });
-});
-
-
-
-
-
-
-// ############################# Compra en línea #######################
-app.post('/api/orden/crear', async (req, res) => {
-  const userId = req.session.userId;
-  const { referencia } = req.body; // 📌 Recibimos la referencia desde el frontend
-
-  if (!userId) {
-      return res.status(401).json({ success: false, message: 'Usuario no autenticado.' });
-  }
-
-  if (!referencia || referencia.trim() === "") {
-      return res.status(400).json({ success: false, message: 'La referencia no puede estar vacía.' });
-  }
-
-  try {
-      // 🔹 Obtener los productos en el carrito
-      const [carrito] = await db.promise().query(
-          `SELECT c.id AS carrito_id, c.producto_id, c.cantidad, c.color,
-                  p.nombre AS producto_nombre, p.precio, p.stock AS stock_principal,
-                  ca.color_id AS alterno_color_id, ca.stock AS stock_alterno
-           FROM carrito c
-           LEFT JOIN Productos p ON c.producto_id = p.producto_id
-           LEFT JOIN ColoresAlternos ca ON c.producto_id = ca.producto_id AND c.color = ca.color
-           WHERE c.usuario_id = ?`,
-          [userId]
-      );
-
-      if (carrito.length === 0) {
-          return res.status(400).json({ success: false, message: 'El carrito está vacío.' });
+  } else {
+    // 🔹 Primero, poner todas las direcciones en 'f' (falso)
+    const queryReset = "UPDATE Direcciones SET Seleccionada = 'f' WHERE usuario_id = ?";
+    db.query(queryReset, [userId], (err) => {
+      if (err) {
+        console.error("❌ Error al actualizar direcciones (Carrito):", err);
+        return res.status(500).json({ success: false, message: "Error interno del servidor." });
       }
 
-      // 🔹 Obtener la dirección seleccionada (`Seleccionada = 't'`)
-      const [direccionData] = await db.promise().query(
-          `SELECT direccion_id FROM Direcciones WHERE usuario_id = ? AND Seleccionada = 't'`,
-          [userId]
-      );
-
-      console.log("📌 Dirección seleccionada:", direccionData); // 🔍 Verificar en consola
-
-      if (direccionData.length === 0) {
-          return res.status(400).json({ success: false, message: 'No tienes una dirección seleccionada para la compra.' });
-      }
-
-      const direccionId = direccionData[0].direccion_id;
-
-      // 🔹 Calcular el precio total de la orden
-      let precioTotal = carrito.reduce((total, producto) => {
-          return total + (producto.precio * producto.cantidad);
-      }, 0);
-
-      console.log("💰 Precio total de la orden:", precioTotal); // 🔍 Verificar total en consola
-
-      // 🔹 Generar número de orden
-      const [ultimoNumero] = await db.promise().query(
-          'SELECT numero_orden FROM ordenes ORDER BY orden_id DESC LIMIT 1'
-      );
-      const nuevoNumeroOrden = generarNumeroOrden(
-          ultimoNumero.length > 0 ? ultimoNumero[0].numero_orden : 'ORD-0000'
-      );
-
-      // 🔹 Crear la orden en la base de datos con `precioTotal` y `referencia`
-      const [nuevaOrden] = await db.promise().query(
-          'INSERT INTO ordenes (numero_orden, usuario_id, referencia, fecha_orden, precioTotal) VALUES (?, ?, ?, NOW(), ?)',
-          [nuevoNumeroOrden, userId, referencia, precioTotal]
-      );
-      const ordenId = nuevaOrden.insertId;
-
-      const compras = [];
-      const registros = [];
-
-        // 🔹 Procesar cada producto en el carrito
-      for (const producto of carrito) {
-        compras.push([
-            producto.producto_id,
-            userId,
-            new Date(),
-            0, // Estado = 0 (nuevo valor por defecto)
-            direccionId, // Guardamos el ID en lugar de la dirección completa
-            producto.cantidad,
-            ordenId,
-            producto.color // Guardamos el color del carrito en la compra
-        ]);
-
-        registros.push([
-            producto.producto_id,
-            'compra',
-            new Date(),
-            producto.precio
-        ]);
-
-        // 🔹 Verificar si el producto está en ColoresAlternos o Productos
-        if (producto.alterno_color_id) {
-            await db.promise().query(
-                `UPDATE ColoresAlternos SET stock = stock - ? WHERE color_id = ?`,
-                [producto.cantidad, producto.alterno_color_id]
-            );
-        } else {
-            await db.promise().query(
-                `UPDATE Productos SET stock = stock - ? WHERE producto_id = ?`,
-                [producto.cantidad, producto.producto_id]
-            );
+      // 🔹 Ahora, poner la dirección seleccionada en 't' (true)
+      const querySet = "UPDATE Direcciones SET Seleccionada = 't' WHERE direccion_id = ? AND usuario_id = ?";
+      db.query(querySet, [direccion_id, userId], (err) => {
+        if (err) {
+          console.error("❌ Error al seleccionar dirección (Carrito):", err);
+          return res.status(500).json({ success: false, message: "Error interno del servidor." });
         }
-      }
-
-      // 🔹 Guardar la compra en la base de datos incluyendo el `color`
-      await db.promise().query(
-        'INSERT INTO Compras (producto_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad, orden_id, color) VALUES ?',
-        [compras]
-      );
-
-
-      // 🔹 Guardar registro del evento de compra
-      await db.promise().query(
-          'INSERT INTO Registros (product_id, evento, fecha, precio) VALUES ?',
-          [registros]
-      );
-
-      // 🔹 Vaciar el carrito después de la compra
-      await db.promise().query('DELETE FROM carrito WHERE usuario_id = ?', [userId]);
-
-      res.json({ success: true, message: 'Orden creada exitosamente.', ordenId, precioTotal });
-
-  } catch (err) {
-      console.error('❌ Error al procesar la orden:', err);
-      res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+        res.json({ success: true });
+      });
+    });
   }
 });
 
 
 
-// ##################### notificaciones PAra informar a la empresa
 
-app.post('/api/notificacion/empresa', async (req, res) => {
-  const { ordenId, usuarioId, compras, direccion } = req.body;
 
-  if (!ordenId || !usuarioId || !compras || compras.length === 0) {
-      return res.status(400).json({ success: false, message: 'Datos incompletos para la notificación.' });
-  }
 
-  try {
-      const [usuarioData] = await db.promise().query(
-          'SELECT nombre, correo, telefono FROM Usuarios WHERE usuario_id = ?',
-          [usuarioId]
-      );
-
-      if (usuarioData.length === 0) {
-          return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
-      }
-
-      const usuario = usuarioData[0];
-      const productosHTML = compras.map(c => `<li>${c[5]}x ${c[1]}</li>`).join('');
-
-      const transporter = nodemailer.createTransport({
-          service: 'Gmail',
-          auth: {
-              user: 'dmasmasdz@gmail.com',
-              pass: 'Dmasmas123'
-          }
-      });
-
-      const mailOptions = {
-          from: 'dmasmasdz@gmail.com',
-          to: EMPRESA_EMAIL,
-          subject: `Nueva orden #${ordenId}`,
-          html: `
-              <h2>Nueva compra realizada</h2>
-              <p>Se ha realizado una nueva compra con la orden <strong>${ordenId}</strong>.</p>
-              <h3>Datos del cliente:</h3>
-              <p><strong>Nombre:</strong> ${usuario.nombre}</p>
-              <p><strong>Correo:</strong> ${usuario.correo}</p>
-              <p><strong>Teléfono:</strong> ${usuario.telefono}</p>
-              <h3>Dirección de envío:</h3>
-              <p>${direccion}</p>
-              <h3>Productos comprados:</h3>
-              <ul>${productosHTML}</ul>
-          `
-      };
-
-      transporter.sendMail(mailOptions, (error, info) => {
-          if (error) {
-              console.error('Error al enviar correo a la empresa:', error);
-          } else {
-              console.log('Correo enviado a la empresa:', info.response);
-          }
-      });
-
-      res.json({ success: true, message: 'Notificación enviada a la empresa.' });
-  } catch (err) {
-      console.error('Error al notificar a la empresa:', err);
-      res.status(500).json({ success: false, message: 'Error interno del servidor.' });
-  }
-});
 
 
 //#################################################### bolsa de valores  ##############################################
@@ -3799,31 +3650,70 @@ import { MercadoPagoConfig, Preference } from 'mercadopago';
 
 // ✅ Configuración de Mercado Pago
 const client = new MercadoPagoConfig({
-  accessToken: "TEST-1299034383805810-021907-5cf1d021ec7d3f46fbc9fd89a91fcd4b-257040664",
+  accessToken: "APP_USR-4766218969963872-030421-97a2948590998bec1e7d7edd1462103d-2306587214",
 });
-
 
 
 // ✅ Ruta para generar `preferenceId`
 app.post("/create_preference", async (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    console.error("❌ Usuario no autenticado");
+    return res.status(401).json({ error: "Usuario no autenticado." });
+  }
+
   try {
+    // 🔹 Obtener los productos del carrito, incluyendo el color y la cantidad
+    const [carrito] = await db.promise().query(
+      `SELECT c.cantidad, c.color, p.nombre, p.precio
+       FROM carrito c
+       JOIN Productos p ON c.producto_id = p.producto_id
+       WHERE c.usuario_id = ?`, 
+      [userId]
+    );
+
+    if (carrito.length === 0) {
+      console.error("❌ El carrito está vacío");
+      return res.status(400).json({ error: "El carrito está vacío." });
+    }
+
+    // 🔹 Generar el nombre de los productos con sus cantidades y colores
+    const productosDescripcion = carrito
+      .map(prod => {
+        const nombreConColor = prod.color ? `${prod.nombre} (${prod.color})` : prod.nombre;
+        return `${nombreConColor} x${prod.cantidad}`;
+      })
+      .join(", ");
+
+    // 🔹 Calcular el precio total de la compra
+    const precioTotal = carrito.reduce((total, prod) => total + (prod.precio * prod.cantidad), 0);
+
+    console.log("✅ Productos en el carrito:", productosDescripcion);
+    console.log("💰 Precio total calculado:", precioTotal);
+
+    if (precioTotal <= 0) {
+      console.error("❌ Error: El precio total debe ser mayor a 0.");
+      return res.status(400).json({ error: "El precio total debe ser mayor a 0." });
+    }
+
     const preferenceClient = new Preference(client);
-    
+
     const response = await preferenceClient.create({
       body: {
         items: [
-          { 
-            title: 'Mi producto 1',
+          {
+            title: productosDescripcion, // ✅ Nombres de los productos con color y cantidad (x2, x3)
             quantity: 1,
-            unit_price: 75.56
+            unit_price: precioTotal // ✅ Precio total basado en el carrito
           },
         ],
         back_urls: {
-          success: "http://localhost:3000/compras",
+          success: `http://localhost:3000/api/orden/webhook?userId=${userId}`, // ✅ SE QUEDA LOCALHOST
           failure: "http://localhost:3000/carrito",
           pending: "http://localhost:3000/carrito",
         },
-        auto_return: "approved", // ✅ Redirección automática si el pago es exitoso lol
+        auto_return: "approved", // ✅ Redirección automática si el pago es exitoso
       },
     });
 
@@ -3831,15 +3721,182 @@ app.post("/create_preference", async (req, res) => {
     const preferenceId = response.id;
 
     if (!preferenceId) {
-      throw new Error("No se recibió preferenceId de Mercado Pago");
+      console.error("❌ No se recibió preferenceId de Mercado Pago");
+      return res.status(500).json({ error: "No se recibió preferenceId de Mercado Pago" });
     }
 
-    console.log("Preference creada con éxito:", preferenceId);
+    console.log("✅ Preference creada con éxito:", preferenceId);
 
     res.json({ preferenceId }); // ✅ Enviar `preferenceId` al frontend
+
   } catch (error) {
-    console.error("Error al crear la preferencia:", error);
+    console.error("❌ Error al crear la preferencia:", error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
+// ✅ Webhook de Mercado Pago para procesar pagos exitosos
+app.get("/api/orden/webhook", async (req, res) => {
+  const userId = req.query.userId; // Recibir el userId desde la URL
+
+  if (!userId) {
+    console.error("❌ Error: userId no recibido en el webhook.");
+    return res.status(400).json({ success: false, message: "Falta userId en la notificación." });
+  }
+
+  try {
+    console.log("📌 Webhook recibido, creando orden para usuario:", userId);
+
+    // 🔹 Enviar la solicitud a la API de orden para registrar la compra
+    const response = await fetch("http://localhost:3000/api/orden/crear", { // <-- Usa la ruta absoluta
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ referencia: `Pago usuario ${userId}`, userId }) // <-- Pasar el userId
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error("Error al crear la orden: " + data.message);
+    }
+
+    console.log("✅ Orden creada con éxito, redirigiendo...");
+
+    // 🔹 Redirigir al usuario a /compras tras la compra
+    res.redirect("/compras");
+
+  } catch (error) {
+    console.error("❌ Error al procesar la orden:", error);
+    res.status(500).json({ success: false, message: "Error al procesar la orden." });
+  }
+});
+
+// ############################# Compra en línea #######################
+app.post('/api/orden/crear', async (req, res) => {
+  const { referencia, userId } = req.body; // Recibimos userId desde el body
+
+  if (!userId) {
+    return res.status(401).json({ success: false, message: 'Usuario no autenticado.' });
+  }
+
+  if (!referencia || referencia.trim() === "") {
+    return res.status(400).json({ success: false, message: 'La referencia no puede estar vacía.' });
+  }
+
+  try {
+    // 🔹 Obtener los productos en el carrito
+    const [carrito] = await db.promise().query(
+      `SELECT c.id AS carrito_id, c.producto_id, c.cantidad, c.color,
+              p.nombre AS producto_nombre, p.precio, p.stock AS stock_principal,
+              ca.color_id AS alterno_color_id, ca.stock AS stock_alterno
+       FROM carrito c
+       LEFT JOIN Productos p ON c.producto_id = p.producto_id
+       LEFT JOIN ColoresAlternos ca ON c.producto_id = ca.producto_id AND c.color = ca.color
+       WHERE c.usuario_id = ?`,
+      [userId]
+    );
+
+    if (carrito.length === 0) {
+      return res.status(400).json({ success: false, message: 'El carrito está vacío.' });
+    }
+
+    // 🔹 Verificar si hay alguna dirección seleccionada ('t')
+    const [direccionData] = await db.promise().query(
+      `SELECT direccion_id FROM Direcciones WHERE usuario_id = ? AND Seleccionada = 't'`,
+      [userId]
+    );
+
+    let direccionId;
+
+    if (direccionData.length === 0) {
+      direccionId = "Recoger en tienda"; // 🚀 Si no hay dirección seleccionada, asignamos "Recoger en tienda"
+      console.log("📌 No hay dirección seleccionada, se asigna 'Recoger en tienda'");
+    } else {
+      direccionId = direccionData[0].direccion_id;
+      console.log("📌 Dirección seleccionada:", direccionId);
+    }
+
+    // 🔹 Calcular el precio total de la orden
+    let precioTotal = carrito.reduce((total, producto) => {
+      return total + (producto.precio * producto.cantidad);
+    }, 0);
+
+    console.log("💰 Precio total de la orden:", precioTotal);
+
+    // 🔹 Generar número de orden
+    const [ultimoNumero] = await db.promise().query(
+      'SELECT numero_orden FROM ordenes ORDER BY orden_id DESC LIMIT 1'
+    );
+    const nuevoNumeroOrden = generarNumeroOrden(
+      ultimoNumero.length > 0 ? ultimoNumero[0].numero_orden : 'ORD-0000'
+    );
+
+    // 🔹 Crear la orden en la base de datos (SIN `direccion_envio`, como antes)
+    const [nuevaOrden] = await db.promise().query(
+      'INSERT INTO ordenes (numero_orden, usuario_id, referencia, fecha_orden, precioTotal) VALUES (?, ?, ?, NOW(), ?)',
+      [nuevoNumeroOrden, userId, referencia, precioTotal]
+    );
+    const ordenId = nuevaOrden.insertId;
+
+    const compras = [];
+    const registros = [];
+
+    // 🔹 Procesar cada producto en el carrito
+    for (const producto of carrito) {
+      compras.push([
+        producto.producto_id,
+        userId,
+        new Date(),
+        0, // Estado = 0 (nuevo valor por defecto)
+        direccionId, // 🚀 Guardamos la dirección en `Compras`, como antes
+        producto.cantidad,
+        ordenId,
+        producto.color
+      ]);
+
+      registros.push([
+        producto.producto_id,
+        'compra',
+        new Date(),
+        producto.precio
+      ]);
+
+      if (producto.alterno_color_id) {
+        await db.promise().query(
+          `UPDATE ColoresAlternos SET stock = stock - ? WHERE color_id = ?`,
+          [producto.cantidad, producto.alterno_color_id]
+        );
+      } else {
+        await db.promise().query(
+          `UPDATE Productos SET stock = stock - ? WHERE producto_id = ?`,
+          [producto.cantidad, producto.producto_id]
+        );
+      }
+    }
+
+    // 🔹 Guardar la compra en la base de datos incluyendo la dirección en `Compras`
+    await db.promise().query(
+      'INSERT INTO Compras (producto_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad, orden_id, color) VALUES ?',
+      [compras]
+    );
+
+    // 🔹 Guardar registro del evento de compra
+    await db.promise().query(
+      'INSERT INTO Registros (product_id, evento, fecha, precio) VALUES ?',
+      [registros]
+    );
+
+    // 🔹 Vaciar el carrito después de la compra
+    await db.promise().query('DELETE FROM carrito WHERE usuario_id = ?', [userId]);
+
+    res.json({ success: true, message: 'Orden creada exitosamente.', ordenId, precioTotal });
+
+  } catch (err) {
+    console.error('❌ Error al procesar la orden:', err);
+    res.status(500).json({ success: false, message: 'Error interno del servidor.' });
   }
 });
 
