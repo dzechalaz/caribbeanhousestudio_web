@@ -81,17 +81,26 @@
                     <p class="profile">Dimensiones: <%= compra.producto?.dimensiones || 'N/A' %></p>
                     <p class="profile">Acabado: <%= compra.producto?.acabado || 'N/A' %></p>
                     <p class="profile">Color: <%= compra.producto?.color || 'N/A' %></p>
+                    <p class="profile">Cantidad: <strong><%= compra.cantidad %></strong></p>
                   </div>
                 </div>
                 <div class="direccionenvio">
-                  <div class="calle-av-siempre-container">
-                    <p class="profile">Calle: <%= compra.direccion?.calle || 'N/A' %></p>
-                    <p class="profile">Ciudad: <%= compra.direccion?.ciudad || 'N/A' %></p>
-                    <p class="profile">Estado: <%= compra.direccion?.estado || 'N/A' %></p>
-                    <p class="profile">Código Postal: <%= compra.direccion?.codigoPostal || 'N/A' %></p>
-                  </div>
-                  <b class="enviar-a">Enviar a:</b>
+                  <% if (compra.direccion.recogerEnTienda) { %>
+                    <div class="calle-av-siempre-container">
+                      <p class="profile"><b><%= compra.direccion.mensaje %></b></p>
+                    </div>
+                    <b class="enviar-a">Enviar a:</b>
+                  <% } else { %>
+                    <div class="calle-av-siempre-container">
+                      <p class="profile">Calle: <%= compra.direccion?.calle || 'N/A' %></p>
+                      <p class="profile">Ciudad: <%= compra.direccion?.ciudad || 'N/A' %></p>
+                      <p class="profile">Estado: <%= compra.direccion?.estado || 'N/A' %></p>
+                      <p class="profile">Código Postal: <%= compra.direccion?.codigoPostal || 'N/A' %></p>
+                    </div>
+                    <b class="enviar-a">Enviar a:</b>
+                  <% } %>
                 </div>
+                
                 <div class="separador2"></div>
                 <button class="reseg" data-compra-id="<%= compra.compra_id %>">
                   <div class="realizar-seguimiento">Realizar Seguimiento</div>
@@ -99,9 +108,7 @@
                 <button class="verart" data-product-id="<%= compra.producto_id %>">
                   <div class="ver-artculo">Ver Artículo</div>
                 </button>
-                <button class="opinion">
-                  <div class="escribir-una-opinin">Escribir una opinión</div>
-                </button>
+                
                 <div class="separador1"></div>
               </div>
           <% } // Cierra el if de compras no repetidas %>

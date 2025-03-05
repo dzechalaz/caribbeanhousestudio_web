@@ -9,5 +9,13 @@ const PORT = process.env.PORT || 3000; // Este es el puerto del servidor
 export { PORT, DB_HOST, DB_NAME, DB_PASSWORD, DB_USER, DB_PORT };
 
 
-//mysql -h monorail.proxy.rlwy.net -u root -pzEloQBYQCXGXJpMQYEpFheDleayOSuHK --port 35619 --protocol=TCP railway
+/*mysql -h monorail.proxy.rlwy.net -u root -pzEloQBYQCXGXJpMQYEpFheDleayOSuHK --port 35619 --protocol=TCP railway 
+Usuario de prueba creado: {
+  id: 2306586948,
+  email: 'test_user_1077529388@testuser.com',
+  nickname: 'TESTUSER1077529388',
+  site_status: 'active',
+  password: 'IhIhDLsxci'
+}
 
+*/

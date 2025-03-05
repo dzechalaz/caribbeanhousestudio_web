@@ -35,16 +35,25 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
         <div class="seguimiento-bloque">
             <div class="direccion-parent">
                 <div class="direccion" data-animate-on-scroll>
-                    <b class="direccin-de-envio">Dirección de Envio</b>
-                    <div class="nombre-juan-quintana-calle-container">
-                        <p class="nombre-juan-quintana">Calle: <%= direccion.calle %></p>
-                        <p class="nombre-juan-quintana">Colonia: <%= direccion.colonia || 'No especificado' %></p> <!-- ✅ Ahora siempre tiene valor -->
-                        <p class="nombre-juan-quintana">Ciudad: <%= direccion.ciudad %></p>
-                        <p class="nombre-juan-quintana">Estado: <%= direccion.estado %></p>
-                        <p class="nombre-juan-quintana">Código Postal: <%= direccion.codigoPostal %></p>
-                    </div>
+                    <b class="direccin-de-envio">Dirección de Envío</b>
+                    
+                    <% if (direccion.recogerEnTienda) { %>
+                        <div class="nombre-juan-quintana-calle-container">
+                             <p class="nombre-juan-quintana"><b><%= direccion.mensaje %></b></p>
+                        </div>
+                    <% } else { %>
+                        <div class="nombre-juan-quintana-calle-container">
+                            <p class="nombre-juan-quintana">Calle: <%= direccion.calle %></p>
+                            <p class="nombre-juan-quintana">Colonia: <%= direccion.colonia %></p>
+                            <p class="nombre-juan-quintana">Ciudad: <%= direccion.ciudad %></p>
+                            <p class="nombre-juan-quintana">Estado: <%= direccion.estado %></p>
+                            <p class="nombre-juan-quintana">Código Postal: <%= direccion.codigoPostal %></p>
+                        </div>
+                    <% } %>
+                
                     <img class="package-2-icon" alt="" src="/public/package-2.svg" />
                 </div>
+                
                 <div class="fecha" data-animate-on-scroll>
                     <b class="tiempo-estimado">Fecha Estimada</b>
                     <img class="calendar" alt="" src="public/calendar.svg" />
@@ -95,16 +104,18 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
                     data-animate-on-scroll />
 
 
-                <div class="description">
-                    <b class="informacin-del-pedido">Información del pedido</b>
-                    <div class="mueble-credenza-material-mad-container">
-                        <p class="nombre-juan-quintana">Mueble: <%= producto.nombre || "No disponible" %></p>
-                        <p class="nombre-juan-quintana">Material: <%= info.material || "No disponible" %></p>
-                        <p class="nombre-juan-quintana">Dimensiones: <%= info.dimensiones || "No disponible" %></p>
-                        <p class="nombre-juan-quintana">Acabado: <%= info.acabado || "No disponible" %></p>
-                        <p class="nombre-juan-quintana">Color: <%= info.color || "No disponible" %></p>
+                    <div class="description">
+                        <b class="informacin-del-pedido">Información del pedido</b>
+                        <div class="mueble-credenza-material-mad-container">
+                            <p class="nombre-juan-quintana">Mueble: <%= producto.nombre || "No disponible" %></p>
+                            <p class="nombre-juan-quintana">Material: <%= info.material || "No disponible" %></p>
+                            <p class="nombre-juan-quintana">Dimensiones: <%= info.dimensiones || "No disponible" %></p>
+                            <p class="nombre-juan-quintana">Acabado: <%= info.acabado || "No disponible" %></p>
+                            <p class="nombre-juan-quintana">Color: <%= info.color || "No disponible" %></p>
+                            <p class="nombre-juan-quintana">Cantidad: <%= cantidad || "1" %></p> <!-- ✅ Agregamos la cantidad -->
+                        </div>
                     </div>
-                </div>
+                    
                 <div class="credenza"><%= producto.nombre || "No disponible" %></div>
                 <div class="id-de-envo">ID de Envío:</div>
                 <div class="div18"><%= idCompra %></div>
