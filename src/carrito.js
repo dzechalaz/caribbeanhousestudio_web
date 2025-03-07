@@ -26,9 +26,9 @@ document.addEventListener("DOMContentLoaded", function () {
         changeAddressButton.textContent = "Cambiar";
       } else {
         //console.warn("⚠️ No se encontró ninguna dirección con Seleccionada = 't'. Mostrando opción de selección.");
-        addressName.textContent = "Seleccionar una dirección";
+        addressName.textContent = "Recoger en tienda";
         addressDetails.textContent = "";
-        changeAddressButton.textContent = "Seleccionar";
+        changeAddressButton.textContent = "Seleccionar una dirección";
       }
 
       // 📝 Mostrar todas las direcciones en el modal
@@ -81,17 +81,22 @@ function updateSelectedAddress(address) {
 }
 
 // Endpoint para cambiar la dirección seleccionada en el carrito
+// ✅ **MODIFICACIÓN: Se recarga la página después de seleccionar una dirección**
 async function selectAddress(direccionId) {
   try {
-    const response = await fetch("/api/direccionesCarrito/seleccionar", { // 🔹 Endpoint correcto
+    const response = await fetch("/api/direccionesCarrito/seleccionar", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ direccion_id: direccionId }),
     });
 
     if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+
+    // 🔹 Recargar la página para actualizar el flete y reflejar la nueva dirección seleccionada
+    location.reload();
+
   } catch (error) {
-    //console.error("❌ Error al seleccionar dirección (Carrito):", error);
+    console.error("❌ Error al seleccionar dirección (Carrito):", error);
   }
 }
 
@@ -103,6 +108,7 @@ document.getElementById("change-address").addEventListener("click", function () 
 window.addEventListener("click", function (event) {
   if (event.target === document.getElementById("address-modal")) {
     document.getElementById("address-modal").style.display = "none";
+    
   }
 });
 
@@ -110,7 +116,7 @@ window.addEventListener("click", function (event) {
 
 
 //cargar carrito
-
+// Cargar carrito
 document.addEventListener("DOMContentLoaded", () => {
   const cartItemsContainer = document.querySelector(".cart-items");
   const totalItemsElement = document.querySelector(".total-items");
@@ -119,32 +125,27 @@ document.addEventListener("DOMContentLoaded", () => {
   // Cargar productos del carrito desde el backend
   async function loadCart() {
     try {
-      
       const response = await fetch("/api/carrito");
-     
 
       if (!response.ok) {
         throw new Error(`Error HTTP: ${response.status}`);
       }
 
       const data = await response.json();
-      
+      console.log("📌 Datos recibidos del carrito:", data); // 🔹 Agregado para depuración
 
       if (data.success && data.carrito) {
-        //console.log("Carrito cargado con éxito:", data.carrito);
-        renderCartItems(data.carrito);
+        renderCartItems(data.carrito, data.flete);
       } else {
-        //console.warn("Error al cargar el carrito. Datos recibidos:", data);
         alert("Error al cargar el carrito.");
       }
     } catch (error) {
-      //console.error("Error al cargar el carrito:", error);
+      console.error("❌ Error al cargar el carrito:", error);
     }
   }
 
   // Renderizar los productos en el carrito
-  function renderCartItems(cartItems) {
-    
+  function renderCartItems(cartItems, flete) {
     cartItemsContainer.innerHTML = "";
     let totalItems = 0;
     let totalPrice = 0;
@@ -152,7 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
     cartItems.forEach((item) => {
       const { producto_nombre, color, precio, cantidad, disponibilidad, path_imagen, producto_id } = item;
 
-      
       // Determinar clase según disponibilidad
       const availabilityClass =
         disponibilidad === "Disponible para envío inmediato" ? "disponible" : "no-disponible";
@@ -185,16 +185,33 @@ document.addEventListener("DOMContentLoaded", () => {
       totalPrice += precio * cantidad;
     });
 
-    // Actualizar resumen del carrito
-    updateCartSummary(totalItems, totalPrice);
+    // Actualizar resumen del carrito con flete
+    updateCartSummary(totalItems, totalPrice, flete);
   }
 
   // Actualizar el resumen del carrito
-  function updateCartSummary(totalItems, totalPrice) {
-  
+  function updateCartSummary(totalItems, totalPrice, flete) {
+    const totalItemsElement = document.querySelector(".total-items");
+    const totalPriceElement = document.querySelector(".total-price");
+    const envioElement = document.querySelector(".shipping-cost");
+    const totalFinalElement = document.querySelector(".final-total");
+
+    console.log("🔹 Flete recibido en updateCartSummary:", flete); // 🔹 Agregado para depuración
+
+    // Asegurar que flete es un número válido
+    flete = isNaN(flete) ? 0 : parseFloat(flete);
+
+    // Actualizar total de productos y precio
     totalItemsElement.textContent = totalItems;
     totalPriceElement.textContent = `$${totalPrice.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
 
+    // Mostrar el costo de envío si hay dirección seleccionada, sino "Recoger en tienda - $0 MXN"
+    envioElement.textContent = flete > 0
+      ? `$${flete.toLocaleString("es-MX", { minimumFractionDigits: 2 })} MXN`
+      : "Recoger en tienda - $0 MXN";
+
+    // Sumar el flete al total final
+    totalFinalElement.textContent = `$${(totalPrice + flete).toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
   }
 
   // Manejar el cambio de cantidad
@@ -210,8 +227,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       input.value = cantidad;
 
-     
-
       try {
         // Actualizar cantidad en el backend
         const response = await fetch(`/api/carrito/${carritoId}`, {
@@ -220,59 +235,50 @@ document.addEventListener("DOMContentLoaded", () => {
           body: JSON.stringify({ cantidad }),
         });
 
-       
-
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || `Error HTTP al actualizar cantidad: ${response.status}`);
         }
 
-        const data = await response.json();
-   
-
         // Recargar el carrito para reflejar cambios
         loadCart();
       } catch (error) {
-        //console.error("Error al actualizar la cantidad:", error);
+        console.error("Error al actualizar la cantidad:", error);
         alert(error.message);
       }
     }
   });
 
-// Manejar eliminación de productos
-cartItemsContainer.addEventListener("click", async (e) => {
-  if (e.target.classList.contains("delete-item-btn")) {
-    const carritoId = e.target.dataset.id;
+  // Manejar eliminación de productos
+  cartItemsContainer.addEventListener("click", async (e) => {
+    if (e.target.classList.contains("delete-item-btn")) {
+      const carritoId = e.target.dataset.id;
 
-    try {
-      // Eliminar producto del carrito
-      const response = await fetch(`/api/carrito/${carritoId}`, {
-        method: "DELETE",
-      });
+      try {
+        // Eliminar producto del carrito
+        const response = await fetch(`/api/carrito/${carritoId}`, {
+          method: "DELETE",
+        });
 
-      if (!response.ok) {
-        throw new Error(`Error HTTP al eliminar producto: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`Error HTTP al eliminar producto: ${response.status}`);
+        }
+
+        // ✅ Refrescar toda la página para actualizar Mercado Pago y el carrito
+        location.reload();
+
+      } catch (error) {
+        console.error("Error al eliminar producto:", error);
+        alert(error.message);
       }
-
-      // ✅ Refrescar toda la página para actualizar Mercado Pago y el carrito
-      location.reload();
-
-    } catch (error) {
-      console.error("Error al eliminar producto:", error);
-      alert(error.message);
     }
-  }
-});
+  });
 
-
-
-  
   // Inicializar el carrito
-  //console.log("Inicializando el carrito...");
+  console.log("✅ Inicializando el carrito...");
   loadCart();
-
-
 });
+
 
 
 

@@ -219,3 +219,32 @@ button:hover {
   background-color: #005f73;
 }
 
+/* ✅ Estilizar el select de ciudad */
+#ciudad {
+  width: 100%;
+  max-width: 320px;
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: white;
+  font-size: 16px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* ✅ Cambiar el color cuando se selecciona */
+#ciudad:focus {
+  border-color: #1abc9c;
+  outline: none;
+  box-shadow: 0 0 5px rgba(26, 188, 156, 0.5);
+}
+
+/* ✅ Contenedor de costo de envío */
+#costo-envio {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1abc9c;
+  margin-top: 5px;
+}

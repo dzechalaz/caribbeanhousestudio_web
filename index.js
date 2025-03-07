@@ -16,13 +16,12 @@ import archiver from "archiver";
 import vexor from 'vexor';
 import dotenv from 'dotenv';
 
-const {Vexor} = vexor;
+// Definir dominio global
+const dominio = "https://www.caribbeanhousestudio.com"; // ✅ URL actual en uso
+ //const dominio = "https://cdc3-2806-10be-c-3346-9d6-4ea1-e380-54d8.ngrok-free.app"; // 🌐 URL de NGROK (descomentar si se usa NGROK)
+// const dominio = "http://localhost:3000"; // 🖥️ URL para desarrollo local (descomentar si se usa localhost)
 
-const vexorInstance = new Vexor({
-  publishableKey: 'vx_prod_pk_c790ff2dfd6eb2172756534fb80d022c_223327c8_07d1_413f_8f25_35eee92a3f75_1243e8',
-  projectId: '67c789efc8ec4f687cfca7f1',
-  apiKey: 'vx_prod_sk_b82ec74289fbe6dc8eff624732e14361_a706dec5_6b53_4238_949f_557439dd9c61_2d7af8'
-});
+
 
 
 const EMPRESA_EMAIL = "diochoglez@gmail.com"; // Aquí defines el correo de la empresa contacto@caribbeanhousestudio.com
@@ -3001,15 +3000,15 @@ app.delete('/api/direcciones/:id', (req, res) => {
 });
 app.post('/api/direcciones', (req, res) => {
   const userId = req.session.userId;
-  const { nombre_direccion, calle, colonia, ciudad, estado, cp } = req.body;
+  const { nombre_direccion, calle, colonia, ciudad, estado, cp, flete } = req.body;
 
   if (!userId) {
     return res.status(401).json({ message: 'Usuario no autenticado' });
   }
 
-  const query = `INSERT INTO Direcciones (usuario_id, nombre_direccion, calle, colonia, ciudad, estado, cp) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  const query = `INSERT INTO Direcciones (usuario_id, nombre_direccion, calle, colonia, ciudad, estado, cp, flete) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
-  db.query(query, [userId, nombre_direccion, calle, colonia, ciudad, estado, cp], (err) => {
+  db.query(query, [userId, nombre_direccion, calle, colonia, ciudad, estado, cp, flete], (err) => {
     if (err) {
       console.error('Error al agregar dirección:', err);
       return res.status(500).json({ message: 'Error al agregar dirección' });
@@ -3018,6 +3017,7 @@ app.post('/api/direcciones', (req, res) => {
     res.status(204).send(); // No devuelve contenido si se agregó correctamente
   });
 });
+
 
 
 
@@ -3132,7 +3132,6 @@ app.get('/carrito', (req, res) => {
   
 });
 
-
 app.get('/api/carrito', (req, res) => {
   const userId = req.session.userId;
 
@@ -3140,7 +3139,8 @@ app.get('/api/carrito', (req, res) => {
     return res.status(401).json({ success: false, message: 'Usuario no autenticado.' });
   }
 
-  const query = `
+  // 🔹 Obtener los productos del carrito
+  const carritoQuery = `
     SELECT 
       c.id AS carrito_id,
       c.cantidad,
@@ -3164,7 +3164,7 @@ app.get('/api/carrito', (req, res) => {
     WHERE c.usuario_id = ?
   `;
 
-  db.query(query, [userId], (err, results) => {
+  db.query(carritoQuery, [userId], (err, results) => {
     if (err) {
       console.error('Error al obtener el carrito:', err);
       return res.status(500).json({ success: false, message: 'Error al obtener el carrito.' });
@@ -3194,9 +3194,23 @@ app.get('/api/carrito', (req, res) => {
       };
     });
 
-    res.json({ success: true, carrito });
+    // 🔹 Obtener el flete de la dirección seleccionada
+    const fleteQuery = `SELECT flete FROM Direcciones WHERE usuario_id = ? AND Seleccionada = 't'`;
+
+    db.query(fleteQuery, [userId], (err, fleteResult) => {
+      if (err) {
+        console.error('Error al obtener el flete:', err);
+        return res.status(500).json({ success: false, message: 'Error al obtener el flete.' });
+      }
+
+      // Si no hay dirección seleccionada, el flete es 0
+      const flete = fleteResult.length > 0 ? parseFloat(fleteResult[0].flete) : 0;
+
+      res.json({ success: true, carrito, flete });
+    });
   });
 });
+
 
 
 
@@ -3665,54 +3679,72 @@ app.post("/create_preference", async (req, res) => {
   }
 
   try {
-    // 🔹 Obtener los productos del carrito, incluyendo el color y la cantidad
+    // 🔹 Obtener productos del carrito y el flete de la dirección seleccionada en una sola consulta
     const [carrito] = await db.promise().query(
-      `SELECT c.cantidad, c.color, p.nombre, p.precio
+      `SELECT 
+          c.cantidad, c.color, p.nombre, p.precio,
+          COALESCE(d.flete, 0) AS flete -- 🔹 Si no hay dirección seleccionada, el flete será 0
        FROM carrito c
        JOIN Productos p ON c.producto_id = p.producto_id
+       LEFT JOIN Direcciones d ON d.usuario_id = c.usuario_id AND d.Seleccionada = 't'
        WHERE c.usuario_id = ?`, 
       [userId]
     );
 
     if (carrito.length === 0) {
-      console.error("❌ El carrito está vacío");
       return res.status(400).json({ error: "El carrito está vacío." });
     }
 
-    // 🔹 Generar el nombre de los productos con sus cantidades y colores
-    const productosDescripcion = carrito
+    // 🔹 Generar la descripción de los productos con colores y cantidades
+    let productosDescripcion = carrito
       .map(prod => {
         const nombreConColor = prod.color ? `${prod.nombre} (${prod.color})` : prod.nombre;
         return `${nombreConColor} x${prod.cantidad}`;
       })
       .join(", ");
 
-    // 🔹 Calcular el precio total de la compra
-    const precioTotal = carrito.reduce((total, prod) => total + (prod.precio * prod.cantidad), 0);
+    // 🔹 Calcular el precio total de los productos del carrito
+    let precioTotal = carrito.reduce((total, prod) => total + (prod.precio * prod.cantidad), 0);
 
-    console.log("✅ Productos en el carrito:", productosDescripcion);
-    console.log("💰 Precio total calculado:", precioTotal);
+    // 🔹 Obtener el flete (todas las filas tendrán el mismo valor, tomamos el primero)
+    let flete = carrito.length > 0 ? parseFloat(carrito[0].flete) : 0;
+    let totalConEnvio = precioTotal + flete;
 
-    if (precioTotal <= 0) {
-      console.error("❌ Error: El precio total debe ser mayor a 0.");
-      return res.status(400).json({ error: "El precio total debe ser mayor a 0." });
+    // 🔹 Si hay flete, agregar "+ Envío ($500)" a la descripción de la compra
+    if (flete > 0) {
+      productosDescripcion += ` + Envío ($${flete})`;
     }
 
+    if (totalConEnvio <= 0) {
+      console.error("❌ Error: El total debe ser mayor a 0.");
+      return res.status(400).json({ error: "El total debe ser mayor a 0." });
+    }
+
+    // 🔹 Crear la preferencia de pago en Mercado Pago
     const preferenceClient = new Preference(client);
+
+    const items = [
+      {
+        title: productosDescripcion, // ✅ Productos + Envío si aplica
+        quantity: 1,
+        unit_price: totalConEnvio // ✅ Se usa el total con el flete incluido
+      },
+    ];
 
     const response = await preferenceClient.create({
       body: {
-        items: [
-          {
-            title: productosDescripcion, // ✅ Nombres de los productos con color y cantidad (x2, x3)
-            quantity: 1,
-            unit_price: precioTotal // ✅ Precio total basado en el carrito
-          },
-        ],
+        items: items,
         back_urls: {
-          success: `http://localhost:3000/api/orden/webhook?userId=${userId}`, // ✅ SE QUEDA LOCALHOST
-          failure: "http://localhost:3000/carrito",
-          pending: "http://localhost:3000/carrito",
+          success: `${dominio}/compras`, 
+          failure: `${dominio}/carrito`,
+          pending: `${dominio}/carrito`,
+        },
+        external_reference: userId.toString(),
+        payment_methods: {
+          excluded_payment_types: [
+            { id: "ticket" }, // Excluye pagos en efectivo (OXXO, Pago Fácil, etc.)
+            { id: "atm" } // Excluye pagos en cajero automático
+          ],
         },
         auto_return: "approved", // ✅ Redirección automática si el pago es exitoso
       },
@@ -3739,53 +3771,103 @@ app.post("/create_preference", async (req, res) => {
 
 
 
-// ✅ Webhook de Mercado Pago para procesar pagos exitosos
-app.get("/api/orden/webhook", async (req, res) => {
-  const userId = req.query.userId; // Recibir el userId desde la URL
 
-  if (!userId) {
-    console.error("❌ Error: userId no recibido en el webhook.");
-    return res.status(400).json({ success: false, message: "Falta userId en la notificación." });
-  }
 
+
+
+
+// ############################# Compra en línea #######################
+
+app.post("/api/mercadopago/webhook", async (req, res) => {
   try {
-    console.log("📌 Webhook recibido, creando orden para usuario:", userId);
+    console.log("📌 Webhook recibido de Mercado Pago.");
 
-    // 🔹 Enviar la solicitud a la API de orden para registrar la compra
-    const response = await fetch("http://localhost:3000/api/orden/crear", { // <-- Usa la ruta absoluta
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ referencia: `` }) // <-- Pasar el userId
-    });
-
-    const data = await response.json();
-
-    if (!data.success) {
-      throw new Error("Error al crear la orden: " + data.message);
+    const paymentId = req.body.data?.id;
+    if (!paymentId) {
+      console.log("⚠️ No se recibió un ID de pago válido.");
+      return res.sendStatus(400);
     }
 
-    console.log("✅ Orden creada con éxito, redirigiendo...");
+    console.log(`🔍 Consultando detalles del pago con ID: ${paymentId}`);
 
-    // 🔹 Redirigir al usuario a /compras tras la compra
-    res.redirect("/compras");
+    // ✅ Consultar Mercado Pago para obtener detalles del pago
+    const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer APP_USR-4766218969963872-030421-97a2948590998bec1e7d7edd1462103d-2306587214`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`❌ Error en la consulta a Mercado Pago: ${response.statusText}`);
+      return res.sendStatus(500);
+    }
+
+    const paymentData = await response.json();
+
+    const status = paymentData.status;
+    const amount = paymentData.transaction_amount;
+    const userId = paymentData.external_reference; // 🔹 Obtener el userId correctamente
+
+    if (!userId) {
+      console.log("⚠️ El userId no está presente en el pago.");
+      return res.sendStatus(400);
+    }
+
+    if (status === "approved") {
+      console.log(`✅ Pago aprobado. Monto: $${amount} MXN para usuario ${userId}`);
+
+      // ✅ Crear orden en la base de datos
+      const referencia = `MP-${paymentId}`;
+
+      const ordenResponse = await fetch(`${dominio}/api/orden/crear`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          referencia: referencia,
+          userId: userId, // 🔹 Ahora enviamos el userId correctamente
+        }),
+      });
+
+      const ordenData = await ordenResponse.json();
+
+      if (ordenData.success) {
+        console.log(`🎉 Orden creada con éxito. ID de orden: ${ordenData.ordenId}`);
+      } else {
+        console.log(`⚠️ No se pudo crear la orden. Motivo: ${ordenData.message}`);
+      }
+
+    } else {
+      console.log(`⚠️ Pago no aprobado. Estado actual: ${status}, Monto: $${amount} MXN`);
+    }
+
+    res.sendStatus(200);
 
   } catch (error) {
-    console.error("❌ Error al procesar la orden:", error);
-    res.status(500).json({ success: false, message: "Error al procesar la orden." });
+    console.error("❌ Error en el webhook:", error);
+    res.sendStatus(500);
   }
 });
 
-// ############################# Compra en línea #######################
+
+
+
+
+// ############################# Generar orden auto #######################
 app.post('/api/orden/crear', async (req, res) => {
   const { referencia, userId } = req.body; // Recibimos userId desde el body
+
 
   if (!userId) {
     return res.status(401).json({ success: false, message: 'Usuario no autenticado.' });
   }
 
+
   if (!referencia || referencia.trim() === "") {
     return res.status(400).json({ success: false, message: 'La referencia no puede estar vacía.' });
   }
+
 
   try {
     // 🔹 Obtener los productos en el carrito
@@ -3800,9 +3882,11 @@ app.post('/api/orden/crear', async (req, res) => {
       [userId]
     );
 
+
     if (carrito.length === 0) {
       return res.status(400).json({ success: false, message: 'El carrito está vacío.' });
     }
+
 
     // 🔹 Verificar si hay alguna dirección seleccionada ('t')
     const [direccionData] = await db.promise().query(
@@ -3810,7 +3894,9 @@ app.post('/api/orden/crear', async (req, res) => {
       [userId]
     );
 
+
     let direccionId;
+
 
     if (direccionData.length === 0) {
       direccionId = "Recoger en tienda"; // 🚀 Si no hay dirección seleccionada, asignamos "Recoger en tienda"
@@ -3820,12 +3906,15 @@ app.post('/api/orden/crear', async (req, res) => {
       console.log("📌 Dirección seleccionada:", direccionId);
     }
 
+
     // 🔹 Calcular el precio total de la orden
     let precioTotal = carrito.reduce((total, producto) => {
       return total + (producto.precio * producto.cantidad);
     }, 0);
 
+
     console.log("💰 Precio total de la orden:", precioTotal);
+
 
     // 🔹 Generar número de orden
     const [ultimoNumero] = await db.promise().query(
@@ -3835,6 +3924,7 @@ app.post('/api/orden/crear', async (req, res) => {
       ultimoNumero.length > 0 ? ultimoNumero[0].numero_orden : 'ORD-0000'
     );
 
+
     // 🔹 Crear la orden en la base de datos (SIN `direccion_envio`, como antes)
     const [nuevaOrden] = await db.promise().query(
       'INSERT INTO ordenes (numero_orden, usuario_id, referencia, fecha_orden, precioTotal) VALUES (?, ?, ?, NOW(), ?)',
@@ -3842,8 +3932,10 @@ app.post('/api/orden/crear', async (req, res) => {
     );
     const ordenId = nuevaOrden.insertId;
 
+
     const compras = [];
     const registros = [];
+
 
     // 🔹 Procesar cada producto en el carrito
     for (const producto of carrito) {
@@ -3858,12 +3950,14 @@ app.post('/api/orden/crear', async (req, res) => {
         producto.color
       ]);
 
+
       registros.push([
         producto.producto_id,
         'compra',
         new Date(),
         producto.precio
       ]);
+
 
       if (producto.alterno_color_id) {
         await db.promise().query(
@@ -3878,11 +3972,13 @@ app.post('/api/orden/crear', async (req, res) => {
       }
     }
 
+
     // 🔹 Guardar la compra en la base de datos incluyendo la dirección en `Compras`
     await db.promise().query(
       'INSERT INTO Compras (producto_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad, orden_id, color) VALUES ?',
       [compras]
     );
+
 
     // 🔹 Guardar registro del evento de compra
     await db.promise().query(
@@ -3890,17 +3986,19 @@ app.post('/api/orden/crear', async (req, res) => {
       [registros]
     );
 
+
     // 🔹 Vaciar el carrito después de la compra
     await db.promise().query('DELETE FROM carrito WHERE usuario_id = ?', [userId]);
 
+
     res.json({ success: true, message: 'Orden creada exitosamente.', ordenId, precioTotal });
+
 
   } catch (err) {
     console.error('❌ Error al procesar la orden:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor.' });
   }
 });
-
 
 
 
