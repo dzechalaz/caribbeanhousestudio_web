@@ -121,18 +121,21 @@ mysql> DESCRIBE Usuarios;
 
 
 
-mysql> DESCRIBE Direcciones; 
-+------------------+--------------+------+-----+---------+----------------+
-| Field            | Type         | Null | Key | Default | Extra          |
-+------------------+--------------+------+-----+---------+----------------+
-| direccion_id     | int          | NO   | PRI | NULL    | auto_increment |
-| usuario_id       | int          | NO   | MUL | NULL    |                |
-| nombre_direccion | varchar(100) | NO   |     | NULL    |                |
-| calle            | varchar(255) | NO   |     | NULL    |                |
-| colonia          | varchar(100) | NO   |     | NULL    |                |
-| ciudad           | varchar(100) | NO   |     | NULL    |                |
-| estado           | varchar(100) | NO   |     | NULL    |                |
-| cp               | varchar(10)  | NO   |     | NULL    |                |
-| Seleccionada     | varchar(1)   | NO   |     | f       |                |
-+------------------+--------------+------+-----+---------+----------------+
-9 rows in set (0.14 sec)
+mysql> DESCRIBE Direcciones;
++------------------+---------------+------+-----+---------+----------------+
+| Field            | Type          | Null | Key | Default | Extra          |
++------------------+---------------+------+-----+---------+----------------+
+| direccion_id     | int           | NO   | PRI | NULL    | auto_increment |
+| usuario_id       | int           | NO   | MUL | NULL    |                |
+| nombre_direccion | varchar(100)  | NO   |     | NULL    |                |
+| calle            | varchar(255)  | NO   |     | NULL    |                |
+| colonia          | varchar(100)  | NO   |     | NULL    |                |
+| ciudad           | varchar(100)  | NO   |     | NULL    |                |
+| estado           | varchar(100)  | NO   |     | NULL    |                |
+| cp               | varchar(10)   | NO   |     | NULL    |                |
+| Seleccionada     | varchar(1)    | NO   |     | f       |                |
+| flete            | decimal(10,2) | NO   |     | 0.00    |                |
++------------------+---------------+------+-----+---------+----------------+
+10 rows in set (0.16 sec)
+
+mysql>

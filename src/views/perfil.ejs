@@ -42,47 +42,78 @@
       </section>
       
       <!-- Modal para agregar dirección -->
-    <!-- Modal para agregar dirección -->
-<div id="address-modal" class="modal" style="display: none;">
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <h2>Agregar Dirección</h2>
-    <form id="add-address-form">
-      <div class="input-group">
-        <label for="nombre_direccion">Nombre:</label>
-        <input type="text" id="nombre_direccion" placeholder="Ej. Casa, Oficina" required />
+      <div id="address-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <h2>Agregar Dirección</h2>
+          <form id="add-address-form">
+            <div class="input-group">
+              <label for="nombre_direccion">Nombre:</label>
+              <input type="text" id="nombre_direccion" placeholder="Ej. Casa, Oficina" required />
+            </div>
+      
+            <div class="input-group">
+              <label for="calle">Calle:</label>
+              <input type="text" id="calle" placeholder="Ej. Av. Siempre Viva 123" required />
+            </div>
+      
+            <div class="input-group">
+              <label for="colonia">Colonia:</label>
+              <input type="text" id="colonia" placeholder="Ej. Centro" required />
+            </div>
+      
+            <!-- ✅ Selector de Ciudad -->
+            <div class="input-group">
+              <label for="ciudad">Ciudad:</label>
+              <select id="ciudad" required>
+                <option value="">Selecciona una ciudad</option>
+                <option value="Playa del Carmen">Playa del Carmen - $500</option>
+                <option value="Puerto Morelos">Puerto Morelos - $900</option>
+                <option value="Puerto Aventuras">Puerto Aventuras - $900</option>
+                <option value="Cancún">Cancún - $1250</option>
+                <option value="Tulum">Tulum - $1250</option>
+              </select>
+            </div>
+            
+      
+            <!-- ✅ Costo de envío dinámico -->
+            <div class="input-group">
+              <label>Costo de envío:</label>
+              <p id="costo-envio">Selecciona una ciudad</p>
+            </div>
+      
+            <!-- ✅ Estado predefinido (no editable) -->
+            <div class="input-group">
+              <label for="estado">Estado:</label>
+              <input type="text" id="estado" value="Quintana Roo" readonly />
+            </div>
+      
+            <div class="input-group">
+              <label for="cp">Código Postal:</label>
+              <input type="text" id="cp" placeholder="Ej. 70000" required />
+            </div>
+      
+            <button type="submit" class="save-button">Guardar Dirección</button>
+          </form>
+        </div>
       </div>
-
-      <div class="input-group">
-        <label for="calle">Calle:</label>
-        <input type="text" id="calle" placeholder="Ej. Av. Siempre Viva 123" required />
-      </div>
-
-      <div class="input-group">
-        <label for="colonia">Colonia:</label>
-        <input type="text" id="colonia" placeholder="Ej. Centro" required />
-      </div>
-
-      <div class="input-group">
-        <label for="ciudad">Ciudad:</label>
-        <input type="text" id="ciudad" placeholder="Ej. Playa del Carmen" required />
-      </div>
-
-      <div class="input-group">
-        <label for="estado">Estado:</label>
-        <input type="text" id="estado" placeholder="Ej. Quintana Roo" required />
-      </div>
-
-      <div class="input-group">
-        <label for="cp">Código Postal:</label>
-        <input type="text" id="cp" placeholder="Ej. 70000" required />
-      </div>
-
-      <button type="submit" class="save-button">Guardar Dirección</button>
-    </form>
-  </div>
-</div>
-
+      
+      <script>
+        function actualizarFlete() {
+          const ciudadSelect = document.getElementById("ciudad");
+          const costoEnvio = document.getElementById("costo-envio");
+      
+          // Obtener el flete desde el atributo "data-flete"
+          const flete = ciudadSelect.options[ciudadSelect.selectedIndex].getAttribute("data-flete");
+      
+          if (flete) {
+            costoEnvio.textContent = `Costo de envío: $${flete} MXN`;
+          } else {
+            costoEnvio.textContent = "Selecciona una ciudad";
+          }
+        }
+      </script>
+      
     </div>
   </div>
 
@@ -163,29 +194,41 @@
       // Manejo del formulario de agregar dirección
       document.getElementById("add-address-form").addEventListener("submit", function (event) {
         event.preventDefault();
-    
+      
+        // Obtener la ciudad seleccionada y asignar el flete correspondiente
+        const ciudadSeleccionada = document.getElementById("ciudad").value;
+        const tarifasEnvio = {
+          "Playa del Carmen": 500,
+          "Puerto Morelos": 900,
+          "Puerto Aventuras": 900,
+          "Cancún": 1250,
+          "Tulum": 1250
+        };
+      
+        const flete = tarifasEnvio[ciudadSeleccionada] || 0;
+      
         const formData = {
           nombre_direccion: document.getElementById("nombre_direccion").value,
           calle: document.getElementById("calle").value,
           colonia: document.getElementById("colonia").value,
-          ciudad: document.getElementById("ciudad").value,
+          ciudad: ciudadSeleccionada,
           estado: document.getElementById("estado").value,
           cp: document.getElementById("cp").value,
+          flete: flete // ✅ Ahora enviamos el flete
         };
-    
+      
         fetch("/api/direcciones", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         })
         .then(() => {
-          // Cerrar el modal
           document.getElementById("address-modal").style.display = "none";
-          // Recargar la lista de direcciones sin recargar la página
           cargarDirecciones();
         })
         .catch(error => console.error("Error al agregar dirección:", error));
       });
+      
     
       function cargarDirecciones() {
         fetch("/api/direcciones")
