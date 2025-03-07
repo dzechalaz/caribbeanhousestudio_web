@@ -268,269 +268,283 @@
       // ########################################### CARGAR DATOS EN GRAFCA
 
 
-      let productNamesMap = new Map(); // Mapa para asociar producto_id con nombres
-
-        // 🔥 Cargar los nombres de los productos desde el backend
-        async function cargarNombresProductos() {
-            try {
-                const response = await fetch('/colaborador/productos/data'); // Ajusta esta ruta según tu backend
-                const data = await response.json();
-
-                if (data.productos && data.productos.length > 0) {
-                    data.productos.forEach(producto => {
-                        productNamesMap.set(producto.producto_id, producto.nombre);
-                    });
-                 
-                }
-            } catch (error) {
-                console.error("❌ Error al cargar nombres de productos:", error);
-            }
+      document.addEventListener('DOMContentLoaded', async () => {
+        const productos = document.querySelectorAll('.product-card');
+        const chartContainer = document.getElementById('price-chart-container');
+        const productoLink = document.getElementById('producto-link');
+      
+        if (!chartContainer) {
+          console.error("⚠️ Falta el contenedor de la gráfica (#price-chart-container).");
+          return;
         }
-
-        // Llamar a la función antes de actualizar la gráfica
-        document.addEventListener('DOMContentLoaded', async () => {
-          const productos = document.querySelectorAll('.product-card');
-          const chartContainer = document.getElementById('price-chart-container');
-          const productoLink = document.getElementById('producto-link');
       
-          let chart = LightweightCharts.createChart(chartContainer, {
-              width: chartContainer.offsetWidth,
-              height: chartContainer.offsetHeight,
-              layout: {
-                  backgroundColor: 'rgba(0, 0, 0, 0)',
-                  textColor: '#000',
-                  fontSize: 20,
-              },
-              grid: {
-                  vertLines: { color: '#eeeeee' },
-                  horzLines: { color: '#eeeeee' },
-              },
-              priceScale: {
-                  autoScale: true,
-                  borderVisible: false,
-                  position: 'none',
-              },
-              timeScale: {
-                  borderColor: '#cccccc',
-                  timeVisible: true,
-              },
-              crosshair: {
-                  mode: LightweightCharts.CrosshairMode.Normal,
-              },
-          });
+        // Mapa para nombres de producto (usado en el tooltip)
+        let productNamesMap = new Map();
       
-          let seriesMap = new Map(); // Mapa de series
-          let productColors = new Map(); // Mapa de colores originales
-          let originalDataMap = new Map(); // Mapa de datos sin normalizar
-      
-          // ✅ Cargar nombres de productos desde el backend
-          async function cargarNombresProductos() {
-              try {
-                  const response = await fetch('/colaborador/productos/data');
-                  const data = await response.json();
-      
-                  if (data.productos && data.productos.length > 0) {
-                      data.productos.forEach(producto => {
-                          productNamesMap.set(producto.producto_id, producto.nombre);
-                      });
-                   
-                  }
-              } catch (error) {
-                  console.error("❌ Error al cargar nombres de productos:", error);
-              }
-          }
-      
-          await cargarNombresProductos(); // Cargar nombres antes de las gráficas
-      
-          // ✅ Normalizar datos para que todas las gráficas tengan la misma escala
-          function normalizeData(data) {
-              if (data.length === 0) return [];
-      
-              let min = Math.min(...data.map(d => d.value));
-              let max = Math.max(...data.map(d => d.value));
-      
-              if (max === min) return data.map(d => ({ time: d.time, value: 0.5, realValue: d.value }));
-      
-              return data.map(d => ({
-                  time: d.time,
-                  value: (d.value - min) / (max - min),
-                  realValue: d.value,
-              }));
-          }
-      
-          // ✅ Cargar datos de una gráfica y almacenarla en el mapa de series
-          const updateChart = async (productoId, color) => {
-              try {
-                  const response = await fetch(`/producto-historial/${productoId}`);
-                  let chartData = await response.json();
-      
-                  if (!chartData || chartData.length === 0) {
-                      console.warn(`No hay datos para el producto ${productoId}`);
-                      return;
-                  }
-      
-                  chartData = chartData.map(data => ({
-                      time: data.time,
-                      value: parseFloat(data.value),
-                  }));
-      
-                  originalDataMap.set(productoId, chartData); // Guardamos los datos originales
-                  let normalizedData = normalizeData(chartData); // Normalizamos los datos
-      
-                  if (!seriesMap.has(productoId)) {
-                      let lineSeries = chart.addLineSeries({
-                          lineWidth: 3,
-                          priceScaleId: '',
-                          color: color,
-                      });
-      
-                      chart.applyOptions({
-                          rightPriceScale: { visible: false },
-                          leftPriceScale: { visible: false },
-                      });
-      
-                      lineSeries.setData(normalizedData);
-                      seriesMap.set(productoId, lineSeries);
-                      productColors.set(productoId, color);
-                  } else {
-                      seriesMap.get(productoId).setData(normalizedData);
-                  }
-      
-                  chart.timeScale().fitContent();
-              } catch (err) {
-                  console.error('Error al actualizar la gráfica:', err);
-              }
-          };
-      
-          // ✅ Función para resaltar una serie y bajar opacidad de las demás
-          function highlightSelectedSeries(selectedProductId) {
-             
-              seriesMap.forEach((series, productId) => {
-                  let parsedProductId = parseInt(productId); // Convertir clave a número
-                 
-                  if (parsedProductId === selectedProductId) {
-                      
-                      series.applyOptions({
-                          lineWidth: 4,
-                          color: productColors.get(parsedProductId), // Color normal
-                      });
-                  } else {
-                      let originalColor = productColors.get(parsedProductId);
-                      if (originalColor) {
-                          let rgbaColor = hexToRGBA(originalColor, 0.4); // 🔥 Opacidad reducida al 20%
-                          series.applyOptions({
-                              lineWidth: 2,
-                              color: rgbaColor,
-                          });
-                      }
-                  }
+        // 1) Cargar nombres de los productos
+        async function cargarNombresProductos() {
+          try {
+            const response = await fetch('/colaborador/productos/data');
+            const data = await response.json();
+            if (data.productos && data.productos.length > 0) {
+              data.productos.forEach(producto => {
+                productNamesMap.set(producto.producto_id, producto.nombre);
               });
+            }
+          } catch (error) {
+            console.error("❌ Error al cargar nombres de productos:", error);
+          }
+        }
+      
+        // Cargar nombres antes de usar la gráfica
+        await cargarNombresProductos();
+      
+        // 2) Crear la gráfica con LightweightCharts
+        let chart = LightweightCharts.createChart(chartContainer, {
+          width: chartContainer.offsetWidth,
+          height: chartContainer.offsetHeight,
+          layout: {
+            backgroundColor: 'rgba(0, 0, 0, 0)',
+            textColor: '#000',
+            fontSize: 20,
+          },
+          grid: {
+            vertLines: { color: '#eeeeee' },
+            horzLines: { color: '#eeeeee' },
+          },
+          priceScale: {
+            autoScale: true,
+            borderVisible: false,
+            position: 'none',
+          },
+          timeScale: {
+            borderColor: '#cccccc',
+            timeVisible: true,
+          },
+          crosshair: {
+            mode: LightweightCharts.CrosshairMode.Normal,
+          },
+        });
+      
+        // 2a) Generar la “línea fantasma” en y=0 para todo el año
+        function generateZeroLineData() {
+          let data = [];
+          let now = new Date();
+          for (let i = 0; i < 13; i++) {
+            let d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            let iso = d.toISOString().split('T')[0];
+            data.push({ time: iso, value: 0 });
+          }
+          data.sort((a, b) => (a.time > b.time ? 1 : -1));
+          return data;
+        }
+      
+        // Crear la serie fantasma (invisible) para que el eje Y incluya 0
+        let zeroLineSeries = chart.addLineSeries({
+          lineWidth: 2,
+          color: 'rgba(0, 0, 0, 0)', // invisible
+        });
+        zeroLineSeries.setData(generateZeroLineData());
+      
+        // Variables globales para la serie principal
+        let currentSeries = null;       // La serie del producto activo
+        let currentProductId = null;    // ID del producto activo
+        let originalDataMap = new Map();// Para tooltip
+      
+        // 3) Obtener datos de un producto (sin normalizar)
+        async function fetchProductData(productoId) {
+          try {
+            const response = await fetch(`/producto-historial/${productoId}`);
+            const chartData = await response.json();
+      
+            if (!chartData || chartData.length === 0) {
+              console.warn(`⚠️ No hay datos para el producto ${productoId}`);
+              return [];
+            }
+      
+            // Convertir la respuesta a { time, value } con valores reales
+            return chartData.map(d => ({
+              time: d.time,
+              value: parseFloat(d.value),
+              nombre: d.nombre || ''
+            }));
+          } catch (err) {
+            console.error('❌ Error al obtener datos del producto:', err);
+            return [];
+          }
+        }
+      
+        // 4) Función para MOSTRAR la gráfica de un producto con fade de 1s
+        async function fadeToProduct(productoId, color) {
+          // a) Iniciar fade-out (1s)
+          chartContainer.style.transition = 'opacity 1s';
+          chartContainer.style.opacity = 0;
+      
+          // b) Esperar ~1s para notar el fade-out
+          await new Promise(resolve => setTimeout(resolve, 1000));
+      
+          // c) Eliminar la serie previa
+          if (currentSeries) {
+            chart.removeSeries(currentSeries);
+            currentSeries = null;
+            if (currentProductId) {
+              originalDataMap.delete(currentProductId);
+            }
           }
       
-          // ✅ Convertir colores HEX a RGBA con transparencia
-          function hexToRGBA(hex, alpha) {
-              if (!hex || hex.length !== 7) return "rgba(0,0,0,1)";
-              let r = parseInt(hex.substring(1, 3), 16);
-              let g = parseInt(hex.substring(3, 5), 16);
-              let b = parseInt(hex.substring(5, 7), 16);
-              return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+          // d) Obtener datos del nuevo producto
+          let data = await fetchProductData(productoId);
+          if (data.length === 0) {
+            // Si no hay datos, resetear el fade
+            chartContainer.style.opacity = 1;
+            return;
           }
       
-          // 🔥 Escuchar clic en los productos y resaltar la serie correspondiente
-          
-          productos.forEach(producto => {
-            producto.addEventListener('click', () => {
-                selectedProductId = parseInt(producto.getAttribute('data-id')); // 🔥 Guardar ID del producto seleccionado
-                console.log("📌 Producto seleccionado:", selectedProductId);
-
-                if (seriesMap.has(selectedProductId)) {
-                    highlightSelectedSeries(selectedProductId);
-                } else {
-                    console.warn("⚠️ No se encontró una serie para el producto:", selectedProductId);
-                }
-
-                // 🔥 Actualizar el enlace del botón "Ver Producto"
-                productoLink.href = `/producto?id=${selectedProductId}`;
-                productoLink.style.opacity = 1; // Asegurar que el botón es visible
-            });
-        });
-        
-     
-          // ✅ Cargar todas las gráficas al inicio
-          productos.forEach(async (producto) => {
-              const productoId = parseInt(producto.getAttribute('data-id'));
-              const color = producto.getAttribute('data-color');
-              await updateChart(productoId, color);
+          // e) Crear la nueva serie
+          currentSeries = chart.addLineSeries({
+            lineWidth: 6,         // grosor de la línea
+            color: color || '#FF0000',
           });
-          
-          // **Crear Tooltip para mostrar el Nombre del Producto y Precio Real**
-          const toolTip = document.createElement('div');
-          toolTip.style.position = 'absolute';
-          toolTip.style.background = '#bfdcd8';
-          toolTip.style.padding = '6px 10px';
-          toolTip.style.border = '1px solid #ccc';
-          toolTip.style.borderRadius = '4px';
-          toolTip.style.fontSize = '20px';
-          toolTip.style.color = '#333';
-          toolTip.style.display = 'none';
-          toolTip.style.pointerEvents = 'none';
-          toolTip.style.whiteSpace = 'nowrap';
-          toolTip.style.zIndex = '5';
-          chartContainer.appendChild(toolTip);
-          
-    // **Mostrar valor real y nombre en el tooltip**
-          chart.subscribeCrosshairMove((param) => {
-            if (!param || !param.time || param.seriesData.size === 0) {
-                toolTip.style.display = 'none';
-                return;
+          currentSeries.setData(data);
+      
+          currentProductId = productoId;
+          originalDataMap.set(productoId, data);
+      
+          // Ajustar la vista
+          chart.timeScale().fitContent();
+      
+          // f) Fade-in
+          chartContainer.style.opacity = 1;
+        }
+      
+        // 5) Al hacer clic en un producto → se detiene la rotación y se muestra ese producto
+        let autoRotate = true;  // bandera para saber si la rotación está activa
+        let rotateInterval;     // para guardar el setInterval
+      
+        productos.forEach(producto => {
+          producto.addEventListener('click', async () => {
+            // Detener la rotación automática
+            autoRotate = false;
+            clearInterval(rotateInterval);
+      
+            let selectedProductId = parseInt(producto.getAttribute('data-id'));
+            let color = producto.getAttribute('data-color') || '#FF0000';
+            console.log("📌 Producto seleccionado (clic):", selectedProductId);
+      
+            await fadeToProduct(selectedProductId, color);
+      
+            // Actualizar enlace "Ver Producto"
+            if (productoLink) {
+              productoLink.href = `/producto?id=${selectedProductId}`;
+              productoLink.style.opacity = 1;
             }
-
-            let text = '';
-            let hasData = false;
-
-            param.seriesData.forEach((data, series) => {
-              // Buscar el producto_id basado en la serie
-              const productoId = [...seriesMap.entries()].find(([id, s]) => s === series)?.[0];
-          
-              if (productoId && originalDataMap.has(productoId)) {
-                  // Obtener el valor real del producto en la fecha seleccionada
-                  const realData = originalDataMap.get(productoId).find(d => d.time === param.time);
-          
-                  // 🔥 Obtener el nombre del producto y limpiarlo
-                  let productName = productNamesMap.get(parseInt(productoId)) || "Producto Desconocido";
-          
-                  // Limpiar el nombre para quitar "ALT" y la flecha "↳"
-                  productName = productName.replace(/↳/g, '').replace(/ ALT\d+/g, '').trim();
-          
-                  if (realData) {
-                      text += `<strong>${productName}:</strong> $${realData.value.toFixed(2)}<br>`;
-                      hasData = true;
-                  }
-              }
           });
-          
-
-            if (!hasData) {
-                toolTip.style.display = 'none';
-                return;
-            }
-
-            toolTip.innerHTML = text;
-            toolTip.style.left = `${param.point.x + 10}px`;
-            toolTip.style.top = `${param.point.y - 30}px`;
-            toolTip.style.display = 'block';
-
         });
-
-        // **Ocultar el tooltip cuando se hace clic en la gráfica**
-        chart.subscribeClick(() => {
+      
+        // 6) Rotación automática cada 7s si autoRotate es true
+        let currentIndex = 0;
+        function startAutoSwitch() {
+          rotateInterval = setInterval(async () => {
+            if (!autoRotate) return; // Si se desactiva la rotación, no hacer nada
+      
+            let product = productos[currentIndex];
+            let productoId = parseInt(product.getAttribute('data-id'));
+            let color = product.getAttribute('data-color') || '#FF0000';
+      
+            console.log("📌 Producto seleccionado (auto-rotate):", productoId);
+            await fadeToProduct(productoId, color);
+      
+            // Actualizar enlace "Ver Producto"
+            if (productoLink) {
+              productoLink.href = `/producto?id=${productoId}`;
+              productoLink.style.opacity = 1;
+            }
+      
+            // Modo circular
+            currentIndex = (currentIndex + 1) % productos.length;
+          }, 7000); // cada 7 segundos
+        }
+      
+        // 7) Mostrar el PRIMER producto inmediatamente (sin esperar)
+        if (productos.length > 0) {
+          const firstId = parseInt(productos[0].getAttribute('data-id'));
+          const firstColor = productos[0].getAttribute('data-color') || '#FF0000';
+      
+          // Mostrar el primer producto
+          await fadeToProduct(firstId, firstColor);
+      
+          // Ajustar currentIndex a 1 para que en la primera transición salte al segundo producto
+          currentIndex = 1;
+      
+          // Iniciar rotación (solo si hay más de 1 producto)
+          if (productos.length > 1) {
+            startAutoSwitch();
+          }
+        }
+      
+        // 8) Tooltip para mostrar nombre y precio real
+        const toolTip = document.createElement('div');
+        toolTip.style.position = 'absolute';
+        toolTip.style.background = '#bfdcd8';
+        toolTip.style.padding = '6px 10px';
+        toolTip.style.border = '1px solid #ccc';
+        toolTip.style.borderRadius = '4px';
+        toolTip.style.fontSize = '20px';
+        toolTip.style.color = '#333';
+        toolTip.style.display = 'none';
+        toolTip.style.pointerEvents = 'none';
+        toolTip.style.whiteSpace = 'nowrap';
+        toolTip.style.zIndex = '5';
+        chartContainer.appendChild(toolTip);
+      
+        chart.subscribeCrosshairMove((param) => {
+          if (!param || !param.time || param.seriesData.size === 0) {
             toolTip.style.display = 'none';
+            return;
+          }
+      
+          let text = '';
+          let hasData = false;
+      
+          param.seriesData.forEach((data, series) => {
+            if (series === currentSeries && originalDataMap.has(currentProductId)) {
+              const realData = originalDataMap
+                .get(currentProductId)
+                .find(d => d.time === param.time);
+      
+              if (realData) {
+                let productName = productNamesMap.get(currentProductId) 
+                               || realData.nombre 
+                               || "Producto Desconocido";
+      
+                // Limpiar “ALT” y flecha ↳ (opcional)
+                productName = productName
+                  .replace(/↳/g, '')
+                  .replace(/ ALT\\d+/g, '')
+                  .trim();
+      
+                text += `<strong>${productName}:</strong> $${realData.value.toFixed(2)}<br>`;
+                hasData = true;
+              }
+            }
+          });
+      
+          if (!hasData) {
+            toolTip.style.display = 'none';
+            return;
+          }
+      
+          toolTip.innerHTML = text;
+          toolTip.style.left = `${param.point.x + 10}px`;
+          toolTip.style.top = `${param.point.y - 30}px`;
+          toolTip.style.display = 'block';
         });
-        
+      
+        // Ocultar tooltip al hacer clic
+        chart.subscribeClick(() => {
+          toolTip.style.display = 'none';
+        });
       });
-          
-      
-      
       
        
 

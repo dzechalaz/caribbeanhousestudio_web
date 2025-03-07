@@ -46,6 +46,7 @@ table tr:hover {
   background-color: #F4E1CF;
 }
 
+.eliminar-orden-btn,
 button {
   background-color: #8EAA6D; /* Verde chukum */
   color: #FFF8F0;
@@ -56,7 +57,14 @@ button {
   font-weight: bold;
   transition: background-color 0.3s ease;
 }
+.eliminar-orden-btn{
+  background-color: #c28938; /* Verde chukum */
+  
+}
 
+.eliminar-orden-btn:hover {
+  background-color: #e3a959; /* Hover más oscuro */
+}
 button:hover {
   background-color: #6E8E51; /* Hover más oscuro */
 }

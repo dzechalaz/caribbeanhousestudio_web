@@ -1148,11 +1148,53 @@ app.get('/colaborador/ordenes/compras/:orden_id', authMiddleware, (req, res) => 
   });
 });
 
+//eliminar orden
+
+
+
 
 app.get('/colaborador/compras/:ordenId', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'src/colaborador/compras/compras.html'));
 });
 
+
+app.delete("/api/orden/eliminar/:ordenId", async (req, res) => {
+  const { ordenId } = req.params;
+
+  if (!ordenId) {
+    return res.status(400).json({ error: "Debe proporcionar un ID de orden válido." });
+  }
+
+  try {
+    // 🔹 Iniciar transacción manualmente
+    await db.promise().query("START TRANSACTION");
+
+    // 🔹 1. Eliminar compras asociadas a la orden
+    const deleteComprasQuery = "DELETE FROM Compras WHERE orden_id = ?";
+    await db.promise().query(deleteComprasQuery, [ordenId]);
+
+    // 🔹 2. Eliminar la orden
+    const deleteOrdenQuery = "DELETE FROM ordenes WHERE orden_id = ?";
+    const [ordenResult] = await db.promise().query(deleteOrdenQuery, [ordenId]);
+
+    if (ordenResult.affectedRows === 0) {
+      throw new Error(`No se encontró la orden con ID ${ordenId}`);
+    }
+
+    // 🔹 Confirmar la transacción
+    await db.promise().query("COMMIT");
+
+ 
+    res.json({ success: true, message: `Orden ${ordenId} y sus compras eliminadas correctamente.` });
+
+  } catch (error) {
+    // 🔹 Revertir cambios en caso de error
+    await db.promise().query("ROLLBACK");
+
+    console.error("❌ Error al eliminar la orden:", error);
+    res.status(500).json({ error: "Error al eliminar la orden." });
+  }
+});
 
 
 app.get('/colaborador/compras/descargar-anexos/:CostumProduct_id', authMiddleware, (req, res) => {
@@ -2187,7 +2229,7 @@ app.get('/producto', async (req, res) => {
        FROM Registros
        WHERE product_id = ? 
          AND fecha IS NOT NULL
-         AND fecha >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) -- 🔥 Solo últimos 30 días
+         AND fecha >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) -- 🔥 Solo últimos 30 días
          AND (evento = 'compra' OR evento = 'sim') -- Filtra por compra o sim
        GROUP BY DATE(fecha)
        ORDER BY fecha ASC`,
@@ -2680,7 +2722,7 @@ app.get('/producto-historial/:id', async (req, res) => {
     FROM Registros r
     WHERE r.product_id = ? 
       AND r.fecha IS NOT NULL
-      AND r.fecha >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) -- Solo últimos 30 días
+      AND r.fecha >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) -- 12 meses
       AND (r.evento = 'compra' OR r.evento = 'sim') -- Filtra por compra o sim
     GROUP BY DATE(r.fecha)
     ORDER BY fecha ASC;
@@ -2706,22 +2748,35 @@ app.get('/producto-historial/:id', async (req, res) => {
 
 
 
-
-
+//visitas a la pagina
 app.use(async (req, res, next) => {
   try {
-    const today = new Date().toISOString().split('T')[0]; // Fecha actual en formato YYYY-MM-DD
+    const today = new Date().toISOString().split('T')[0]; // Fecha actual YYYY-MM-DD
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress; // Obtener la IP del usuario
+    const now = new Date(); // Hora actual
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); // Hace 1 hora
 
-    // Incrementar contador o insertar registro para la fecha actual
-    await db.promise().query(
+    // Verificar si esta IP ya ha registrado una visita en la última hora
+    const [rows] = await db.promise().query(
       `
-      INSERT INTO Visitas (fecha, cantidad)
-      VALUES (?, 1)
-      ON DUPLICATE KEY UPDATE cantidad = cantidad + 1
+      SELECT ultima_visita FROM Visitas
+      WHERE fecha = ? AND ip = ? AND ultima_visita > ?
+      LIMIT 1
       `,
-      [today]
+      [today, ip, oneHourAgo]
     );
-    //console.log(`Visita registrada para la fecha: ${today}`);
+
+    if (rows.length === 0) {
+      // Si no hay registros en la última hora, insertar o actualizar
+      await db.promise().query(
+        `
+        INSERT INTO Visitas (fecha, cantidad, ip, ultima_visita)
+        VALUES (?, 1, ?, ?)
+        ON DUPLICATE KEY UPDATE cantidad = cantidad + 1, ultima_visita = ?
+        `,
+        [today, ip, now, now]
+      );
+    }
   } catch (err) {
     console.error('Error al registrar visita:', err);
   }

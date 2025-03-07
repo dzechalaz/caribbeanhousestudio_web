@@ -356,25 +356,26 @@ if (producto) {
     };
 
 
-
+    
       function interpolateData(data) {
         const interpolated = [];
-        
+      
         for (let i = 0; i < data.length - 1; i++) {
           const current = data[i];
           const next = data[i + 1];
-          
-          interpolated.push(current); // Agregar el punto actual
+      
+          // Agregar el punto actual
+          interpolated.push(current);
       
           const currentDate = new Date(current.time);
           const nextDate = new Date(next.time);
       
           const diffDays = Math.floor((nextDate - currentDate) / (1000 * 60 * 60 * 24));
-          
+      
           if (diffDays > 1) {
             // Interpolar valores entre los días
             const priceStep = (next.value - current.value) / diffDays;
-            
+      
             for (let j = 1; j < diffDays; j++) {
               const interpolatedDate = new Date(currentDate);
               interpolatedDate.setDate(currentDate.getDate() + j);
@@ -387,61 +388,74 @@ if (producto) {
           }
         }
       
-        interpolated.push(data[data.length - 1]); // Agregar el último punto
+        // Agregar el último punto
+        interpolated.push(data[data.length - 1]);
         return interpolated;
       }
       
-      document.addEventListener('DOMContentLoaded', function () {
-        const chart = LightweightCharts.createChart(document.getElementById('price-chart'), {
-          width: 1200,
-          height: 500,
-          layout: {
-            backgroundColor: { type: 'solid', color: '#eeeeee' },
-            textColor: '#333',
-          },
-          grid: {
-            vertLines: { color: '#eeeeee' },
-            horzLines: { color: '#eeeeee' },
-          },
-          priceScale: {
-            borderColor: '#cccccc',
-            autoScale: true,
-          },
-          timeScale: {
-            borderColor: '#cccccc',
-            timeVisible: true,
-            secondsVisible: true,
-          },
-        });
       
-        const lineSeries = chart.addLineSeries({
-          color: '#a5d1ce',
-          lineWidth: 6,
-        });
+document.addEventListener('DOMContentLoaded', function () {
+  const chart = LightweightCharts.createChart(document.getElementById('price-chart'), {
+    width: 1200,
+    height: 500,
+    layout: {
+      backgroundColor: '#eeeeee',
+      textColor: '#333',
+    },
+    grid: {
+      vertLines: { color: '#eeeeee' },
+      horzLines: { color: '#eeeeee' },
+    },
+    priceScale: {
+      borderColor: '#cccccc',
+      autoScale: true,
+      scaleMargins: {
+        top: 0.2,    // 20% de espacio arriba
+        bottom: 0.2, // 20% de espacio abajo
+      },
+    },
+    timeScale: {
+      borderColor: '#cccccc',
+      timeVisible: true,
+      secondsVisible: true,
+    },
+  });
+
+  const lineSeries = chart.addLineSeries({
+    color: '#a5d1ce',
+    lineWidth: 6,
+  });
+
+  let chartData = <%- JSON.stringify(chartData) %>;
+
+  try {
+    if (Array.isArray(chartData) && chartData.length > 0) {
+      chartData = chartData.map(data => ({
+        time: data.time,
+        value: parseFloat(data.value),
+      }));
+
+      chartData = interpolateData(chartData);
+
+      lineSeries.setData(chartData);
+      chart.timeScale().fitContent();
+    } else {
+      console.warn('No hay datos disponibles para el historial de precios.');
+    }
+  } catch (error) {
+    console.error('Error al procesar los datos del backend:', error);
+  }
+});
       
-        let chartData = <%- JSON.stringify(chartData) %>;
-      
-        try {
-          if (Array.isArray(chartData) && chartData.length > 0) {
-            chartData = chartData.map(data => ({
-              time: data.time,
-              value: parseFloat(data.value),
-            }));
-      
-            // Aplicar interpolación
-            chartData = interpolateData(chartData);
-      
-            lineSeries.setData(chartData);
-            chart.timeScale().fitContent();
-          } else {
-            console.warn('No hay datos disponibles para el historial de precios.');
-          }
-        } catch (error) {
-          console.error('Error al procesar los datos del backend:', error);
-        }
-      });
-      
-      
+
+
+
+
+
+
+
+
+
         // agregar al carrito
         document.addEventListener('DOMContentLoaded', () => {
           // Seleccionar el botón
