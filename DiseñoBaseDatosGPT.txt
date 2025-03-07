@@ -65,6 +65,20 @@ mysql> DESCRIBE Compras;
 +------------------+--------------+------+-----+---------+----------------+
 11 rows in set (0.12 sec)
 
+mysql> DESCRIBE ordenes;   
++--------------+--------------+------+-----+-------------------+-------------------+
+| Field        | Type         | Null | Key | Default           | Extra             |
++--------------+--------------+------+-----+-------------------+-------------------+
+| orden_id     | int          | NO   | PRI | NULL              | auto_increment    |
+| numero_orden | varchar(50)  | NO   | UNI | NULL              |                   |
+| usuario_id   | int          | NO   | MUL | NULL              |                   |
+| referencia   | varchar(255) | YES  |     | NULL              |                   |
+| fecha_orden  | datetime     | NO   |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
+| precioTotal  | int          | YES  |     | NULL              |                   |
++--------------+--------------+------+-----+-------------------+-------------------+
+6 rows in set (0.13 sec)
+
+
 
 mysql> DESCRIBE Registros; 
 +------------+-------------------------------+------+-----+---------+----------------+
@@ -78,18 +92,6 @@ mysql> DESCRIBE Registros;
 +------------+-------------------------------+------+-----+---------+----------------+
 5 rows in set (0.12 sec)
 
-mysql> DESCRIBE ordenes;   
-+--------------+--------------+------+-----+-------------------+-------------------+
-| Field        | Type         | Null | Key | Default           | Extra             |
-+--------------+--------------+------+-----+-------------------+-------------------+
-| orden_id     | int          | NO   | PRI | NULL              | auto_increment    |
-| numero_orden | varchar(50)  | NO   | UNI | NULL              |                   |
-| usuario_id   | int          | NO   | MUL | NULL              |                   |
-| referencia   | varchar(255) | YES  |     | NULL              |                   |
-| fecha_orden  | datetime     | NO   |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
-| precioTotal  | int          | YES  |     | NULL              |                   |
-+--------------+--------------+------+-----+-------------------+-------------------+
-6 rows in set (0.13 sec)
 
 
 mysql>  DESCRIBE carrito;
