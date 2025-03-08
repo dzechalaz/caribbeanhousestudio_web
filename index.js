@@ -13,18 +13,18 @@ import nodemailer from "nodemailer";
 import cookieParser from "cookie-parser";
 import { fileURLToPath } from "url";
 import archiver from "archiver";
-import vexor from 'vexor';
 import dotenv from 'dotenv';
 
 // Definir dominio global
 const dominio = "https://www.caribbeanhousestudio.com"; // ✅ URL actual en uso
- //const dominio = "https://cdc3-2806-10be-c-3346-9d6-4ea1-e380-54d8.ngrok-free.app"; // 🌐 URL de NGROK (descomentar si se usa NGROK)
+//const dominio = "https://cdc3-2806-10be-c-3346-9d6-4ea1-e380-54d8.ngrok-free.app"; // 🌐 URL de NGROK (descomentar si se usa NGROK)
 // const dominio = "http://localhost:3000"; // 🖥️ URL para desarrollo local (descomentar si se usa localhost)
 
 
 
 
 const EMPRESA_EMAIL = "diochoglez@gmail.com"; // Aquí defines el correo de la empresa contacto@caribbeanhousestudio.com
+//const EMPRESA_EMAIL = "contacto@caribbeanhousestudio.com"; 
 
 import cors from "cors";
 
@@ -2801,12 +2801,16 @@ app.get("/api/muebles", (req, res) => {
     res.json(results);
   });
 });
+
+
+
+
 app.post("/pedido-custom", upload.array("images"), async (req, res) => {
   const { name, email, phone, referenceItem, description, dimensions, material, finish, generalNotes } = req.body;
   const images = req.files || [];
 
   // Email receptor (correo de los colaboradores)
-  const recipientEmail = "dmasmasdz@gmail.com";
+  const recipientEmail = EMPRESA_EMAIL;
   let attachments = [];
 
   // Procesar imágenes como adjuntos
@@ -4046,7 +4050,25 @@ app.post('/api/orden/crear', async (req, res) => {
     await db.promise().query('DELETE FROM carrito WHERE usuario_id = ?', [userId]);
 
 
-    res.json({ success: true, message: 'Orden creada exitosamente.', ordenId, precioTotal });
+    // ✅ **Mandar la notificación por correo al final**
+    const totalCompra = precioTotalProductos + parseFloat(precio_envio);
+
+    fetch("http://localhost:3000/send-order-notification", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        orden_id: ordenId,
+        precio_envio: precio_envio
+      })
+    })
+    .then(response => response.json())
+    .then(data => console.log("📩 Notificación enviada:", data))
+    .catch(error => console.error("❌ Error enviando notificación:", error));
+
+    // 🔥 **Responder sin esperar la notificación**
+    res.json({ success: true, message: 'Orden creada exitosamente.', ordenId, totalCompra });
 
 
   } catch (err) {
@@ -4054,6 +4076,131 @@ app.post('/api/orden/crear', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error interno del servidor.' });
   }
 });
+
+
+//////////////////////////////////////////////// notificaciones //////////////////////////////////////////////////////////////////
+
+
+
+// 📩 **CREDENCIALES DEL CORREO EMISOR (TU CUENTA GMAIL)**
+const EMAIL_USER = "noreply.caribbeanhousestudio@gmail.com"; // 📌 Tu correo de Gmail
+const EMAIL_PASS = "zwnt jfcn xesw aohg"; // 📌 Contraseña de aplicación
+
+// Configuración de Nodemailer
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: EMAIL_USER,
+    pass: EMAIL_PASS,
+  },
+});
+
+
+
+// 📌 **Endpoint para notificar compras**
+app.post("/send-order-notification", async (req, res) => {
+  try {
+    const { orden_id, precio_envio } = req.body;
+    if (!orden_id || precio_envio === undefined) {
+      return res.status(400).json({ error: "Se requiere orden_id y precio_envio" });
+    }
+
+    // 🛒 **1. Obtener información de la orden**
+    const [ordenRows] = await db.query(
+      `SELECT numero_orden, usuario_id, fecha_orden FROM ordenes WHERE orden_id = ?`,
+      [orden_id]
+    );
+    if (ordenRows.length === 0) {
+      return res.status(404).json({ error: "Orden no encontrada" });
+    }
+    const { numero_orden, usuario_id, fecha_orden } = ordenRows[0];
+
+    // 👤 **2. Obtener información del usuario**
+    const [usuarioRows] = await db.query(
+      `SELECT nombre, correo FROM Usuarios WHERE usuario_id = ?`,
+      [usuario_id]
+    );
+    if (usuarioRows.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+    const { nombre, correo } = usuarioRows[0];
+
+    // 🏠 **3. Obtener dirección de envío**
+    const [direccionRows] = await db.query(
+      `SELECT calle, colonia, ciudad, estado, cp FROM Direcciones 
+       WHERE usuario_id = ? AND Seleccionada = 't' LIMIT 1`,
+      [usuario_id]
+    );
+    if (direccionRows.length === 0) {
+      return res.status(404).json({ error: "Dirección no encontrada" });
+    }
+    const { calle, colonia, ciudad, estado, cp } = direccionRows[0];
+    const direccion_completa = `${calle}, ${colonia}, ${ciudad}, ${estado}, CP: ${cp}`;
+
+    // 📦 **4. Obtener los productos comprados**
+    const [comprasRows] = await db.query(
+      `SELECT c.producto_id, c.cantidad, c.color, p.nombre AS producto_nombre, p.precio
+       FROM Compras c
+       JOIN Productos p ON c.producto_id = p.producto_id
+       WHERE c.orden_id = ?`,
+      [orden_id]
+    );
+
+    if (comprasRows.length === 0) {
+      return res.status(404).json({ error: "No hay productos en la orden" });
+    }
+
+    // 🧮 **5. Calcular el total de la compra**
+    let total_productos = 0;
+    let productos_list = "";
+    comprasRows.forEach((compra) => {
+      const subtotal = compra.precio * compra.cantidad;
+      total_productos += subtotal;
+      productos_list += `- ${compra.producto_nombre} (${compra.color}): ${compra.cantidad} x $${compra.precio} = $${subtotal}\n`;
+    });
+
+    const total_compra = total_productos + parseFloat(precio_envio);
+
+    // 📧 **6. Enviar correo con los detalles**
+    const email_subject = `Nueva orden recibida: ${numero_orden}`;
+    const email_body = `
+    📌 **Nueva compra realizada** 📌
+    
+    🛒 Cliente: ${nombre}
+    📧 Email: ${correo}
+    📅 Fecha de la orden: ${new Date(fecha_orden).toLocaleDateString()}
+    🔢 Número de orden: ${numero_orden}
+
+    📦 **Productos comprados:**
+    ${productos_list}
+
+    🚚 **Envío a:** ${direccion_completa}
+    📦 Costo de envío: $${precio_envio}
+
+    💰 **Total pagado: $${total_compra}**
+
+    `;
+
+    const mailOptions = {
+      from: EMAIL_USER,
+      to: EMPRESA_EMAIL,
+      subject: email_subject,
+      text: email_body,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ success: true, message: "Correo de notificación enviado correctamente" });
+  } catch (error) {
+    console.error("Error al enviar la notificación de compra:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+
+
+
+
 
 
 
