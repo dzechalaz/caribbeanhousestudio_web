@@ -4053,7 +4053,7 @@ app.post('/api/orden/crear', async (req, res) => {
     // ✅ **Mandar la notificación por correo al final**
     const totalCompra = precioTotalProductos + parseFloat(precio_envio);
 
-    fetch("http://localhost:3000/send-order-notification", {
+    fetch(`${dominio}/compras/send-order-notification`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
