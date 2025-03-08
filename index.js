@@ -2847,8 +2847,8 @@ app.post("/pedido-custom", upload.array("images"), async (req, res) => {
    const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "dmasmasdz@gmail.com", // Tu correo
-      pass: "lwqm ksts hhxy yfxy", // Contraseña generada
+      user: EMAIL_USER,
+      pass: EMAIL_PASS,
     },
   });
   
@@ -4067,14 +4067,19 @@ app.post('/api/orden/crear', async (req, res) => {
     .then(data => console.log("📩 Notificación enviada:", data))
     .catch(error => console.error("❌ Error enviando notificación:", error));
 
+    
+
     // 🔥 **Responder sin esperar la notificación**
     res.json({ success: true, message: 'Orden creada exitosamente.', ordenId, totalCompra });
+    
 
 
   } catch (err) {
     console.error('❌ Error al procesar la orden:', err);
     res.status(500).json({ success: false, message: 'Error interno del servidor.' });
   }
+
+  
 });
 
 
@@ -4096,7 +4101,6 @@ const transporter = nodemailer.createTransport({
 });
 
 
-
 // 📌 **Endpoint para notificar compras**
 app.post("/send-order-notification", async (req, res) => {
   try {
@@ -4106,7 +4110,7 @@ app.post("/send-order-notification", async (req, res) => {
     }
 
     // 🛒 **1. Obtener información de la orden**
-    const [ordenRows] = await db.query(
+    const [ordenRows] = await db.promise().query(
       `SELECT numero_orden, usuario_id, fecha_orden FROM ordenes WHERE orden_id = ?`,
       [orden_id]
     );
@@ -4116,7 +4120,7 @@ app.post("/send-order-notification", async (req, res) => {
     const { numero_orden, usuario_id, fecha_orden } = ordenRows[0];
 
     // 👤 **2. Obtener información del usuario**
-    const [usuarioRows] = await db.query(
+    const [usuarioRows] = await db.promise().query(
       `SELECT nombre, correo FROM Usuarios WHERE usuario_id = ?`,
       [usuario_id]
     );
@@ -4125,20 +4129,40 @@ app.post("/send-order-notification", async (req, res) => {
     }
     const { nombre, correo } = usuarioRows[0];
 
-    // 🏠 **3. Obtener dirección de envío**
-    const [direccionRows] = await db.query(
-      `SELECT calle, colonia, ciudad, estado, cp FROM Direcciones 
-       WHERE usuario_id = ? AND Seleccionada = 't' LIMIT 1`,
-      [usuario_id]
+    // 🏠 **3. Obtener dirección de envío desde `Compras`**
+    const [direccionCompraRows] = await db.promise().query(
+      `SELECT direccion_envio FROM Compras WHERE orden_id = ? LIMIT 1`,
+      [orden_id]
     );
-    if (direccionRows.length === 0) {
-      return res.status(404).json({ error: "Dirección no encontrada" });
+
+    if (direccionCompraRows.length === 0) {
+      return res.status(404).json({ error: "No se encontró dirección de envío para la orden" });
     }
-    const { calle, colonia, ciudad, estado, cp } = direccionRows[0];
-    const direccion_completa = `${calle}, ${colonia}, ${ciudad}, ${estado}, CP: ${cp}`;
+
+    let direccion_envio = direccionCompraRows[0].direccion_envio;
+    let direccion_completa;
+
+    if (!isNaN(direccion_envio)) {
+      // Si `direccion_envio` es un número, buscar en la tabla `Direcciones`
+      const [direccionRows] = await db.promise().query(
+        `SELECT calle, colonia, ciudad, estado, cp FROM Direcciones 
+         WHERE direccion_id = ? LIMIT 1`,
+        [direccion_envio]
+      );
+
+      if (direccionRows.length === 0) {
+        direccion_completa = "Dirección no encontrada";
+      } else {
+        const { calle, colonia, ciudad, estado, cp } = direccionRows[0];
+        direccion_completa = `${calle}, ${colonia}, ${ciudad}, ${estado}, CP: ${cp}`;
+      }
+    } else {
+      // Si `direccion_envio` no es un número (ej. "Recoger en tienda"), usarlo tal cual
+      direccion_completa = direccion_envio;
+    }
 
     // 📦 **4. Obtener los productos comprados**
-    const [comprasRows] = await db.query(
+    const [comprasRows] = await db.promise().query(
       `SELECT c.producto_id, c.cantidad, c.color, p.nombre AS producto_nombre, p.precio
        FROM Compras c
        JOIN Productos p ON c.producto_id = p.producto_id
@@ -4162,33 +4186,119 @@ app.post("/send-order-notification", async (req, res) => {
     const total_compra = total_productos + parseFloat(precio_envio);
 
     // 📧 **6. Enviar correo con los detalles**
-    const email_subject = `Nueva orden recibida: ${numero_orden}`;
-    const email_body = `
-    📌 **Nueva compra realizada** 📌
     
-    🛒 Cliente: ${nombre}
-    📧 Email: ${correo}
-    📅 Fecha de la orden: ${new Date(fecha_orden).toLocaleDateString()}
-    🔢 Número de orden: ${numero_orden}
+    const email_subject = `Nueva orden recibida: ${numero_orden}`;
+const email_body = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orden Confirmada</title>
+  <style>
+    body {
+      font-family: "Arial", sans-serif;
+      background-color: #F4EDE1;
+      margin: 0;
+      padding: 0;
+      color: #3D2C2A;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+    .header {
+      background-color: #A46D42;
+      color: white;
+      padding: 18px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+    }
+    .content {
+      padding: 20px;
+    }
+    .info, .productos, .direccion {
+      padding: 18px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+    .info {
+      background: #E8D3C0;
+    }
+    .productos {
+      background: #F9E8D9;
+    }
+    .direccion {
+      background: #C8D8B8;
+    }
+    h3 {
+      font-size: 20px;
+      color: #8B4A32;
+      margin-bottom: 8px;
+    }
+    .total {
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+      color: #BF3B2B;
+      margin-top: 20px;
+    }
+    .footer {
+      text-align: center;
+      padding: 15px;
+      font-size: 16px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">🛒 Nueva compra realizada</div>
+    <div class="content">
+      <div class="info">
+        <p><strong>Cliente:</strong> ${nombre}</p>
+        <p><strong>Email:</strong> ${correo}</p>
+        <p><strong>Fecha de la orden:</strong> ${new Date(fecha_orden).toLocaleDateString()}</p>
+        <p><strong>Número de orden:</strong> ${numero_orden}</p>
+      </div>
+      <div class="productos">
+        <h3>📦 Productos comprados:</h3>
+        <ul>
+          ${comprasRows.map(compra => 
+            `<li><strong>${compra.producto_nombre} (${compra.color})</strong>: ${compra.cantidad} x $${compra.precio} = <strong>$${compra.precio * compra.cantidad}</strong></li>`
+          ).join('')}
+        </ul>
+      </div>
+      <div class="direccion">
+        <h3>🚚 Envío a:</h3>
+        <p><strong>${direccion_completa}</strong></p>
+        <p><strong>Costo de envío:</strong> $${precio_envio}</p>
+      </div>
+      <div class="total">💰 Total pagado: <strong>$${total_compra}</strong></div>
+    </div>
+    <div class="footer">Gracias por tu compra | Caribbean House Studio</div>
+  </div>
+</body>
+</html>
+`;
 
-    📦 **Productos comprados:**
-    ${productos_list}
+const mailOptions = {
+  from: EMAIL_USER,
+  to: EMPRESA_EMAIL,
+  subject: email_subject,
+  html: email_body, // Ahora enviamos HTML mejorado
+};
 
-    🚚 **Envío a:** ${direccion_completa}
-    📦 Costo de envío: $${precio_envio}
+await transporter.sendMail(mailOptions);
 
-    💰 **Total pagado: $${total_compra}**
-
-    `;
-
-    const mailOptions = {
-      from: EMAIL_USER,
-      to: EMPRESA_EMAIL,
-      subject: email_subject,
-      text: email_body,
-    };
-
-    await transporter.sendMail(mailOptions);
 
     res.status(200).json({ success: true, message: "Correo de notificación enviado correctamente" });
   } catch (error) {
@@ -4196,8 +4306,6 @@ app.post("/send-order-notification", async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
-
-
 
 
 
