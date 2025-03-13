@@ -23,8 +23,8 @@ const dominio = "https://www.caribbeanhousestudio.com"; // ✅ URL actual en uso
 
 
 
-const EMPRESA_EMAIL = "diochoglez@gmail.com"; // Aquí defines el correo de la empresa contacto@caribbeanhousestudio.com
-//const EMPRESA_EMAIL = "contacto@caribbeanhousestudio.com"; 
+//const EMPRESA_EMAIL = "diochoglez@gmail.com"; // Aquí defines el correo de la empresa contacto@caribbeanhousestudio.com
+const EMPRESA_EMAIL = "contacto@caribbeanhousestudio.com"; 
 
 import cors from "cors";
 
