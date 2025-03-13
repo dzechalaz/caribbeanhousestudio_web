@@ -107,19 +107,36 @@
           </div>
           
           <!-- Paginación -->
-          <div class="pagination">
-            <% if (paginaActual > 1) { %>
-              <a href="/catalogo?page=<%= paginaActual - 1 %>" class="page-button">Anterior</a>
-            <% } %>
-        
-            <% for (let i = 1; i <= totalPaginas; i++) { %>
-              <a href="/catalogo?page=<%= i %>" class="page-button <%= i === paginaActual ? 'active' : '' %>"><%= i %></a>
-            <% } %>
-        
-            <% if (paginaActual < totalPaginas) { %>
-              <a href="/catalogo?page=<%= paginaActual + 1 %>" class="page-button">Siguiente</a>
-            <% } %>
-          </div>
+         <!-- Paginación -->
+        <div class="pagination">
+          <% if (paginaActual > 1) { %>
+            <a 
+              href="/catalogo?page=<%= paginaActual - 1 %>&categoria=<%= categoriaSeleccionada %>&query=<%= searchQuery %>" 
+              class="page-button"
+            >
+              Anterior
+            </a>
+          <% } %>
+
+          <% for (let i = 1; i <= totalPaginas; i++) { %>
+            <a 
+              href="/catalogo?page=<%= i %>&categoria=<%= categoriaSeleccionada %>&query=<%= searchQuery %>" 
+              class="page-button <%= i === paginaActual ? 'active' : '' %>"
+            >
+              <%= i %>
+            </a>
+          <% } %>
+
+          <% if (paginaActual < totalPaginas) { %>
+            <a 
+              href="/catalogo?page=<%= paginaActual + 1 %>&categoria=<%= categoriaSeleccionada %>&query=<%= searchQuery %>" 
+              class="page-button"
+            >
+              Siguiente
+            </a>
+          <% } %>
+        </div>
+
         </section>
         
     
