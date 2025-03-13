@@ -3724,7 +3724,7 @@ import { MercadoPagoConfig, Preference } from 'mercadopago';
 
 // ✅ Configuración de Mercado Pago
 const client = new MercadoPagoConfig({
-  accessToken: "APP_USR-4766218969963872-030421-97a2948590998bec1e7d7edd1462103d-2306587214",
+  accessToken: "APP_USR-7149075560158894-022517-61e2404d04f9052fb3cca2b8c4b82cfc-1755966178",
 });
 
 
@@ -3853,7 +3853,7 @@ app.post("/api/mercadopago/webhook", async (req, res) => {
     const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer APP_USR-4766218969963872-030421-97a2948590998bec1e7d7edd1462103d-2306587214`,
+        "Authorization": `Bearer APP_USR-7149075560158894-022517-61e2404d04f9052fb3cca2b8c4b82cfc-1755966178`,
         "Content-Type": "application/json",
       },
     });
