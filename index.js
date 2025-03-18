@@ -23,8 +23,8 @@ const dominio = "https://www.caribbeanhousestudio.com"; // ✅ URL actual en uso
 
 
 
-//const EMPRESA_EMAIL = "diochoglez@gmail.com"; // Aquí defines el correo de la empresa contacto@caribbeanhousestudio.com
-const EMPRESA_EMAIL = "contacto@caribbeanhousestudio.com"; 
+const EMPRESA_EMAIL = "diochoglez@gmail.com"; // Aquí defines el correo de la empresa contacto@caribbeanhousestudio.com
+//const EMPRESA_EMAIL = "contacto@caribbeanhousestudio.com"; 
 
 import cors from "cors";
 
@@ -1124,19 +1124,27 @@ app.get('/colaborador/ordenes/compras/:orden_id', authMiddleware, (req, res) => 
   const ordenId = req.params.orden_id;
 
   const query = `
-    SELECT 
-      c.compra_id,
-      COALESCE(p.nombre, pc.nombre) AS producto_nombre, -- Muestra el nombre del producto normal o personalizado
-      c.cantidad,
-      c.fecha_compra,
-      c.direccion_envio,
-      c.estado,
-      c.color -- 🔥 Se agregó la columna 'color' desde la tabla Compras
-    FROM Compras c
-    LEFT JOIN Productos p ON c.producto_id = p.producto_id
-    LEFT JOIN ProductCostum pc ON c.CostumProduct_id = pc.CostumProduct_id
-    WHERE c.orden_id = ?
-  `;
+  SELECT 
+    c.compra_id,
+    COALESCE(p.nombre, pc.nombre) AS producto_nombre,
+    c.cantidad,
+    c.fecha_compra,
+    CONCAT(
+     
+      d.calle, ', ',
+      d.colonia, ', ',
+      d.ciudad, ', ',
+      d.estado, ' CP:', d.cp
+    ) AS direccion_envio,
+    c.estado,
+    c.color
+  FROM Compras c
+  LEFT JOIN Productos p      ON c.producto_id      = p.producto_id
+  LEFT JOIN ProductCostum pc ON c.CostumProduct_id = pc.CostumProduct_id
+  LEFT JOIN Direcciones d    ON c.direccion_envio  = d.direccion_id
+  WHERE c.orden_id = ?
+`;
+
 
   db.query(query, [ordenId], (err, results) => {
     if (err) {
