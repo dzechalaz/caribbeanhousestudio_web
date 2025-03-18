@@ -17,7 +17,7 @@ import dotenv from 'dotenv';
 
 // Definir dominio global
 const dominio = "https://www.caribbeanhousestudio.com"; // ✅ URL actual en uso
-//const dominio = "https://cdc3-2806-10be-c-3346-9d6-4ea1-e380-54d8.ngrok-free.app"; // 🌐 URL de NGROK (descomentar si se usa NGROK)
+//const dominio = " https://70e5-2806-10be-c-bc98-30-64d-740a-5583.ngrok-free.app"; // 🌐 URL de NGROK (descomentar si se usa NGROK)
 // const dominio = "http://localhost:3000"; // 🖥️ URL para desarrollo local (descomentar si se usa localhost)
 
 
@@ -3711,7 +3711,7 @@ app.post('/api/actualizar-precio/130', async (req, res) => {
       console.log(`📝 Evento "sim" registrado en Registros con el nuevo precio de $${nuevoPrecio.toFixed(2)}`);
 
       res.json({ success: true, nuevo_precio: nuevoPrecio.toFixed(2) });
-
+   
   } catch (error) {
       console.error("❌ Error al actualizar el precio:", error);
       res.status(500).json({ success: false, error: "Error al actualizar el precio." });

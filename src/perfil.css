@@ -167,16 +167,20 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  
 }
 
 .modal-content {
   background-color: white;
   padding: 20px;
   border-radius: 8px;
-  width: 40%;
-  max-width: 500px;
+  width: 90%;         /* Que tome gran parte, pero no todo, en móviles */
+  max-width: 500px;   /* En desktop no supera 500px */
+  max-height: 80vh;   /* 80% de la altura de la ventana */
+
   text-align: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
 }
 
 .close {

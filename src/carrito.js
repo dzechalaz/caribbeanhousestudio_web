@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (data.length === 0) {
         // 🔹 No hay direcciones registradas
-        addressName.textContent = "No tienes direcciones";
+        addressName.textContent = "Recoger en tienda";
         addressDetails.textContent = "";
         changeAddressButton.textContent = "Crear Dirección";
         changeAddressButton.onclick = () => (window.location.href = "/perfil");
