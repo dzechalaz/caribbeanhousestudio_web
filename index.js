@@ -17,14 +17,14 @@ import dotenv from 'dotenv';
 
 // Definir dominio global
 const dominio = "https://www.caribbeanhousestudio.com"; // ✅ URL actual en uso
-//const dominio = " https://70e5-2806-10be-c-bc98-30-64d-740a-5583.ngrok-free.app"; // 🌐 URL de NGROK (descomentar si se usa NGROK)
+//const dominio = "https://4771-2806-10be-c-bc98-d4f-d6db-96c1-e9da.ngrok-free.app"; // 🌐 URL de NGROK (descomentar si se usa NGROK)
 // const dominio = "http://localhost:3000"; // 🖥️ URL para desarrollo local (descomentar si se usa localhost)
 
 
 
 
-const EMPRESA_EMAIL = "diochoglez@gmail.com"; // Aquí defines el correo de la empresa contacto@caribbeanhousestudio.com
-//const EMPRESA_EMAIL = "contacto@caribbeanhousestudio.com"; 
+//const EMPRESA_EMAIL = "diochoglez@gmail.com"; // Aquí defines el correo de la empresa contacto@caribbeanhousestudio.com
+const EMPRESA_EMAIL = "contacto@caribbeanhousestudio.com"; 
 
 import cors from "cors";
 
@@ -3726,13 +3726,20 @@ app.post('/api/actualizar-precio/130', async (req, res) => {
   }
 });
 
+
+
+
+
+
+
 // ############################################## mercado pago ##############################################
 
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 
 // ✅ Configuración de Mercado Pago
 const client = new MercadoPagoConfig({
-  accessToken: "APP_USR-7149075560158894-022517-61e2404d04f9052fb3cca2b8c4b82cfc-1755966178",
+  accessToken: "APP_USR-7149075560158894-022517-61e2404d04f9052fb3cca2b8c4b82cfc-1755966178", //prod
+  //accessToken: "APP_USR-4766218969963872-030421-97a2948590998bec1e7d7edd1462103d-2306587214", //test
 });
 
 
@@ -3861,7 +3868,8 @@ app.post("/api/mercadopago/webhook", async (req, res) => {
     const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer APP_USR-7149075560158894-022517-61e2404d04f9052fb3cca2b8c4b82cfc-1755966178`,
+        //"Authorization": `Bearer APP_USR-4766218969963872-030421-97a2948590998bec1e7d7edd1462103d-2306587214`, //Test
+        "Authorization": `Bearer APP_USR-7149075560158894-022517-61e2404d04f9052fb3cca2b8c4b82cfc-1755966178`, //prod
         "Content-Type": "application/json",
       },
     });
@@ -3956,29 +3964,31 @@ app.post('/api/orden/crear', async (req, res) => {
 
 
     // 🔹 Verificar si hay alguna dirección seleccionada ('t')
-    const [direccionData] = await db.promise().query(
-      `SELECT direccion_id FROM Direcciones WHERE usuario_id = ? AND Seleccionada = 't'`,
-      [userId]
-    );
-
-
+    const [direccionData] = await db.promise().query(`
+      SELECT direccion_id, flete 
+      FROM Direcciones 
+      WHERE usuario_id = ? AND Seleccionada = 't'
+    `, [userId]);
+    
     let direccionId;
-
-
+    let precio_envio = 0;  // Aquí declaras la variable con un valor por defecto 0
+    
     if (direccionData.length === 0) {
-      direccionId = "Recoger en tienda"; // 🚀 Si no hay dirección seleccionada, asignamos "Recoger en tienda"
+      // No hay dirección seleccionada
+      direccionId = "Recoger en tienda";
       console.log("📌 No hay dirección seleccionada, se asigna 'Recoger en tienda'");
     } else {
       direccionId = direccionData[0].direccion_id;
+      // Aquí tomas el flete real si existe
+      precio_envio = parseFloat(direccionData[0].flete) || 0;
       console.log("📌 Dirección seleccionada:", direccionId);
+      console.log("💲 Flete de la dirección:", precio_envio);
     }
 
-
-    // 🔹 Calcular el precio total de la orden
+      // precioTotal se calcula solo con (producto.precio * producto.cantidad)
     let precioTotal = carrito.reduce((total, producto) => {
       return total + (producto.precio * producto.cantidad);
     }, 0);
-
 
     console.log("💰 Precio total de la orden:", precioTotal);
 
@@ -4059,7 +4069,7 @@ app.post('/api/orden/crear', async (req, res) => {
 
 
     // ✅ **Mandar la notificación por correo al final**
-    const totalCompra = precioTotalProductos + parseFloat(precio_envio);
+    const totalCompra = precioTotal + precio_envio;
 
     fetch(`${dominio}/compras/send-order-notification`, {
       method: "POST",
@@ -4068,7 +4078,7 @@ app.post('/api/orden/crear', async (req, res) => {
       },
       body: JSON.stringify({
         orden_id: ordenId,
-        precio_envio: precio_envio
+        precio_envio: precio_envio     // <--- asegurarte de mandar la variable correcta
       })
     })
     .then(response => response.json())
@@ -4110,7 +4120,7 @@ const transporter = nodemailer.createTransport({
 
 
 // 📌 **Endpoint para notificar compras**
-app.post("/send-order-notification", async (req, res) => {
+app.post("/compras/send-order-notification", async (req, res) => {
   try {
     const { orden_id, precio_envio } = req.body;
     if (!orden_id || precio_envio === undefined) {
