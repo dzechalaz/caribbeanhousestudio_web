@@ -1,0 +1,11 @@
+4189 1412 2126 7633
+TESTUSER638544104
+qHZ73RWD38
+
+
+Usuario de prueba creado: 
+id: 2306586948,
+test_user_1077529388@testuser.com
+nickname: 'TESTUSER1077529388',
+ite_status: 'active',
+IhIhDLsxci
