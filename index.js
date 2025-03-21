@@ -15,6 +15,7 @@ import { fileURLToPath } from "url";
 import archiver from "archiver";
 import dotenv from 'dotenv';
 
+
 // Definir dominio global
 const dominio = "https://www.caribbeanhousestudio.com"; // ✅ URL actual en uso
 //const dominio = "https://4771-2806-10be-c-bc98-d4f-d6db-96c1-e9da.ngrok-free.app"; // 🌐 URL de NGROK (descomentar si se usa NGROK)
@@ -35,7 +36,7 @@ app.use(cors());
 app.use(cookieParser());
 
 
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand} from '@aws-sdk/client-s3';
 
 
 
@@ -1524,6 +1525,75 @@ app.post('/colaborador/compras/modificar-estado/:compra_id', authMiddleware, (re
 });
 
 
+//###################################### IMÁGENES DE PROGRESO
+
+// Endpoint para listar las imágenes de progreso de una compra
+app.get('/colaborador/compras/progreso/:compra_id/images', async (req, res) => {
+  const { compra_id } = req.params;
+  const prefix = `Progreso/${compra_id}/`; // Carpeta en el bucket para esta compra
+
+  try {
+    const data = await s3.send(new ListObjectsCommand({
+      Bucket: 'products', // Reemplaza con el nombre real de tu bucket
+      Prefix: prefix,
+    }));
+
+    const contents = data.Contents || [];
+    // Se obtienen las claves (paths) de cada imagen
+    const images = contents.map((obj) => obj.Key);
+    return res.json({ success: true, images });
+  } catch (error) {
+    console.error('Error al listar imágenes:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Endpoint para subir imágenes de progreso a la carpeta correspondiente
+app.post('/colaborador/compras/progreso/:compra_id/images', upload.array('images'), async (req, res) => {
+  const { compra_id } = req.params;
+  const prefix = `Progreso/${compra_id}/`; // Carpeta donde se guardarán las imágenes
+
+  try {
+    // Primero, se listan las imágenes existentes para determinar el siguiente índice
+    const listData = await s3.send(new ListObjectsCommand({
+      Bucket: 'products', // Reemplaza con el nombre real de tu bucket
+      Prefix: prefix,
+    }));
+
+    const existingObjects = listData.Contents || [];
+    let maxIndex = 0;
+    existingObjects.forEach((obj) => {
+      const fileName = obj.Key.replace(prefix, ""); // Ejemplo: "3.jpg"
+      const baseName = fileName.split(".")[0];        // Extraemos el número: "3"
+      const parsed = parseInt(baseName, 10);
+      if (!isNaN(parsed) && parsed > maxIndex) {
+        maxIndex = parsed;
+      }
+    });
+
+    // Se sube cada archivo asignándole el siguiente número consecutivo
+    let counter = maxIndex;
+    for (const file of req.files) {
+      counter++;
+      const extension = path.extname(file.originalname) || ".jpg";
+      const key = `${prefix}${counter}${extension}`; // Ejemplo: Progreso/123/4.jpg
+
+      await s3.send(new PutObjectCommand({
+        Bucket: 'products', // Reemplaza con el nombre real de tu bucket
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      }));
+    }
+
+    return res.json({ success: true, message: "Imágenes subidas correctamente" });
+  } catch (error) {
+    console.error('Error al subir imágenes:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+
 
 // ########################################## PRODUCTOS CUSTOMIZADOS
 app.get('/colaborador/costumProductCrear', authMiddleware, (req, res) => {
@@ -1883,6 +1953,45 @@ app.get('/seguimiento', async (req, res) => {
   }
 });
 
+
+
+// Endpoint para obtener las imágenes de progreso de una compra, en orden ascendente
+app.get("/seguimiento/:compra_id/images", async (req, res) => {
+  const { compra_id } = req.params;
+  const prefix = `Progreso/${compra_id}/`;
+
+  try {
+    // Listar objetos (imágenes) del bucket en la carpeta correspondiente
+    const data = await s3.send(
+      new ListObjectsCommand({
+        Bucket: "products", // Ajusta al nombre de tu bucket en R2
+        Prefix: prefix,
+      })
+    );
+
+    const contents = data.Contents || [];
+
+    // Extraer la parte numérica del nombre de archivo para ordenar
+    // Por ejemplo: Progreso/123/2.jpg => baseName = "2"
+    // Convertimos "2" a número y así ordenamos
+    const images = contents
+      .map((obj) => obj.Key)
+      .map((key) => {
+        const fileName = key.replace(prefix, ""); // "2.jpg"
+        const baseName = fileName.split(".")[0];  // "2"
+        const indexNum = parseInt(baseName, 10) || 0;
+        return { key, indexNum };
+      })
+      .sort((a, b) => a.indexNum - b.indexNum) // Orden ascendente
+      .map((item) => item.key); // Solo nos quedamos con la clave final
+
+    // Devuelve el arreglo de claves ordenadas
+    return res.json({ success: true, images });
+  } catch (error) {
+    console.error("Error al obtener imágenes de progreso:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 
 //########################################## COMPRAS ##########################################

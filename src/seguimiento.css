@@ -48,7 +48,7 @@
   bottom: 0.04px;
   left: calc(50% - 3.05px);
   width: 6.6px;
-  background-image: url(./public/rectangle-813@3x.png);
+
   background-size: cover;
   background-repeat: no-repeat;
   background-position: top;
@@ -532,7 +532,7 @@
 .entregado-icon,
 .seguimiento4 {
   position: absolute;
-  top: calc(50% + 30px);
+  top: 480px;
   right: 126.8px;
   width: 28.1px;
   height: 29.4px;
@@ -757,7 +757,7 @@
   color: var(--color-darkslategray-100);
 }
 .seguimiento-bloque {
-  position: absolute;
+  position: relative; 
   height: calc(100% - 624px);
   top: 135px;
   bottom: 489px;
@@ -911,7 +911,11 @@
   font-size: var(--font-size-xs);
   color: var(--color-white);
   font-family: var(--font-montserrat);
+  margin-bottom: 150px;
 }
+body{
+  background-color: var(--color-antiquewhite);
+  }
 @media screen and (max-width: 768px) {
   .direccion-parent {
     flex-direction: column;
@@ -993,7 +997,7 @@
   opacity: 1;
 }
 /* Línea de progreso */
-.linea-Segment {
+.linea-Segment{
   position: absolute;
   top: -10px;
   left: 0;
@@ -1059,4 +1063,141 @@
   font-size: 35px;
   text-align: center;
 
+
+
+}
+
+
+
+/* ===== Carrusel de Imágenes ===== */
+.carousel-container {
+  position: relative;
+  width: 80%;
+  max-width: 400px;  /* Ajusta el ancho máximo */
+  margin: 30px auto;
+  
+  /* Forzamos una relación de aspecto 1:1 para que sea cuadrado */
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background-color: #FFF8F0;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* Flechas (controles) */
+.carousel-control {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #D99058; /* Naranja Chukum */
+  border: none;
+  color: #FFF8F0;
+  font-size: 24px;
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  opacity: 0.8;
+  border-radius: 50%;
+  z-index: 2;
+  margin: auto 300px;
+}
+.carousel-control:hover {
+  opacity: 1;
+}
+.carousel-control.prev {
+  left: 10px;
+}
+.carousel-control.next {
+  right: 10px;
+}
+
+/* Contenedor que "enmarca" la pista */
+.carousel-track-container {
+  width: 100%;
+  height: 100%;  /* Ocupa todo el alto disponible (cuadrado) */
+  overflow: hidden;
+}
+
+/* La "pista" con todos los slides en fila */
+.carousel-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.4s ease;
+}
+
+/* Cada slide ocupa todo el contenedor (para 1 imagen a la vez) */
+.slide {
+  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Forzamos la imagen a llenar todo el slide y recortarse con object-fit */
+.slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* recorta si sobra */
+  border-radius: 8px;
+}
+
+/* Indicadores (puntitos) */
+.carousel-indicators {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.indicator-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin: 0 5px;
+  background-color: #C19A6B; /* Chukum claro */
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.indicator-dot.active {
+  background-color: #8EAA6D; /* Verde Chukum */
+}
+
+
+.carrusel-wrapper {
+  top: 900px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: 97%;
+  
+}
+
+.has-images {
+  height: calc(100% - 50px);
+}
+
+
+.progreso-titulo {
+  position: relatives;
+  margin-left: 20px;
+
+  text-align: left;
+ 
+  font: normal normal normal 31px/41px Josefin Sans;
+  letter-spacing: 0px;
+  color: #414141;
+  opacity: 1;
+}
+.linea-Segment2 {
+  position: absolute;
+  top: 45px;
+  left: 0;
+  right: 0;
+  border: 2px solid var(--unnamed-color-38afa7);
+  border: 2px solid #38AFA7;
+  opacity: 1;
 }

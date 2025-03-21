@@ -159,3 +159,82 @@ body {
     color: #A3826B; /* Color para el placeholder */
     font-style: italic;
 }
+
+
+/* Sección para las Imágenes de Progreso */
+#imagenes-progreso {
+    margin-top: 40px;
+}
+
+#imagenes-progreso h2 {
+    margin-bottom: 20px;
+    color: #5B4536; /* Texto principal */
+    font-size: 20px;
+    text-transform: uppercase;
+}
+
+/* Formulario de subida de imágenes */
+#upload-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#upload-input {
+    padding: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #F4EDE0; /* Fondo cálido */
+    border: 1px solid #C19A6B; /* Borde chukum claro */
+    border-radius: 5px;
+}
+
+#upload-form button {
+    background-color: #8EAA6D; /* Verde chukum */
+    color: #FFF8F0;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#upload-form button:hover {
+    background-color: #6E8E51; /* Verde más oscuro */
+}
+
+/* Galería de imágenes */
+.image-gallery {
+    /* 3 columnas fijas */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    justify-items: center;
+    margin-top: 20px;
+}
+
+.image-item {
+    /* Contenedor para cada imagen y su label */
+    width: 250px;
+    /* Espacio extra si quieres centrar texto debajo */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.imagen-progreso {
+    /* Forzamos 300×300 */
+    width: 250px;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra sutil */
+}
+
+.image-label {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #5B4536;
+    text-align: center;
+}
