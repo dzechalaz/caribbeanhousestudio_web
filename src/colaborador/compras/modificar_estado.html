@@ -25,6 +25,20 @@
             </div>
         </div>
         
+        <!-- NUEVA SECCIÓN PARA SUBIR IMÁGENES -->
+        <div id="imagenes-progreso">
+            <h2>Imágenes de Progreso</h2>
+            
+            <!-- Formulario de subida -->
+            <form id="upload-form" enctype="multipart/form-data">
+                <input type="file" id="upload-input" name="images" multiple />
+                <button type="submit">Subir Imágenes</button>
+            </form>
+
+            <!-- Aquí mostraremos la galería de imágenes ya subidas -->
+            <div id="image-gallery" class="image-gallery"></div>
+        </div>
+        
         
     </div>
     <script src="/colaborador/compras/modificar.js"></script>

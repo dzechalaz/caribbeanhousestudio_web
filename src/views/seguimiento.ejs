@@ -31,7 +31,7 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
 </header>
 <body>
     <div class="seguimiento3">
-        <img class="bef28-e2d2-463c-ae04-d69b5960f-icon2" alt="" src="/public/080bef28e2d2463cae04d69b5960f9f82@2x.png" />
+      
         <div class="seguimiento-bloque">
             <div class="direccion-parent">
                 <div class="direccion" data-animate-on-scroll>
@@ -153,8 +153,32 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
                     </div>
                 </div>
             </div>
-        </div>
-    
+             <!-- En tu EJS/HTML -->
+            <div class="carrusel-wrapper" id="carruselWrapper">
+                <div class="progreso-titulo">Progreso</div>
+                <div class="linea-Segment2"></div>
+
+                <div class="carousel-container">
+                
+                <div class="carousel-track-container">
+                    <div id="carouselTrack" class="carousel-track">
+                    <!-- Imágenes dinámicas -->
+                    </div>
+                </div>
+                
+                </div>
+                <button id="prevBtn" class="carousel-control prev">&#8249;</button>
+                <button id="nextBtn" class="carousel-control next">&#8250;</button>
+            
+                <!-- Indicadores (puntitos) -->
+                <div id="carouselIndicators" class="carousel-indicators"></div>
+            </div>
+            
+            
+            </div>
+        
+        
+            
     </div>
 
     <!-- Footer -->
@@ -266,5 +290,119 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
             observer.observe(scrollAnimElements[i]);
         }
     </script>
+    <script>
+        // Después de tu window.onload o dentro de él, para asegurarte de que el DOM está cargado:
+        window.addEventListener("DOMContentLoaded", function() {
+          const compraId = "<%= idCompra %>"; 
+          const CFI = "<%= CFI %>"; // Asegúrate de inyectar tu variable CFI si usas EJS
+          const track = document.getElementById("carouselTrack");
+          const prevBtn = document.getElementById("prevBtn");
+          const nextBtn = document.getElementById("nextBtn");
+          const indicatorsContainer = document.getElementById("carouselIndicators");
+      
+          let currentSlide = 0; // Índice del slide actual
+          let totalSlides = 0;
+      
+          // 1) Cargar imágenes desde el backend
+          fetch(`/seguimiento/${compraId}/images`)
+            .then(res => res.json())
+            .then(data => {
+              if (!data.success) {
+                console.error(data.error);
+                return;
+              }
+              const images = data.images || [];
+              const wrapper = document.getElementById("carruselWrapper");
+
+
+                if (images.length === 0) {
+                // No hay imágenes, ocultar el carrusel
+                wrapper.style.display = "none";
+                return; // Detener aquí, para no crear slides ni indicadores
+                }
+                const bloque = document.querySelector('.seguimiento-bloque');
+
+                
+
+                if (images.length > 0) {
+                // Aplica la clase si sí hay imágenes
+                bloque.classList.add('has-images');
+                } else {
+                // Si no hay imágenes, quita la clase o no la agregas
+                bloque.classList.remove('has-images');
+                }
+      
+              // OPCIONAL: si quieres la imagen más reciente primero,
+              // harías images.reverse(). Pero dices "la 1 primero y la última al final",
+              // así que no hace falta reverse.
+      
+              totalSlides = images.length;
+      
+              // 2) Crear cada slide
+              images.forEach((key, index) => {
+                // Contenedor "slide"
+                const slideDiv = document.createElement("div");
+                slideDiv.classList.add("slide");
+      
+                // Imagen
+                const img = document.createElement("img");
+                img.src = `${CFI}/${key}`; // Construye la URL final
+                img.alt = `Progreso ${index + 1}`;
+      
+                slideDiv.appendChild(img);
+                track.appendChild(slideDiv);
+      
+                // 3) Crear indicador (puntito)
+                const dot = document.createElement("div");
+                dot.classList.add("indicator-dot");
+                dot.addEventListener("click", () => goToSlide(index));
+                indicatorsContainer.appendChild(dot);
+              });
+      
+              // Activar el primer indicador
+              updateIndicators();
+      
+              // Ajustar track a la posición inicial
+              goToSlide(0);
+            })
+            .catch(err => console.error("Error al cargar imágenes de progreso:", err));
+      
+          // Función para moverse a un slide específico
+          function goToSlide(slideIndex) {
+            if (slideIndex < 0) slideIndex = totalSlides - 1;
+            if (slideIndex >= totalSlides) slideIndex = 0;
+            currentSlide = slideIndex;
+      
+            const slideWidth = track.clientWidth; 
+            // Mover la pista (carousel-track) con transform
+            track.style.transform = `translateX(-${slideWidth * currentSlide}px)`;
+      
+            updateIndicators();
+          }
+      
+          // Actualizar estilo de los puntitos
+          function updateIndicators() {
+            const dots = indicatorsContainer.querySelectorAll(".indicator-dot");
+            dots.forEach((dot, i) => {
+              dot.classList.toggle("active", i === currentSlide);
+            });
+          }
+      
+          // Eventos de flechas
+          prevBtn.addEventListener("click", () => {
+            goToSlide(currentSlide - 1);
+          });
+          nextBtn.addEventListener("click", () => {
+            goToSlide(currentSlide + 1);
+          });
+      
+          // (Opcional) Ajustar automáticamente el tamaño del carrusel al redimensionar
+          window.addEventListener("resize", () => {
+            // Forzamos el "re-layout" cuando cambie el ancho, para que se recalcule
+            goToSlide(currentSlide);
+          });
+        });
+      </script>
+      
 </body>
 </html>

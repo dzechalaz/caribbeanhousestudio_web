@@ -7,6 +7,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const fechaInput = document.getElementById('fecha-input');
     const ultimaFechaSpan = document.getElementById('ultima-fecha');
 
+    // Elementos para manejo de imágenes de progreso
+    const uploadForm = document.getElementById('upload-form');
+    const uploadInput = document.getElementById('upload-input');
+    const imageGallery = document.getElementById('image-gallery');
+
     let estadoActual;
 
     if (!compraId) {
@@ -157,4 +162,83 @@ document.addEventListener('DOMContentLoaded', function () {
     cancelarBtn.addEventListener('click', () => {
         window.location.href = '/colaborador/ordenes';
     });
+
+    // ===================== IMÁGENES DE PROGRESO =====================
+    const CFI =  "https://pub-9eb3385798dc4bcba46fb69f616dc1a0.r2.dev";
+    // Función para cargar las imágenes de progreso
+    function cargarImagenesProgreso() {
+        fetch(`/colaborador/compras/progreso/${compraId}/images`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    console.error(data.error);
+                    return;
+                }
+                imageGallery.innerHTML = ''; // Limpiar la galería
+                // data.images es un array de claves (ej: "Progreso/123/1.jpg")
+                // data.images es un array con las claves de las imágenes
+                    data.images.forEach((key, index) => {
+                        const imgUrl = `${CFI}/${key}`;
+                    
+                        // Crea un contenedor para la imagen y el texto
+                        const imageItem = document.createElement('div');
+                        imageItem.classList.add('image-item');
+                    
+                        // Imagen
+                        const imgElement = document.createElement('img');
+                        imgElement.src = imgUrl;
+                        imgElement.classList.add('imagen-progreso');
+                    
+                        // Label (Imagen 1, Imagen 2, etc.)
+                        const label = document.createElement('div');
+                        label.classList.add('image-label');
+                        label.textContent = `Imagen ${index + 1}`;
+                    
+                        // Agrega todo al contenedor
+                        imageItem.appendChild(imgElement);
+                        imageItem.appendChild(label);
+                    
+                        // Finalmente, agrega el contenedor a la galería
+                        imageGallery.appendChild(imageItem);
+                    });
+  
+            })
+            .catch(err => console.error('Error al cargar imágenes de progreso:', err));
+    }
+
+    // Cargar la galería al iniciar la página
+    cargarImagenesProgreso();
+
+    // Manejar el envío del formulario para subir imágenes
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const files = uploadInput.files;
+            if (!files.length) {
+                alert('No has seleccionado ningún archivo.');
+                return;
+            }
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('images', files[i]);
+            }
+            fetch(`/colaborador/compras/progreso/${compraId}/images`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Imágenes subidas exitosamente');
+                    // Recargar la galería
+                    cargarImagenesProgreso();
+                    // Resetear el input
+                    uploadInput.value = '';
+                } else {
+                    alert(data.error || 'Error al subir las imágenes');
+                }
+            })
+            .catch(err => console.error('Error al subir las imágenes:', err));
+        });
+    }
 });
