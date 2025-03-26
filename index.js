@@ -716,7 +716,10 @@ app.get('/colaborador/productos/generar-codigo', (req, res) => {
     'Recámara': 'REC',
     'Exterior': 'EXT',
     'Almacenaje': 'ALM',
-    'Varios': 'VAR'
+    'Varios': 'VAR',
+    'Outlet': 'OTL'
+
+
   };
 
   const prefix = prefixMapping[categoria];
