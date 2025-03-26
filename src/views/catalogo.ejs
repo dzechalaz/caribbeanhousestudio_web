@@ -52,9 +52,14 @@
           
           <h3>Categorías</h3>
           <ul>   
-            <!-- Listar dinámicamente las categorías -->
-            <% categorias.forEach(function(categoria) { %>
-              <li class="<%= categoria.categoria === categoriaSeleccionada ? 'active' : '' %>">
+            <% categorias.forEach(function(categoria) { 
+                
+                const isOutlet = categoria.categoria.toLowerCase() === 'outlet';
+            %>
+              <li 
+                class="<%= categoria.categoria === categoriaSeleccionada ? 'active' : '' %> 
+                       <%= isOutlet ? 'outlet-category' : '' %>"
+              >
                 <a 
                   href="/catalogo?categoria=<%= categoria.categoria %>" 
                   class="<%= categoria.categoria === categoriaSeleccionada ? 'active' : '' %>"

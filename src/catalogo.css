@@ -114,7 +114,7 @@
   background-color: #C19A6B; /* Color estilo chukum */
   padding: 20px;
   border-radius: 8px;
-  max-height: 430px;
+  max-height: 500px;
   margin-right: 20px;
   
 }
@@ -286,4 +286,33 @@ body {
 
 .quote-button:hover {
   background-color: #497E39; /* Verde más oscuro para hover */
+}
+
+
+/* Define variables para que puedas cambiarlas fácilmente */
+:root {
+  --outlet-font-size: 1.2rem;      /* Ajusta el tamaño de fuente que desees */
+  --outlet-bg-color: #5da795;      /* Verde tipo “chukum” (ajusta según tu preferencia) */
+  --outlet-bg-hover: #bfe6db;      /* Color de fondo al hacer hover */
+  --outlet-text-color: #FFFFFF;    /* Color del texto */
+}
+
+/* Estilo especial para la categoría Outlet */
+.outlet-category a {
+  display: inline-block;
+  font-weight: bold;
+  font-size: var(--outlet-font-size);
+  background-color: var(--outlet-bg-color);
+  color: var(--outlet-text-color);
+  padding: 8px 16px;
+  border: none;             /* Sin borde sólido, para un look más minimalista */
+  border-radius: 20px;      /* Bordes redondeados; ajusta según tu gusto */
+  transition: background-color 0.3s ease, color 0.3s ease;
+  text-decoration: none;    /* Aseguramos que no aparezca el subrayado */
+}
+
+/* Efecto hover */
+.outlet-category a:hover {
+  background-color: var(--outlet-bg-hover);
+  color: var(--outlet-text-color);
 }
