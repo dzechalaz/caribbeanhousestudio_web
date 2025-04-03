@@ -19,7 +19,7 @@ import dotenv from 'dotenv';
 // Definir dominio global
 const dominio = "https://www.caribbeanhousestudio.com"; // ✅ URL actual en uso
 //const dominio = "https://4771-2806-10be-c-bc98-d4f-d6db-96c1-e9da.ngrok-free.app"; // 🌐 URL de NGROK (descomentar si se usa NGROK)
-// const dominio = "http://localhost:3000"; // 🖥️ URL para desarrollo local (descomentar si se usa localhost)
+//const dominio = "http://localhost:3000"; // 🖥️ URL para desarrollo local (descomentar si se usa localhost)
 
 
 
@@ -1128,37 +1128,40 @@ app.get('/colaborador/ordenes/compras/:orden_id', authMiddleware, (req, res) => 
   const ordenId = req.params.orden_id;
 
   const query = `
-  SELECT 
-    c.compra_id,
-    COALESCE(p.nombre, pc.nombre) AS producto_nombre,
-    c.cantidad,
-    c.fecha_compra,
-    CONCAT(
-     
-      d.calle, ', ',
-      d.colonia, ', ',
-      d.ciudad, ', ',
-      d.estado, ' CP:', d.cp
-    ) AS direccion_envio,
-    c.estado,
-    c.color
-  FROM Compras c
-  LEFT JOIN Productos p      ON c.producto_id      = p.producto_id
-  LEFT JOIN ProductCostum pc ON c.CostumProduct_id = pc.CostumProduct_id
-  LEFT JOIN Direcciones d    ON c.direccion_envio  = d.direccion_id
-  WHERE c.orden_id = ?
-`;
-
+    SELECT 
+      c.compra_id,
+      COALESCE(p.nombre, pc.nombre) AS producto_nombre,
+      c.cantidad,
+      c.fecha_compra,
+      CONCAT(
+        d.calle, ', ',
+        d.colonia, ', ',
+        d.ciudad, ', ',
+        d.estado, ' CP:', d.cp
+      ) AS direccion_envio,
+      c.estado,
+      c.color,
+      CASE
+        WHEN ca.color_id IS NOT NULL THEN CONCAT('${CFI}', '/Colors/', c.producto_id, '/', ca.color_id, '/a.webp')
+        ELSE CONCAT('${CFI}', '/Products/', c.producto_id, '/a.webp')
+      END AS path_imagen
+    FROM Compras c
+    LEFT JOIN Productos p ON c.producto_id = p.producto_id
+    LEFT JOIN ProductCostum pc ON c.CostumProduct_id = pc.CostumProduct_id
+    LEFT JOIN Direcciones d ON c.direccion_envio = d.direccion_id
+    LEFT JOIN ColoresAlternos ca ON c.producto_id = ca.producto_id AND c.color = ca.color
+    WHERE c.orden_id = ?
+  `;
 
   db.query(query, [ordenId], (err, results) => {
     if (err) {
       console.error('Error fetching purchases:', err);
       return res.status(500).json({ error: 'Error fetching purchases' });
     }
-
     res.json({ compras: results });
   });
 });
+
 
 //eliminar orden
 
@@ -1254,31 +1257,128 @@ app.get('/colaborador/compras/descargar-anexos/:CostumProduct_id', authMiddlewar
 //####################################### crear compra #####################################ds
 
 // Endpoint para verificar si el correo ya existe en la base de datos
+// Endpoint para verificar si el correo ya existe y cargar las direcciones registradas
 app.post('/colaborador/ordenes/verificar-correo', authMiddleware, (req, res) => {
   const { correo } = req.body;
-
   if (!correo) {
-      return res.status(400).json({ success: false, error: 'El correo es obligatorio.' });
+    return res.status(400).json({ success: false, error: 'El correo es obligatorio.' });
   }
 
-  db.query('SELECT usuario_id, nombre, telefono FROM Usuarios WHERE correo = ?', [correo], (err, results) => {
+  db.query(
+    'SELECT usuario_id, nombre, telefono FROM Usuarios WHERE correo = ?',
+    [correo],
+    (err, results) => {
       if (err) {
-          console.error('Error al verificar el correo:', err);
-          return res.status(500).json({ success: false, error: 'Error interno del servidor al verificar el correo.' });
+        console.error('Error al verificar el correo:', err);
+        return res.status(500).json({ success: false, error: 'Error interno del servidor al verificar el correo.' });
       }
 
       if (results.length > 0) {
-          const usuario = results[0];
-          res.json({
+        const usuario = results[0];
+        // Ahora obtenemos también las direcciones
+        db.query(
+          'SELECT direccion_id, nombre_direccion, calle, colonia, ciudad, estado, cp, flete FROM Direcciones WHERE usuario_id = ?',
+          [usuario.usuario_id],
+          (err2, direcciones) => {
+            if (err2) {
+              console.error('Error al obtener direcciones:', err2);
+              return res.status(500).json({ success: false, error: 'Error interno al obtener direcciones.' });
+            }
+            return res.json({
               success: true,
               registrado: true,
-              datos: { nombre: usuario.nombre, telefono: usuario.telefono },
-          });
+              usuario_id: usuario.usuario_id, // <--- INCLUIR ESTO
+              datos: {
+                nombre: usuario.nombre,
+                telefono: usuario.telefono
+              },
+              direcciones: direcciones
+            });
+          }
+        );
       } else {
-          res.json({ success: true, registrado: false });
+        // Cliente no existe
+        res.json({ success: true, registrado: false });
       }
+    }
+  );
+});
+
+
+app.post('/colaborador/ordenes/registrar-cliente', authMiddleware, (req, res) => {
+  const { correo, nombre, telefono } = req.body;
+  if (!correo) {
+    return res.status(400).json({ success: false, message: 'Falta el correo.' });
+  }
+
+  // Verificar si ya existe el usuario
+  db.query('SELECT usuario_id FROM Usuarios WHERE correo = ?', [correo], (err, results) => {
+    if (err) {
+      console.error('Error al buscar el usuario:', err);
+      return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+    if (results.length > 0) {
+      // Ya existe; no es necesario crearlo
+      return res.json({ success: true, message: 'El usuario ya está registrado.' });
+    }
+
+    // Crear el usuario con password vacío
+    db.query(
+      'INSERT INTO Usuarios (nombre, correo, telefono, password) VALUES (?, ?, ?, "")',
+      [nombre || '', correo, telefono || ''],
+      (err2, result) => {
+        if (err2) {
+          console.error('Error al crear el usuario:', err2);
+          return res.status(500).json({ success: false, message: 'Error al crear el usuario.' });
+        }
+        // Devuelve success para que el front sepa que se registró
+        res.json({ success: true, message: 'Usuario registrado correctamente.' });
+      }
+    );
   });
 });
+
+
+
+
+// Endpoint para que el colaborador agregue una dirección a un usuario específico
+app.post('/colaborador/ordenes/agregar-direccion', authMiddleware, (req, res) => {
+  const {
+    usuario_id,
+    nombre_direccion,
+    calle,
+    colonia,
+    ciudad,
+    estado,
+    cp,
+    flete
+  } = req.body;
+
+  if (!usuario_id) {
+    return res.status(400).json({ success: false, message: 'Falta el usuario_id para asignar la dirección.' });
+  }
+
+  // Insertar la dirección asociándola al usuario_id
+  const query = `
+    INSERT INTO Direcciones 
+    (usuario_id, nombre_direccion, calle, colonia, ciudad, estado, cp, flete) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(query, [usuario_id, nombre_direccion, calle, colonia, ciudad, estado, cp, flete], (err, result) => {
+    if (err) {
+      console.error('Error al agregar dirección (colaborador):', err);
+      return res.status(500).json({ success: false, message: 'Error al agregar dirección.' });
+    }
+
+    // Retornamos la dirección recién creada
+    // (Opcionalmente podríamos consultar la fila insertada)
+    return res.status(200).json({ success: true, message: 'Dirección agregada correctamente.' });
+  });
+});
+
+
+
 
 
 // Endpoint para renderizar la página de crear orden
@@ -1306,31 +1406,25 @@ app.get('/colaborador/ordenes/productos', authMiddleware, (req, res) => {
   }
   res.sendFile(path.join(__dirname, 'src/colaborador/compras/productos.html'));
 });
-
-// Endpoint para manejar la creación final de la orden
-// Endpoint para manejar la creación final de la orden
-// Endpoint para manejar la creación final de la orden
 app.post('/colaborador/ordenes/finalizar', authMiddleware, async (req, res) => {
   const { productos } = req.body;
 
   if (!req.session.ordenTemporal) {
     return res.status(400).json({ success: false, error: 'No se encontraron datos de la orden.' });
   }
-
   if (!productos || productos.length === 0) {
     return res.status(400).json({ success: false, error: 'Debes agregar al menos un producto.' });
   }
 
   const { direccion, correo, nombre, telefono, referencia } = req.session.ordenTemporal;
-
+  
   try {
+    // 1) Obtener o crear el usuario
     const [usuarioResult] = await db.promise().query(
       'SELECT usuario_id FROM Usuarios WHERE correo = ?',
       [correo]
     );
-
     let usuarioId = usuarioResult.length > 0 ? usuarioResult[0].usuario_id : null;
-
     if (!usuarioId) {
       const [nuevoUsuario] = await db.promise().query(
         'INSERT INTO Usuarios (nombre, correo, telefono, password) VALUES (?, ?, ?, ?)',
@@ -1339,65 +1433,88 @@ app.post('/colaborador/ordenes/finalizar', authMiddleware, async (req, res) => {
       usuarioId = nuevoUsuario.insertId;
     }
 
+    // 2) Generar número de orden
     const [ultimoNumero] = await db.promise().query(
       'SELECT numero_orden FROM ordenes ORDER BY orden_id DESC LIMIT 1'
     );
-    const nuevoNumeroOrden = generarNumeroOrden(
-      ultimoNumero.length > 0 ? ultimoNumero[0].numero_orden : 'ORD-0000'
-    );
+    const ultimoOrd = ultimoNumero.length > 0 ? ultimoNumero[0].numero_orden : 'ORD-0000';
+    const nuevoNumeroOrden = generarNumeroOrden(ultimoOrd);
 
-    const [nuevaOrden] = await db.promise().query(
-      'INSERT INTO ordenes (numero_orden, usuario_id, referencia, fecha_orden) VALUES (?, ?, ?, NOW())',
-      [nuevoNumeroOrden, usuarioId, referencia]
-    );
-    const ordenId = nuevaOrden.insertId;
-
+    // 3) Inicializar arrays y calcular precioTotal
+    let precioTotal = 0;
     const compras = [];
     const registros = [];
+    // Extraer el ID de la dirección (o texto, si se usara "Recoger en tienda")
+    const direccionId = typeof direccion === 'object'
+      ? String(direccion.direccion_id)
+      : String(direccion);
 
+    // Recorrer cada producto seleccionado
     for (const producto of productos) {
-      const { codigo, cantidad } = producto;
-
-      // Obtener el product_id y precio basado en el código
+      const { codigo, cantidad, color } = producto; // color es el texto elegido
+      // Consultar datos del producto y su detalle (incluyendo el color principal)
       const [productoData] = await db.promise().query(
-        `SELECT producto_id, precio FROM Productos WHERE codigo = ?`,
+        `SELECT p.producto_id, p.precio, pd.color AS color_principal 
+         FROM Productos p 
+         JOIN Productos_detalles pd ON p.producto_id = pd.producto_id
+         WHERE p.codigo = ?`,
         [codigo]
       );
-
       if (productoData.length === 0) {
         return res.status(400).json({ success: false, error: `El producto con código ${codigo} no existe.` });
       }
+      const { producto_id, precio, color_principal } = productoData[0];
+      precioTotal += precio * cantidad;
 
-      const { producto_id, precio } = productoData[0];
+      // Determinar si se seleccionó el color principal o un alterno
+      let esAlterno = false;
+      let alterno_id = null;
+      // Comparación en minúsculas para evitar diferencias de mayúsculas/minúsculas
+      if (color.trim().toLowerCase() === color_principal.trim().toLowerCase()) {
+        esAlterno = false;
+      } else {
+        // Buscar en la tabla de ColoresAlternos para este producto y color
+        const [alternoData] = await db.promise().query(
+          `SELECT color_id FROM ColoresAlternos WHERE producto_id = ? AND LOWER(color) = ?`,
+          [producto_id, color.trim().toLowerCase()]
+        );
+        if (alternoData.length > 0) {
+          esAlterno = true;
+          alterno_id = alternoData[0].color_id;
+        } else {
+          // Si no se encuentra, lo tratamos como principal
+          esAlterno = false;
+        }
+      }
 
-      // Agregar a la tabla Compras
+      // Agregar la información al array de compras.
+      // En la última columna, guardamos el color seleccionado.
       compras.push([
         producto_id,
         usuarioId,
         new Date(),
-        1, // Estado por defecto
-        direccion,
+        1,              // Estado por defecto
+        direccionId,    // Se guarda el ID de la dirección
         cantidad,
-        ordenId,
+        null,           // Orden ID se asignará más adelante
+        color           // Guardamos el color elegido
       ]);
 
-      // Agregar a la tabla Registros
+      // Agregar registro del evento en "Registros"
       registros.push([
         producto_id,
         'compra',
         new Date(),
-        precio,
+        precio
       ]);
 
-      // Actualizar el stock
-      if (producto.color_id) {
-        // Si es un color alterno
+      // Actualizar el stock: si es alterno, se actualiza en ColoresAlternos; de lo contrario, en Productos
+      if (esAlterno && alterno_id) {
         await db.promise().query(
           `UPDATE ColoresAlternos SET stock = stock - ? WHERE color_id = ? AND stock > 0`,
-          [cantidad, producto.color_id]
+          [cantidad, alterno_id]
         );
       } else {
-        // Si es el producto principal
         await db.promise().query(
           `UPDATE Productos SET stock = stock - ? WHERE producto_id = ? AND stock > 0`,
           [cantidad, producto_id]
@@ -1405,20 +1522,49 @@ app.post('/colaborador/ordenes/finalizar', authMiddleware, async (req, res) => {
       }
     }
 
-    // Insertar las compras
+    // 4) Insertar la orden y obtener su ID (ahora sí guardamos el precioTotal)
+    const [nuevaOrden] = await db.promise().query(
+      'INSERT INTO ordenes (numero_orden, usuario_id, referencia, fecha_orden, precioTotal) VALUES (?, ?, ?, NOW(), ?)',
+      [nuevoNumeroOrden, usuarioId, referencia, precioTotal]
+    );
+    const nuevaOrdenId = nuevaOrden.insertId;
+
+    // 5) Actualizar el array de compras asignándole el ID de la orden
+    for (const row of compras) {
+      row[6] = nuevaOrdenId; // La posición 6 corresponde al orden_id
+    }
+
+    // 6) Insertar las compras en la tabla "Compras"
     await db.promise().query(
-      'INSERT INTO Compras (producto_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad, orden_id) VALUES ?',
+      'INSERT INTO Compras (producto_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad, orden_id, color) VALUES ?',
       [compras]
     );
 
-    // Insertar en registros
+    // 7) Insertar los registros en la tabla "Registros"
     await db.promise().query(
       'INSERT INTO Registros (product_id, evento, fecha, precio) VALUES ?',
       [registros]
     );
 
+    // 8) Vaciar el carrito y limpiar la sesión
+    await db.promise().query('DELETE FROM carrito WHERE usuario_id = ?', [usuarioId]);
     req.session.ordenTemporal = null;
-    res.json({ success: true, message: 'Orden creada exitosamente.' });
+
+    // (Opcional) Mandar notificación por correo
+    const totalCompra = precioTotal; // Puedes sumar el flete si corresponde
+    fetch(`${dominio}/compras/send-order-notification`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orden_id: nuevaOrdenId,
+        precio_envio: 0  // O el valor del flete si aplica
+      })
+    })
+    .then(response => response.json())
+    .then(data => console.log("📩 Notificación enviada:", data))
+    .catch(error => console.error("❌ Error enviando notificación:", error));
+
+    res.json({ success: true, message: 'Orden creada exitosamente.', ordenId: nuevaOrdenId, totalCompra });
   } catch (err) {
     console.error('Error al procesar la orden:', err);
     res.status(500).json({ success: false, error: 'Error interno del servidor.' });
@@ -1426,10 +1572,19 @@ app.post('/colaborador/ordenes/finalizar', authMiddleware, async (req, res) => {
 });
 
 function generarNumeroOrden(ultimoNumero) {
-  const hex = ultimoNumero.split('-')[1];
-  const nuevoHex = (parseInt(hex, 16) + 1).toString(16).toUpperCase().padStart(4, '0');
+  const parts = ultimoNumero.split('-');
+  if (parts.length < 2) {
+    return 'ORD-0001';
+  }
+  const hex = parts[1];
+  let currentVal = parseInt(hex, 16);
+  if (isNaN(currentVal)) {
+    currentVal = 0;
+  }
+  const nuevoHex = (currentVal + 1).toString(16).toUpperCase().padStart(4, '0');
   return `ORD-${nuevoHex}`;
 }
+
 
 
 //####################################### Modificar estado #####################################
@@ -1522,6 +1677,21 @@ app.post('/colaborador/compras/modificar-estado/:compra_id', authMiddleware, (re
     if (results.affectedRows === 0) {
       return res.status(404).json({ success: false, error: 'Compra no encontrada.' });
     }
+    
+     // Llamada al endpoint de notificaciones usando fetch
+    // Asegúrate de que la variable "dominio" contenga la URL base correcta (por ejemplo: 'http://localhost:3000')
+    fetch(`${dominio}/compras/notificacion-estado`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        compra_id: compraId
+      })
+    })
+      .then(response => response.json())
+      .then(data => console.log("📩 Notificación enviada:", data))
+      .catch(error => console.error("❌ Error enviando notificación:", error));
 
     res.json({ success: true, message: 'Estado o fecha estimada actualizados correctamente.' });
   });
@@ -1744,15 +1914,20 @@ app.post(
             console.log("Orden Creada, ID:", ordenId);
       
             // Formatear dirección
-            const direccion = req.session.ordenTemporal?.direccion || {};
-            const direccionCompleta = `${direccion.calle}, ${direccion.ciudad}, ${direccion.estado}, ${direccion.codigoPostal}`;
-      
+            // Extraer el ID de la dirección desde la sesión.
+            // Se asume que, cuando se selecciona una dirección, req.session.ordenTemporal.direccion es un objeto con la propiedad direccion_id.
+            const direccionId = req.session.ordenTemporal?.direccion?.direccion_id || 'Recoger en tienda';
+
             const queryCompraCostum = `
               INSERT INTO Compras (CostumProduct_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad, orden_id, FechaEstimada) 
               VALUES (?, ?, NOW(), ?, ?, ?, ?, ?)
             `;
-      
-            const compraValues = [costumProductId, usuarioId, 0, direccionCompleta, cantidad, ordenId, fecha_estimada];
+
+            // Asegúrate de que 'cantidad' provenga de req.body (ya que lo extraes en la creación del producto customizado)
+            const compraValues = [costumProductId, usuarioId, 0, direccionId, cantidad, ordenId, fecha_estimada];
+
+
+            
             console.log("Valores de CompraCostum:", compraValues);
       
             db.query(queryCompraCostum, compraValues, (err) => {
@@ -4230,6 +4405,145 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Mapeo de estados y sus mensajes
+const estados = {
+  0: 'Tu pedido ha sido registrado, pero aún no ha sido confirmado. Una vez revisado, se asignará una fecha de entrega. Te notificaremos cuando avance en el proceso.',
+  1: 'El pedido ha sido confirmado y está en proceso de preparación.',
+  2: 'Todos los insumos están listos para comenzar la fabricación.',
+  3: 'El producto está en proceso de maquila, se está llevando a cabo la producción.',
+  4: 'El producto está siendo barnizado para asegurar su acabado y durabilidad.',
+  5: 'El producto está siendo armado por nuestros técnicos.',
+  6: 'El producto ha sido empaquetado y enviado a la dirección indicada. Se espera que llegue en los próximos días.',
+  7: 'El producto ha sido entregado al cliente.'
+};
+
+// Endpoint para notificar el cambio de estado de una compra
+app.post('/compras/notificacion-estado', async (req, res) => {
+  try {
+    const { compra_id } = req.body;
+
+    if (!compra_id) {
+      return res.status(400).json({ error: "Se requiere el ID de compra" });
+    }
+
+    // 1. Buscar la compra en la tabla Compras
+    const [compraRows] = await db.promise().query(
+      `SELECT compra_id, usuario_id, estado FROM Compras WHERE compra_id = ?`,
+      [compra_id]
+    );
+
+    if (compraRows.length === 0) {
+      return res.status(404).json({ error: "Compra no encontrada" });
+    }
+
+    const compra = compraRows[0];
+    const estadoActual = compra.estado;
+    const mensajeEstado = estados[estadoActual] || "Estado desconocido";
+
+    // 2. Obtener la información del usuario (nombre y correo)
+    const [usuarioRows] = await db.promise().query(
+      `SELECT usuario_id, nombre, correo FROM Usuarios WHERE usuario_id = ?`,
+      [compra.usuario_id]
+    );
+
+    if (usuarioRows.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    const usuario = usuarioRows[0];
+
+    // 3. Construir el asunto y cuerpo del correo
+    const email_subject = `Actualización del estado de tu compra`;
+    const email_body = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Actualización de estado</title>
+        <style>
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+          }
+          .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+          }
+          .header {
+            background-color: #444;
+            color: #fff;
+            text-align: center;
+            padding: 16px;
+            font-size: 20px;
+            font-weight: bold;
+          }
+          .content {
+            padding: 20px;
+            font-size: 16px;
+            line-height: 1.5;
+          }
+          .footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #eee;
+            font-size: 14px;
+            color: #777;
+          }
+          strong {
+            color: #555;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">Actualización de estado de tu compra</div>
+          <div class="content">
+            <p>Hola <strong>${usuario.nombre}</strong>,</p>
+            <p>Queremos informarte que el estado de tu compra ha cambiado.</p>
+            <p><strong>Nuevo estado:</strong> ${mensajeEstado}</p>
+            <p>Muchas gracias por tu preferencia.</p>
+            <p>Atentamente,<br>
+            Caribbean House Studio</p>
+          </div>
+          <div class="footer">
+            &copy; ${new Date().getFullYear()} Caribbean House Studio
+          </div>
+        </div>
+      </body>
+      </html>
+      `;
+
+
+    // 4. Configurar las opciones del correo
+    const mailOptions = {
+      from: EMAIL_USER,
+      to: usuario.correo,
+      subject: email_subject,
+      html: email_body
+    };
+
+    // 5. Enviar el correo
+    await transporter.sendMail(mailOptions);
+
+    // Imprimir en consola el correo al que se envió la notificación
+    console.log("Correo enviado a:", usuario.correo);
+
+    res.status(200).json({ success: true, message: "Notificación enviada correctamente" });
+  } catch (error) {
+    console.error("Error enviando notificación de estado:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+
 
 // 📌 **Endpoint para notificar compras**
 app.post("/compras/send-order-notification", async (req, res) => {
@@ -4318,107 +4632,107 @@ app.post("/compras/send-order-notification", async (req, res) => {
     // 📧 **6. Enviar correo con los detalles**
     
     const email_subject = `Nueva orden recibida: ${numero_orden}`;
-const email_body = `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orden Confirmada</title>
-  <style>
-    body {
-      font-family: "Arial", sans-serif;
-      background-color: #F4EDE1;
-      margin: 0;
-      padding: 0;
-      color: #3D2C2A;
-    }
-    .container {
-      max-width: 600px;
-      margin: 20px auto;
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-    }
-    .header {
-      background-color: #A46D42;
-      color: white;
-      padding: 18px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-    }
-    .content {
-      padding: 20px;
-    }
-    .info, .productos, .direccion {
-      padding: 18px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      font-size: 18px;
-    }
-    .info {
-      background: #E8D3C0;
-    }
-    .productos {
-      background: #F9E8D9;
-    }
-    .direccion {
-      background: #C8D8B8;
-    }
-    h3 {
-      font-size: 20px;
-      color: #8B4A32;
-      margin-bottom: 8px;
-    }
-    .total {
-      font-size: 22px;
-      font-weight: bold;
-      text-align: center;
-      color: #BF3B2B;
-      margin-top: 20px;
-    }
-    .footer {
-      text-align: center;
-      padding: 15px;
-      font-size: 16px;
-      color: #777;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">🛒 Nueva compra realizada</div>
-    <div class="content">
-      <div class="info">
-        <p><strong>Cliente:</strong> ${nombre}</p>
-        <p><strong>Email:</strong> ${correo}</p>
-        <p><strong>Fecha de la orden:</strong> ${new Date(fecha_orden).toLocaleDateString()}</p>
-        <p><strong>Número de orden:</strong> ${numero_orden}</p>
+    const email_body = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Orden Confirmada</title>
+      <style>
+        body {
+          font-family: "Arial", sans-serif;
+          background-color: #F4EDE1;
+          margin: 0;
+          padding: 0;
+          color: #3D2C2A;
+        }
+        .container {
+          max-width: 600px;
+          margin: 20px auto;
+          background: #ffffff;
+          border-radius: 12px;
+          box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+          padding: 20px;
+        }
+        .header {
+          background-color: #A46D42;
+          color: white;
+          padding: 18px;
+          text-align: center;
+          font-size: 22px;
+          font-weight: bold;
+          border-top-left-radius: 12px;
+          border-top-right-radius: 12px;
+        }
+        .content {
+          padding: 20px;
+        }
+        .info, .productos, .direccion {
+          padding: 18px;
+          border-radius: 10px;
+          margin-bottom: 20px;
+          font-size: 18px;
+        }
+        .info {
+          background: #E8D3C0;
+        }
+        .productos {
+          background: #F9E8D9;
+        }
+        .direccion {
+          background: #C8D8B8;
+        }
+        h3 {
+          font-size: 20px;
+          color: #8B4A32;
+          margin-bottom: 8px;
+        }
+        .total {
+          font-size: 22px;
+          font-weight: bold;
+          text-align: center;
+          color: #BF3B2B;
+          margin-top: 20px;
+        }
+        .footer {
+          text-align: center;
+          padding: 15px;
+          font-size: 16px;
+          color: #777;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">🛒 Nueva compra realizada</div>
+        <div class="content">
+          <div class="info">
+            <p><strong>Cliente:</strong> ${nombre}</p>
+            <p><strong>Email:</strong> ${correo}</p>
+            <p><strong>Fecha de la orden:</strong> ${new Date(fecha_orden).toLocaleDateString()}</p>
+            <p><strong>Número de orden:</strong> ${numero_orden}</p>
+          </div>
+          <div class="productos">
+            <h3>📦 Productos comprados:</h3>
+            <ul>
+              ${comprasRows.map(compra => 
+                `<li><strong>${compra.producto_nombre} (${compra.color})</strong>: ${compra.cantidad} x $${compra.precio} = <strong>$${compra.precio * compra.cantidad}</strong></li>`
+              ).join('')}
+            </ul>
+          </div>
+          <div class="direccion">
+            <h3>🚚 Envío a:</h3>
+            <p><strong>${direccion_completa}</strong></p>
+            <p><strong>Costo de envío:</strong> $${precio_envio}</p>
+          </div>
+          <div class="total">💰 Total pagado: <strong>$${total_compra}</strong></div>
+        </div>
+        <div class="footer">Gracias por tu compra | Caribbean House Studio</div>
       </div>
-      <div class="productos">
-        <h3>📦 Productos comprados:</h3>
-        <ul>
-          ${comprasRows.map(compra => 
-            `<li><strong>${compra.producto_nombre} (${compra.color})</strong>: ${compra.cantidad} x $${compra.precio} = <strong>$${compra.precio * compra.cantidad}</strong></li>`
-          ).join('')}
-        </ul>
-      </div>
-      <div class="direccion">
-        <h3>🚚 Envío a:</h3>
-        <p><strong>${direccion_completa}</strong></p>
-        <p><strong>Costo de envío:</strong> $${precio_envio}</p>
-      </div>
-      <div class="total">💰 Total pagado: <strong>$${total_compra}</strong></div>
-    </div>
-    <div class="footer">Gracias por tu compra | Caribbean House Studio</div>
-  </div>
-</body>
-</html>
-`;
+    </body>
+    </html>
+    `;
 
 const mailOptions = {
   from: EMAIL_USER,
