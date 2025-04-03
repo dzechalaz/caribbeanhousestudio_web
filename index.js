@@ -1128,37 +1128,40 @@ app.get('/colaborador/ordenes/compras/:orden_id', authMiddleware, (req, res) => 
   const ordenId = req.params.orden_id;
 
   const query = `
-  SELECT 
-    c.compra_id,
-    COALESCE(p.nombre, pc.nombre) AS producto_nombre,
-    c.cantidad,
-    c.fecha_compra,
-    CONCAT(
-     
-      d.calle, ', ',
-      d.colonia, ', ',
-      d.ciudad, ', ',
-      d.estado, ' CP:', d.cp
-    ) AS direccion_envio,
-    c.estado,
-    c.color
-  FROM Compras c
-  LEFT JOIN Productos p      ON c.producto_id      = p.producto_id
-  LEFT JOIN ProductCostum pc ON c.CostumProduct_id = pc.CostumProduct_id
-  LEFT JOIN Direcciones d    ON c.direccion_envio  = d.direccion_id
-  WHERE c.orden_id = ?
-`;
-
+    SELECT 
+      c.compra_id,
+      COALESCE(p.nombre, pc.nombre) AS producto_nombre,
+      c.cantidad,
+      c.fecha_compra,
+      CONCAT(
+        d.calle, ', ',
+        d.colonia, ', ',
+        d.ciudad, ', ',
+        d.estado, ' CP:', d.cp
+      ) AS direccion_envio,
+      c.estado,
+      c.color,
+      CASE
+        WHEN ca.color_id IS NOT NULL THEN CONCAT('${CFI}', '/Colors/', c.producto_id, '/', ca.color_id, '/a.webp')
+        ELSE CONCAT('${CFI}', '/Products/', c.producto_id, '/a.webp')
+      END AS path_imagen
+    FROM Compras c
+    LEFT JOIN Productos p ON c.producto_id = p.producto_id
+    LEFT JOIN ProductCostum pc ON c.CostumProduct_id = pc.CostumProduct_id
+    LEFT JOIN Direcciones d ON c.direccion_envio = d.direccion_id
+    LEFT JOIN ColoresAlternos ca ON c.producto_id = ca.producto_id AND c.color = ca.color
+    WHERE c.orden_id = ?
+  `;
 
   db.query(query, [ordenId], (err, results) => {
     if (err) {
       console.error('Error fetching purchases:', err);
       return res.status(500).json({ error: 'Error fetching purchases' });
     }
-
     res.json({ compras: results });
   });
 });
+
 
 //eliminar orden
 
@@ -1911,15 +1914,20 @@ app.post(
             console.log("Orden Creada, ID:", ordenId);
       
             // Formatear dirección
-            const direccion = req.session.ordenTemporal?.direccion || {};
-            const direccionCompleta = `${direccion.calle}, ${direccion.ciudad}, ${direccion.estado}, ${direccion.codigoPostal}`;
-      
+            // Extraer el ID de la dirección desde la sesión.
+            // Se asume que, cuando se selecciona una dirección, req.session.ordenTemporal.direccion es un objeto con la propiedad direccion_id.
+            const direccionId = req.session.ordenTemporal?.direccion?.direccion_id || 'Recoger en tienda';
+
             const queryCompraCostum = `
               INSERT INTO Compras (CostumProduct_id, usuario_id, fecha_compra, estado, direccion_envio, cantidad, orden_id, FechaEstimada) 
               VALUES (?, ?, NOW(), ?, ?, ?, ?, ?)
             `;
-      
-            const compraValues = [costumProductId, usuarioId, 0, direccionCompleta, cantidad, ordenId, fecha_estimada];
+
+            // Asegúrate de que 'cantidad' provenga de req.body (ya que lo extraes en la creación del producto customizado)
+            const compraValues = [costumProductId, usuarioId, 0, direccionId, cantidad, ordenId, fecha_estimada];
+
+
+            
             console.log("Valores de CompraCostum:", compraValues);
       
             db.query(queryCompraCostum, compraValues, (err) => {

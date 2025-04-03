@@ -19,13 +19,14 @@ $(document).ready(function () {
               day: '2-digit',
             });
 
-            // Agregar los datos a la tabla
+            // Agregar los datos a la tabla, incluyendo la columna de imagen
             tablaCompras.row.add([
+              `<img src="${compra.path_imagen}" alt="Imagen del producto" style="width:80px;">`,
               compra.compra_id,
               compra.producto_nombre,
-              compra.color || 'No especificado', // 🔥 Se agregó Color después de Producto
+              compra.color || 'No especificado', // Columna de color
               compra.cantidad,
-              fechaFormateada, // Usar fecha formateada aquí
+              fechaFormateada,
               compra.direccion_envio,
               compra.estado,
               `<button class="modificar-estado-btn btn-rojo-chukum" data-compra-id="${compra.compra_id}">Modificar Estado</button>`
