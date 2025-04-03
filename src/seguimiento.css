@@ -215,20 +215,21 @@
   right: 34.83px;
 }
 .nombre-juan-quintana {
-  margin: 0;
+  margin: 0px;
 }
-.nombre-juan-quintana-calle-container {
-  position: absolute;
-  width: calc(100% - 50.9px);
-  bottom: 16px;
-  left: 25.99px;
-  font-size: var(--font-size-lg);
-  line-height: 30px;
-  font-weight: 500;
-  color: var(--color-dimgray);
-  display: inline-block;
-  height: 146px;
+  .nombre-juan-quintana-calle-container {
+    position: absolute;
+    width: calc(100% - 50.9px);
+    bottom: 16px;
+    left: 25.99px;
+    font-size: var(--font-size-lg);
+    line-height: 30px;
+    font-weight: 500;
+    color: var(--color-dimgray);
+    display: inline-block;
+    height: 146px;
 }
+
 .package-2-icon {
   position: absolute;
   top: 12.74px;
@@ -587,6 +588,7 @@
   left: 25px;
   font-size: var(--font-size-mid);
   line-height: 31px;
+  width: 410px;
 }
 .description {
   position: absolute;
@@ -599,6 +601,40 @@
   height: 271px;
   font-size: 27px;
 }
+
+
+.nombre-juan-quintana {
+  margin: 0;
+  display: block;          /* Asegura que se comporte como bloque y respete el ancho */
+  width: 100%;             /* Toma el ancho completo del contenedor padre */
+  white-space: nowrap;     /* Forzar que el texto se mantenga en una sola línea */
+  overflow: hidden;        /* Oculta el texto que se exceda */
+  text-overflow: ellipsis; /* Muestra "..." al final del texto si es muy largo */
+  box-sizing: border-box;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .credenza{
   position: absolute;
   font-family: var(--font-josefin-sans);

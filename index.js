@@ -17,9 +17,9 @@ import dotenv from 'dotenv';
 
 
 // Definir dominio global
-const dominio = "https://www.caribbeanhousestudio.com"; // ✅ URL actual en uso
+//const dominio = "https://www.caribbeanhousestudio.com"; // ✅ URL actual en uso
 //const dominio = "https://4771-2806-10be-c-bc98-d4f-d6db-96c1-e9da.ngrok-free.app"; // 🌐 URL de NGROK (descomentar si se usa NGROK)
-// const dominio = "http://localhost:3000"; // 🖥️ URL para desarrollo local (descomentar si se usa localhost)
+const dominio = "http://localhost:3000"; // 🖥️ URL para desarrollo local (descomentar si se usa localhost)
 
 
 
@@ -1522,6 +1522,21 @@ app.post('/colaborador/compras/modificar-estado/:compra_id', authMiddleware, (re
     if (results.affectedRows === 0) {
       return res.status(404).json({ success: false, error: 'Compra no encontrada.' });
     }
+    
+     // Llamada al endpoint de notificaciones usando fetch
+    // Asegúrate de que la variable "dominio" contenga la URL base correcta (por ejemplo: 'http://localhost:3000')
+    fetch(`${dominio}/compras/notificacion-estado`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        compra_id: compraId
+      })
+    })
+      .then(response => response.json())
+      .then(data => console.log("📩 Notificación enviada:", data))
+      .catch(error => console.error("❌ Error enviando notificación:", error));
 
     res.json({ success: true, message: 'Estado o fecha estimada actualizados correctamente.' });
   });
@@ -4230,6 +4245,145 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Mapeo de estados y sus mensajes
+const estados = {
+  0: 'Tu pedido ha sido registrado, pero aún no ha sido confirmado. Una vez revisado, se asignará una fecha de entrega. Te notificaremos cuando avance en el proceso.',
+  1: 'El pedido ha sido confirmado y está en proceso de preparación.',
+  2: 'Todos los insumos están listos para comenzar la fabricación.',
+  3: 'El producto está en proceso de maquila, se está llevando a cabo la producción.',
+  4: 'El producto está siendo barnizado para asegurar su acabado y durabilidad.',
+  5: 'El producto está siendo armado por nuestros técnicos.',
+  6: 'El producto ha sido empaquetado y enviado a la dirección indicada. Se espera que llegue en los próximos días.',
+  7: 'El producto ha sido entregado al cliente.'
+};
+
+// Endpoint para notificar el cambio de estado de una compra
+app.post('/compras/notificacion-estado', async (req, res) => {
+  try {
+    const { compra_id } = req.body;
+
+    if (!compra_id) {
+      return res.status(400).json({ error: "Se requiere el ID de compra" });
+    }
+
+    // 1. Buscar la compra en la tabla Compras
+    const [compraRows] = await db.promise().query(
+      `SELECT compra_id, usuario_id, estado FROM Compras WHERE compra_id = ?`,
+      [compra_id]
+    );
+
+    if (compraRows.length === 0) {
+      return res.status(404).json({ error: "Compra no encontrada" });
+    }
+
+    const compra = compraRows[0];
+    const estadoActual = compra.estado;
+    const mensajeEstado = estados[estadoActual] || "Estado desconocido";
+
+    // 2. Obtener la información del usuario (nombre y correo)
+    const [usuarioRows] = await db.promise().query(
+      `SELECT usuario_id, nombre, correo FROM Usuarios WHERE usuario_id = ?`,
+      [compra.usuario_id]
+    );
+
+    if (usuarioRows.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    const usuario = usuarioRows[0];
+
+    // 3. Construir el asunto y cuerpo del correo
+    const email_subject = `Actualización del estado de tu compra`;
+    const email_body = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Actualización de estado</title>
+        <style>
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+          }
+          .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+          }
+          .header {
+            background-color: #444;
+            color: #fff;
+            text-align: center;
+            padding: 16px;
+            font-size: 20px;
+            font-weight: bold;
+          }
+          .content {
+            padding: 20px;
+            font-size: 16px;
+            line-height: 1.5;
+          }
+          .footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #eee;
+            font-size: 14px;
+            color: #777;
+          }
+          strong {
+            color: #555;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">Actualización de estado de tu compra</div>
+          <div class="content">
+            <p>Hola <strong>${usuario.nombre}</strong>,</p>
+            <p>Queremos informarte que el estado de tu compra ha cambiado.</p>
+            <p><strong>Nuevo estado:</strong> ${mensajeEstado}</p>
+            <p>Muchas gracias por tu preferencia.</p>
+            <p>Atentamente,<br>
+            Caribbean House Studio</p>
+          </div>
+          <div class="footer">
+            &copy; ${new Date().getFullYear()} Caribbean House Studio
+          </div>
+        </div>
+      </body>
+      </html>
+      `;
+
+
+    // 4. Configurar las opciones del correo
+    const mailOptions = {
+      from: EMAIL_USER,
+      to: usuario.correo,
+      subject: email_subject,
+      html: email_body
+    };
+
+    // 5. Enviar el correo
+    await transporter.sendMail(mailOptions);
+
+    // Imprimir en consola el correo al que se envió la notificación
+    console.log("Correo enviado a:", usuario.correo);
+
+    res.status(200).json({ success: true, message: "Notificación enviada correctamente" });
+  } catch (error) {
+    console.error("Error enviando notificación de estado:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+
 
 // 📌 **Endpoint para notificar compras**
 app.post("/compras/send-order-notification", async (req, res) => {
@@ -4318,107 +4472,107 @@ app.post("/compras/send-order-notification", async (req, res) => {
     // 📧 **6. Enviar correo con los detalles**
     
     const email_subject = `Nueva orden recibida: ${numero_orden}`;
-const email_body = `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orden Confirmada</title>
-  <style>
-    body {
-      font-family: "Arial", sans-serif;
-      background-color: #F4EDE1;
-      margin: 0;
-      padding: 0;
-      color: #3D2C2A;
-    }
-    .container {
-      max-width: 600px;
-      margin: 20px auto;
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-    }
-    .header {
-      background-color: #A46D42;
-      color: white;
-      padding: 18px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-    }
-    .content {
-      padding: 20px;
-    }
-    .info, .productos, .direccion {
-      padding: 18px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      font-size: 18px;
-    }
-    .info {
-      background: #E8D3C0;
-    }
-    .productos {
-      background: #F9E8D9;
-    }
-    .direccion {
-      background: #C8D8B8;
-    }
-    h3 {
-      font-size: 20px;
-      color: #8B4A32;
-      margin-bottom: 8px;
-    }
-    .total {
-      font-size: 22px;
-      font-weight: bold;
-      text-align: center;
-      color: #BF3B2B;
-      margin-top: 20px;
-    }
-    .footer {
-      text-align: center;
-      padding: 15px;
-      font-size: 16px;
-      color: #777;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">🛒 Nueva compra realizada</div>
-    <div class="content">
-      <div class="info">
-        <p><strong>Cliente:</strong> ${nombre}</p>
-        <p><strong>Email:</strong> ${correo}</p>
-        <p><strong>Fecha de la orden:</strong> ${new Date(fecha_orden).toLocaleDateString()}</p>
-        <p><strong>Número de orden:</strong> ${numero_orden}</p>
+    const email_body = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Orden Confirmada</title>
+      <style>
+        body {
+          font-family: "Arial", sans-serif;
+          background-color: #F4EDE1;
+          margin: 0;
+          padding: 0;
+          color: #3D2C2A;
+        }
+        .container {
+          max-width: 600px;
+          margin: 20px auto;
+          background: #ffffff;
+          border-radius: 12px;
+          box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+          padding: 20px;
+        }
+        .header {
+          background-color: #A46D42;
+          color: white;
+          padding: 18px;
+          text-align: center;
+          font-size: 22px;
+          font-weight: bold;
+          border-top-left-radius: 12px;
+          border-top-right-radius: 12px;
+        }
+        .content {
+          padding: 20px;
+        }
+        .info, .productos, .direccion {
+          padding: 18px;
+          border-radius: 10px;
+          margin-bottom: 20px;
+          font-size: 18px;
+        }
+        .info {
+          background: #E8D3C0;
+        }
+        .productos {
+          background: #F9E8D9;
+        }
+        .direccion {
+          background: #C8D8B8;
+        }
+        h3 {
+          font-size: 20px;
+          color: #8B4A32;
+          margin-bottom: 8px;
+        }
+        .total {
+          font-size: 22px;
+          font-weight: bold;
+          text-align: center;
+          color: #BF3B2B;
+          margin-top: 20px;
+        }
+        .footer {
+          text-align: center;
+          padding: 15px;
+          font-size: 16px;
+          color: #777;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">🛒 Nueva compra realizada</div>
+        <div class="content">
+          <div class="info">
+            <p><strong>Cliente:</strong> ${nombre}</p>
+            <p><strong>Email:</strong> ${correo}</p>
+            <p><strong>Fecha de la orden:</strong> ${new Date(fecha_orden).toLocaleDateString()}</p>
+            <p><strong>Número de orden:</strong> ${numero_orden}</p>
+          </div>
+          <div class="productos">
+            <h3>📦 Productos comprados:</h3>
+            <ul>
+              ${comprasRows.map(compra => 
+                `<li><strong>${compra.producto_nombre} (${compra.color})</strong>: ${compra.cantidad} x $${compra.precio} = <strong>$${compra.precio * compra.cantidad}</strong></li>`
+              ).join('')}
+            </ul>
+          </div>
+          <div class="direccion">
+            <h3>🚚 Envío a:</h3>
+            <p><strong>${direccion_completa}</strong></p>
+            <p><strong>Costo de envío:</strong> $${precio_envio}</p>
+          </div>
+          <div class="total">💰 Total pagado: <strong>$${total_compra}</strong></div>
+        </div>
+        <div class="footer">Gracias por tu compra | Caribbean House Studio</div>
       </div>
-      <div class="productos">
-        <h3>📦 Productos comprados:</h3>
-        <ul>
-          ${comprasRows.map(compra => 
-            `<li><strong>${compra.producto_nombre} (${compra.color})</strong>: ${compra.cantidad} x $${compra.precio} = <strong>$${compra.precio * compra.cantidad}</strong></li>`
-          ).join('')}
-        </ul>
-      </div>
-      <div class="direccion">
-        <h3>🚚 Envío a:</h3>
-        <p><strong>${direccion_completa}</strong></p>
-        <p><strong>Costo de envío:</strong> $${precio_envio}</p>
-      </div>
-      <div class="total">💰 Total pagado: <strong>$${total_compra}</strong></div>
-    </div>
-    <div class="footer">Gracias por tu compra | Caribbean House Studio</div>
-  </div>
-</body>
-</html>
-`;
+    </body>
+    </html>
+    `;
 
 const mailOptions = {
   from: EMAIL_USER,
