@@ -61,7 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
             registrarClienteBtn.style.display = 'none';
   
             // Limpiar y cargar direcciones
-            direccionSelect.innerHTML = '<option value="">Selecciona una dirección existente</option>';
+            // Siempre se incluye "Recoger en tienda" como opción por defecto
+            direccionSelect.innerHTML = '<option value="Recoger en tienda">Recoger en tienda</option>';
             if (data.direcciones && data.direcciones.length > 0) {
               data.direcciones.forEach(dir => {
                 const option = document.createElement('option');
@@ -73,6 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
               sinDireccionesMsg.style.display = 'block';
             }
+
+
           } else {
             // Cliente no registrado: habilitar edición y mostrar botón de registro
             currentUserId = null;
@@ -80,7 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
             telefonoInput.value = '';
             nombreInput.readOnly = false;
             telefonoInput.readOnly = false;
-            direccionSelect.innerHTML = '<option value="">No hay direcciones registradas</option>';
+            // En lugar de dejarlo vacío, se establece "Recoger en tienda"
+            direccionSelect.innerHTML = '<option value="Recoger en tienda">Recoger en tienda</option>';
             sinDireccionesMsg.style.display = 'block';
             alert('El correo no está registrado. Ingresa los datos del cliente y registra una dirección.');
             registrarClienteBtn.style.display = 'inline-block';
@@ -212,10 +216,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   // Función para recargar direcciones (utilizando el endpoint de verificar correo)
+  // Función para recargar direcciones (utilizando el endpoint de verificar correo)
   function recargarDireccionesUsuario(userId) {
     const correo = correoInput.value.trim();
     if (!correo) return;
-  
+
     fetch('/colaborador/ordenes/verificar-correo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -224,7 +229,8 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(response => response.json())
       .then(data => {
         if (data.success && data.registrado) {
-          direccionSelect.innerHTML = '<option value="">Selecciona una dirección existente</option>';
+          // Establecer "Recoger en tienda" como opción por defecto
+          direccionSelect.innerHTML = '<option value="Recoger en tienda">Recoger en tienda</option>';
           if (data.direcciones && data.direcciones.length > 0) {
             data.direcciones.forEach(dir => {
               const option = document.createElement('option');
@@ -240,6 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .catch(err => console.error('Error al recargar direcciones:', err));
   }
+
   
   // =======================
   // 5) Enviar formulario principal y guardar datos en sesión

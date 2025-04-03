@@ -35,12 +35,13 @@
       <h2>Dirección de Envío</h2>
       <div id="direccion-section">
         <label for="direccion-select">Direcciones Registradas:</label>
-        <select id="direccion-select" name="direccion">
-          <option value="">Selecciona una dirección existente</option>
+        <select id="direccion-select" name="direccion" required>
+          <option value="Recoger en tienda">Seleccionar Dirección</option>
         </select>
         <p id="sin-direcciones" style="display: none;">No se encontraron direcciones registradas.</p>
         <button type="button" id="agregar-direccion">Agregar Dirección</button>
       </div>
+
 
       <button type="submit" id="btn-siguiente">Siguiente</button>
     </form>
