@@ -15,6 +15,7 @@ import { fileURLToPath } from "url";
 import archiver from "archiver";
 import dotenv from 'dotenv';
 
+// 7 de abril 2024
 
 // Definir dominio global
 const dominio = "https://www.caribbeanhousestudio.com"; // ✅ URL actual en uso

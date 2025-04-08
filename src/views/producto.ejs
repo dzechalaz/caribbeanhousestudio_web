@@ -167,6 +167,8 @@ if (producto) {
     
 
     <script>
+      let currentImagePath = "<%= CFI %>/Products/<%= producto.producto_id %>";
+
 
           document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
@@ -203,17 +205,20 @@ if (producto) {
                   // Evento para cambiar imágenes, texto del color y disponibilidad
                   colorBox.onclick = () => {
                     const rutaImagenes = color.ruta_imagenes;
-                  
+    
+                    // Actualizar la variable global
+                    currentImagePath = rutaImagenes;
+                    
                     // Actualizar las imágenes principales y miniaturas
                     mainImage.src = `${rutaImagenes}/a.webp`;
                     imageIds.forEach((id, index) => {
                       document.getElementById(id).src = `${rutaImagenes}/${String.fromCharCode(97 + index)}.webp`;
                     });
-                  
+                    
                     // Actualizar el texto del color
                     colorNameElement.textContent = color.color;
-                  
-                    // Actualizar la disponibilidad según el backend
+                    
+                    // Actualizar la disponibilidad
                     if (color.disponible > 0) {
                       availabilityStatus.textContent = 'Disponible para envío inmediato';
                       availabilityStatus.className = 'disponible';
@@ -221,7 +226,7 @@ if (producto) {
                       availabilityStatus.textContent = 'Entrega en 10-14 días';
                       availabilityStatus.className = 'no-disponible';
                     }
-                  
+                    
                     // Guardar el color seleccionado en Local Storage
                     localStorage.setItem('colorSeleccionado', JSON.stringify({
                       color_id: color.color_id,
@@ -229,7 +234,6 @@ if (producto) {
                       producto_id: productoId,
                     }));
                   };
-                  
 
                   colorGrid.appendChild(colorBox);
                 });
@@ -245,9 +249,10 @@ if (producto) {
 
 
 
-      function changeMainImage(imageName) {
-        document.getElementById('mainImage').src = "<%= CFI %>/Products/<%= producto.producto_id %>/" + imageName;
-    }
+          function changeMainImage(imageName) {
+              document.getElementById('mainImage').src = currentImagePath + '/' + imageName;
+            }
+
     
 
           

@@ -330,6 +330,7 @@
   background-color: var(--color-powderblue);
   width: 600px;
   height: 175px;
+  cursor:pointer;
 }
 
 .a, .b, .c, .d {
