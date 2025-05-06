@@ -2,48 +2,58 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="initial-scale=1, width=device-width" />
-
-    <link rel="stylesheet" href="./global.css" />
-    <link rel="stylesheet" href="./index.css" />
-    <script src="/global.js" defer></script>
-
-    <link rel="stylesheet" href="/Templates/footer.css" />
-
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Josefin Sans:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap"
     />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,700;1,600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600&display=swap"
     />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
     />
-  </head>
-
-  <header>
-    <div id="barra"></div>
-    
-    
-  </header>
-  <body>
-    
-    
+  
+    <!-- Hoja global de tu proyecto -->
+    <link rel="stylesheet" href="/global.css" />
+  
+    <!-- Styles específicos de cada página -->
+    <link rel="stylesheet" href="/index.css" />       <!-- para index.ejs -->
+    <!-- o en catalogo.ejs -->
+    <!-- <link rel="stylesheet" href="/catalogo.css" /> -->
+  
+    <!-- Barra y Footer (van antes de tu propio JS) -->
+    <link rel="stylesheet" href="/barra.css" />
+    <link rel="stylesheet" href="/footer.css" />
+    <script src="/barra.js" defer></script> <!-- toggleMenu, hideSidebar -->
+    <script src="/global.js" defer></script>
+  
+    <!-- Librerías de terceros -->
+    <script
+      src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"
       
-      <div class="home1">
+    ></script>
+  
+
+   
+  </head>
+  
+
+  
+    
+
+  <body>
+    <div id="barra"></div>
+
+      <div class="home1"> 
         <div class="portada"></div>
         <div class="textos"></div>
         <div class="containerLable">
       
         </div>
-
-
-
         <div id="main-content">
 
 
@@ -79,10 +89,6 @@
             </div>
           </div>
         </div>
-                
-                
-        
-        
 
           <div class="categorias">
 
@@ -184,14 +190,17 @@
           
               
         
-          <div id="footer"></div>
+          
 
         </div>
-
+        <div id="footer"></div>
       </div>
+      
+       
+      
     </div>
 
-
+   
 
     <script>
 
@@ -377,11 +386,11 @@
         // 4) Función para MOSTRAR la gráfica de un producto con fade de 1s
         async function fadeToProduct(productoId, color) {
           // a) Iniciar fade-out (1s)
-          chartContainer.style.transition = 'opacity 1s';
+          chartContainer.style.transition = 'opacity 500ms';
           chartContainer.style.opacity = 0;
       
           // b) Esperar ~1s para notar el fade-out
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 500));
       
           // c) Eliminar la serie previa
           if (currentSeries) {
@@ -429,7 +438,7 @@
       
             let selectedProductId = parseInt(producto.getAttribute('data-id'));
             let color = producto.getAttribute('data-color') || '#FF0000';
-            console.log("📌 Producto seleccionado (clic):", selectedProductId);
+ 
       
             await fadeToProduct(selectedProductId, color);
       
@@ -451,7 +460,7 @@
             let productoId = parseInt(product.getAttribute('data-id'));
             let color = product.getAttribute('data-color') || '#FF0000';
       
-            console.log("📌 Producto seleccionado (auto-rotate):", productoId);
+          
             await fadeToProduct(productoId, color);
       
             // Actualizar enlace "Ver Producto"
@@ -462,7 +471,7 @@
       
             // Modo circular
             currentIndex = (currentIndex + 1) % productos.length;
-          }, 7000); // cada 7 segundos
+          }, 3000); // cada 7 segundos
         }
       
         // 7) Mostrar el PRIMER producto inmediatamente (sin esperar)
@@ -550,104 +559,9 @@
 
 
       //########################################################
+
+      window.onload = () => loadTemplates('inicio');
     
-    
-        window.onload = function () {
-      let claseAResaltar = "inicio";
-
-      // Cargar barra.html dinámicamente
-      fetch("/Templates/barra.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("barra").innerHTML = data;
-
-          // Aplicar el estilo para el elemento resaltado
-          let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
-          if (elementoAResaltar) {
-            elementoAResaltar.style.fontWeight = "bold";
-            elementoAResaltar.style.color = "var(--color-lightseagreen)";
-          }
-
-          // Por defecto, el login-wrapper3 redirige a /login
-          const loginWrapper = document.querySelector("#login-wrapper3");
-          const loginText = document.querySelector(".login5"); // El texto dentro del botón
-
-          // Asegúrate de seleccionar cartContainer DESPUÉS de que se cargue la barra
-          const cartContainer = document.getElementById("cart-container");
-
-          if (loginWrapper) {
-            loginWrapper.onclick = function () {
-              window.location.href = "/login";
-            }; // Redirige a /login por defecto
-          }
-
-          // Verificar la sesión para modificar el botón de login/logout si es necesario
-          fetch("/api/session")
-            .then((response) => response.json())
-            .then((data) => {
-              console.log("Sesión obtenida:", data);
-
-              if (data.isAuthenticated) {
-                // Cambiamos el color del contenedor (wrapper) a rojo chukum
-                loginWrapper.setAttribute(
-                  "style",
-                  "background-color: #C19A6B; top: -10;"
-                );
-
-                // Cambiamos el texto a "Mi Perfil"
-                loginText.textContent = "Mi Perfil";
-
-                // Cambiamos la acción a ir al perfil
-                loginWrapper.onclick = function () {
-                  window.location.href = "/perfil";
-                };
-
-                // Hacer visible el cartContainer
-                if (cartContainer) {
-                  cartContainer.style.display = "flex"; // O 'block', según el diseño
-                } else {
-                  console.warn("cart-container no encontrado en el DOM");
-                }
-
-                console.log("Sesión iniciada. Usuario:", data.correo);
-              } else {
-                console.log("No hay sesión iniciada.");
-                // Ocultar el cartContainer si no está autenticado
-                if (cartContainer) {
-                  cartContainer.style.display = "none";
-                }
-              }
-            })
-            .catch((error) => console.error("Error al cargar la sesión:", error));
-        })
-        .catch((error) => console.error("Error al cargar la barra:", error));
-
-      // Cargar el footer.html dinámicamente
-      fetch("/Templates/footer.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("footer").innerHTML = data;
-        })
-        .catch((error) => console.error("Error al cargar el footer:", error));
-    };
-
-
-
-
-
-
-
-      
-      function toggleMenu() {
-        const menu = document.querySelector('.menu-container');
-        menu.classList.toggle('active'); // Activa o desactiva el menú
-      }
-
-      function hideSidebar() {
-        const menu = document.querySelector('.menu-container');
-        menu.classList.remove('active'); // Oculta el menú
-      }
-     
     </script>
     
     
@@ -655,5 +569,5 @@
       
   </body>
   <script src="https://unpkg.com/lightweight-charts@4.0.0/dist/lightweight-charts.standalone.production.js"></script>
-  <script src="/global.js" defer></script>
+
 </html>

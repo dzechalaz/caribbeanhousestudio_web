@@ -20,29 +20,42 @@
     href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
   />
 
+    
+    <!-- Barra y Footer (van antes de tu propio JS) -->
+    <link rel="stylesheet" href="/barra.css" />
+    <link rel="stylesheet" href="/footer.css" />
+    <script src="/barra.js" defer></script> <!-- toggleMenu, hideSidebar -->
+    <script src="/global.js" defer></script>
+
   <title>Compras</title>
 </head>
 <body>
   <div id="barra"></div>
 
   <div class="seguimientopre">
-        <img class="fondo-icon" alt="" src="./public/080bef28e2d2463cae04d69b5960f9f82@2x.png" />
-        <div class="seguimientoheader">
-          <div class="inputbuscar"></div>
 
-            <!-- Barra de búsqueda actualizada -->
-            <form method="GET" action="/comprasbuscar">
-              <input class="buscar-todas-las" name="q" placeholder="Buscar todas las ordenes" type="text" maxlength="100" value="<%= searchQuery || '' %>" />
-              <button type="submit" class="btnbusqueda">
-                <div class="buscar">Buscar</div>
-              </button>
-            </form>
+        <div class="ima"></div>
+       
+        <div class="seguimientoheader">
+         
+          
+          
+            <div class="searchgroup">
             
-            <img class="lupa-icon" alt="" src="./public/lupa.svg" />
-        
+                <!-- Barra de búsqueda actualizada -->
+                <form method="GET" action="/comprasbuscar">
+                  <img class="lupa-icon" alt="" src="./public/lupa.svg" />
+                  <input class="buscar-todas-las" name="q" placeholder="Buscar todas las órdenes" type="text" maxlength="100" value="<%= searchQuery || '' %>" />
+                  <button type="submit" class="btnbusqueda">Buscar</button>
+                  
+                </form>
+                
+                
+            </div>
           
           <b class="seguimiento-de-compras">Seguimiento de compras</b>
-        </div>
+      
+      </div>
     <div class="space"></div>
 
     <% if (mensaje) { %>
@@ -67,13 +80,12 @@
           %>
               <div class="compra" data-animate-on-scroll>
                 <div class="cabezeracompra">
-                  <img class="compra-icon" alt="" src="./public/compra.svg" />
+                
                   <b class="compra-realizada">Compra Realizada: <%= compra.fecha_compra.toLocaleDateString('es-ES') %></b>
-                  <b class="id">Id:</b>
-                  <div class="IDCom"><%= compra.compra_id %></div>
+                 
                 </div>
                 <img class="imagen-icon" alt="Producto" src="<%= compra.producto?.path_imagen %>" />
-                <b class="compra-realizada1">Compra Realizada:</b>
+           
                 <div class="detalles">
                   <b class="NombreProducto"><%= compra.producto?.nombre || 'Producto no disponible' %></b>
                   <div class="informacionBasica">
@@ -102,24 +114,28 @@
                 </div>
                 
                 <div class="separador2"></div>
-                <button class="reseg" data-compra-id="<%= compra.compra_id %>">
-                  <div class="realizar-seguimiento">Realizar Seguimiento</div>
-                </button>
-                <button class="verart" data-product-id="<%= compra.producto_id %>">
-                  <div class="ver-artculo">Ver Artículo</div>
-                </button>
-                
+             
+                  
+                  <button class="reseg"  data-compra-id="…">Realizar Seguimiento</button>
+                  <button class="verart" data-product-id="…">Ver Artículo</button>
+              
+             
                 <div class="separador1"></div>
               </div>
           <% } // Cierra el if de compras no repetidas %>
           <% }) %>
         </div>
+        
       <% }) %>
     <% } %>
     
+    <footer id ="footer" class="footer"></footer>
+    
+    
+ 
+ 
   </div>
 
-  
   
 
   
@@ -130,85 +146,7 @@
 
     // barra y footer
    
-   
-    window.onload = function () {
-      let claseAResaltar = "seguimiento";
-
-      // Cargar barra.html dinámicamente
-      fetch("/Templates/barra.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("barra").innerHTML = data;
-
-          // Aplicar el estilo para el elemento resaltado
-          let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
-          if (elementoAResaltar) {
-            elementoAResaltar.style.fontWeight = "bold";
-            elementoAResaltar.style.color = "var(--color-lightseagreen)";
-          }
-
-          // Por defecto, el login-wrapper3 redirige a /login
-          const loginWrapper = document.querySelector("#login-wrapper3");
-          const loginText = document.querySelector(".login5"); // El texto dentro del botón
-
-          // Asegúrate de seleccionar cartContainer DESPUÉS de que se cargue la barra
-          const cartContainer = document.getElementById("cart-container");
-
-          if (loginWrapper) {
-            loginWrapper.onclick = function () {
-              window.location.href = "/login";
-            }; // Redirige a /login por defecto
-          }
-
-          // Verificar la sesión para modificar el botón de login/logout si es necesario
-          fetch("/api/session")
-            .then((response) => response.json())
-            .then((data) => {
-              console.log("Sesión obtenida:", data);
-
-              if (data.isAuthenticated) {
-                // Cambiamos el color del contenedor (wrapper) a rojo chukum
-                loginWrapper.setAttribute(
-                  "style",
-                  "background-color: #C19A6B; top: -10;"
-                );
-
-                // Cambiamos el texto a "Mi Perfil"
-                loginText.textContent = "Mi Perfil";
-
-                // Cambiamos la acción a ir al perfil
-                loginWrapper.onclick = function () {
-                  window.location.href = "/perfil";
-                };
-
-                // Hacer visible el cartContainer
-                if (cartContainer) {
-                  cartContainer.style.display = "flex"; // O 'block', según el diseño
-                } else {
-                  console.warn("cart-container no encontrado en el DOM");
-                }
-
-                console.log("Sesión iniciada. Usuario:", data.correo);
-              } else {
-                console.log("No hay sesión iniciada.");
-                // Ocultar el cartContainer si no está autenticado
-                if (cartContainer) {
-                  cartContainer.style.display = "none";
-                }
-              }
-            })
-            .catch((error) => console.error("Error al cargar la sesión:", error));
-        })
-        .catch((error) => console.error("Error al cargar la barra:", error));
-
-      // Cargar el footer.html dinámicamente
-      fetch("/Templates/footer.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("footer").innerHTML = data;
-        })
-        .catch((error) => console.error("Error al cargar el footer:", error));
-    };
+    window.onload = () => loadTemplates('seguimiento');
 
     // Configuración de botones para seguimiento
     document.addEventListener('DOMContentLoaded', function () {
@@ -257,4 +195,5 @@
     scrollAnimElements.forEach(element => observer.observe(element));
   </script>
 </body>
+
 </html>

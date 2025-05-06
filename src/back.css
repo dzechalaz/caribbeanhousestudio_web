@@ -1,0 +1,324 @@
+@media screen and (min-width: 900px) {
+
+    /* Estilo de la barra lateral */
+    .catalog-container {
+      display: flex;
+      flex-grow: 1;
+      justify-content: center;
+      align-content: center;
+    
+      margin: 87px auto 0; /* Espacio debajo del header */
+      padding: 20px;
+      gap: 0px; /* Espacio entre la barra lateral y el área de productos */
+      min-height: 500px;
+      min-width: 400px;
+     
+      
+    }
+    
+    .sidebar h3 {
+      font-size: 2.5em;
+      color: #4A403A; 
+      margin-bottom: 15px;
+    }
+    
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .sidebar ul li {
+      margin-bottom: 10px;
+    }
+    
+    .sidebar ul li a {
+      text-decoration: none;
+      font-size: 1.5em;
+      color: #f0f0f0;
+    }
+    
+    .sidebar ul li a:hover {
+      color: #a5d1ce; /* Color hover */
+      font-weight: 500;
+    }
+    
+    
+    .canvas {
+      position: flex;
+     
+      text-align: left;
+      font-size: var(--font-size-xs);
+      color: var(--color-white);
+      font-family: var(--font-montserrat);
+    }
+    
+    
+    /* -----------------------------------------------------------------------------/
+    /* Estilos del cuadro del producto */
+    /* Estilo del enlace que rodea todo el contenedor del producto */
+    .product-link {
+      text-decoration: none; /* Elimina el subrayado del enlace */
+      color: inherit; /* Mantiene el color original del texto */
+    }
+    
+    
+    /* Estilo para cuando el contenedor se pasa el mouse por encima */
+    .product-card:hover {
+      transform: scale(1.05); /* Pequeña ampliación al hacer hover */
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+    
+    .product-image {
+      width: calc(100%); /* Tamaño ajustado para el margen de 20px en cada lado */
+      height: 40%; /* Altura fija para hacer la imagen cuadrada */
+      
+      object-fit: cover; /* Asegura que la imagen se recorte para encajar en el cuadro */
+      border-radius: 15px;
+      border: 3px solid #f0f0f0;
+      margin: 0 auto; /* Centra la imagen horizontalmente */
+      display: block;
+    }
+    
+    .product-details {
+      margin-top: 20px;
+      text-align: left;
+    }
+    
+    .product-title {
+      font-size: 2em;
+      color: #4A403A; /* Color de texto estilo chukum */
+      margin: 0 0 10px;
+      font-weight: bold;
+    }
+    
+    .product-sku {
+      font-size: 1.1em;
+      color: #888;
+      margin-bottom: 15px;
+    }
+    
+    .product-price {
+      margin-bottom: 20px;
+    }
+    
+    .discounted-price {
+      font-size: 1.6em;
+      color: #705645; /* Color estilo chukum */
+      font-weight: bold;
+    }
+    /* Estilo de la barra lateral */
+    .sidebar {
+      display: relative;
+      z-index: 2;
+      width: 20vw;
+      max-width: 250px;
+      min-width: 170px;
+      background-color: #C19A6B; /* Color estilo chukum */
+      padding: 20px;
+      border-radius: 8px;
+      max-height: 500px;
+      margin-right: 20px;
+      
+    }
+    
+    body {
+      margin: 0; /* Elimina el margen predeterminado */
+      height: 100%;
+      background-color: var(--color-antiquewhite);
+    }
+    .product-grid
+    .product-list {
+      display: flex;
+      flex-grow: 1;
+      background-color: #ffffff7c;
+      border-radius: 8px;
+      padding: 20px;
+      max-width:  70vw;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Máximo de 5 columnas */ /* Cambiar el tamaño mínimo de las tarjetas */
+      gap: 20px;
+    
+      
+    
+       /* Centra verticalmente el contenido del grid (si el contenedor tiene más altura) */
+    }
+    .product-grid{
+      max-width: 1500px;
+      min-height: 700px;
+    }
+    
+    
+    
+    
+    /* Estilo del contenedor de la tarjeta de producto */
+    .product-card {
+      border: 1px solid #C19A6B; /* Borde con color estilo chukum */
+      border-radius: 8px;
+      padding: calc(15%);
+      width: calc(65%);
+      max-width: 250px;
+      height: 320px;
+      background-color: #a5d1ce; /* Fondo estilo chukum */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      cursor: pointer; /* Cambia el cursor para indicar que es clicable */
+    }
+    
+    
+    
+    
+    .product-details {
+      text-align: left;
+    }
+    
+    /*paginacion*/
+    
+    .pagination {
+      
+      position: relative;
+      display: flex;
+      justify-content: center;
+      margin: 40px 0;
+    }
+    
+    .page-button {
+      padding: 10px 15px;
+      margin: 0 5px;
+      background-color: #C19A6B; /* Color estilo chukum */
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s ease-in-out;
+    }
+    
+    .page-button.active {
+      background-color: #4A403A; /* Color más oscuro para la página activa */
+    }
+    
+    .page-button:hover {
+      background-color: #A17851;
+    }
+    
+    
+    /* Estilo de la barra de búsqueda */
+    .search-bar {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+      
+    }
+    
+    .search-input {
+      padding: 10px;
+      border: 1px solid #C19A6B;
+      border-radius: 5px 0 0 5px;
+      width: 145px;
+      font-size: 1em;
+    }
+    
+    .search-button {
+      padding: 10px 20px;
+      background-color: #4a403a; /* Color del botón de búsqueda */
+      color: #fff;
+      border: none;
+      border-radius: 0 5px 5px 0;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background-color 0.3s ease-in-out;
+    }
+    
+    .search-button:hover {
+      background-color: #363636;
+    }
+    
+    
+    /* Cambiar el color de la categoría seleccionada */
+    .sidebar ul li a.active {
+      color: #63ded0;
+      font-weight: bold;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    /*pedido costum */
+    
+    .custom-quote-section {
+      background-color: #E06666; /* Rojo suave estilo Chukum */
+      color: #FFF8F0; /* Texto en color claro */
+      padding: 20px; /* Ajuste del padding para más simetría */
+      border-radius: 8px;
+      text-align: center;
+      margin-top: 80px; /* Espaciado */
+      width: 20vw; /* Asegura el mismo ancho que la barra lateral */
+      max-width: 250px; /* Asegura el ancho máximo */
+      min-width: 170px; /* Asegura el ancho mínimo */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+      margin-left: -20px;
+      position: relative;
+     
+    }
+    
+    .custom-quote-section h2 {
+      font-size: 1.8em;
+      margin-bottom: 10px;
+      color: #4A403A; /* Tono oscuro */
+    }
+    
+    .custom-quote-section p {
+      font-size: 1.2em;
+      margin-bottom: 15px;
+    }
+    
+    .quote-button, .xbutton {
+      background-color: #6E8E51; /* Verde Chukum */
+      color: #FFF8F0; /* Texto claro */
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 1.2em;
+      cursor: pointer;
+      transition: background-color 0.3s ease-in-out;
+      margin-bottom: 20px;
+    }
+    
+    .quote-button:hover {
+      background-color: #497E39; /* Verde más oscuro para hover */
+    }
+    
+    
+    /* Define variables para que puedas cambiarlas fácilmente */
+    :root {
+      --outlet-font-size: 1.2rem;      /* Ajusta el tamaño de fuente que desees */
+      --outlet-bg-color: #5da795;      /* Verde tipo “chukum” (ajusta según tu preferencia) */
+      --outlet-bg-hover: #bfe6db;      /* Color de fondo al hacer hover */
+      --outlet-text-color: #FFFFFF;    /* Color del texto */
+    }
+    
+    /* Estilo especial para la categoría Outlet */
+    .outlet-category a {
+      display: inline-block;
+      font-weight: bold;
+      font-size: var(--outlet-font-size);
+      background-color: var(--outlet-bg-color);
+      color: var(--outlet-text-color);
+      padding: 8px 16px;
+      border: none;             /* Sin borde sólido, para un look más minimalista */
+      border-radius: 20px;      /* Bordes redondeados; ajusta según tu gusto */
+      transition: background-color 0.3s ease, color 0.3s ease;
+      text-decoration: none;    /* Aseguramos que no aparezca el subrayado */
+    }
+    
+    /* Efecto hover */
+    .outlet-category a:hover {
+      background-color: var(--outlet-bg-hover);
+      color: var(--outlet-text-color);
+    }
+     }
+    
+    
+    

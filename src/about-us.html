@@ -18,73 +18,85 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
     />
-  </head>
-  <body>
-    <div id="barra"></div>
+    <!-- Barra y Footer (van antes de tu propio JS) -->
     
-   
+    <!-- Barra y Footer (van antes de tu propio JS) -->
+    <link rel="stylesheet" href="/barra.css" />
+    <link rel="stylesheet" href="/footer.css" />
+    <script src="/barra.js" defer></script> <!-- toggleMenu, hideSidebar -->
+    <script src="/global.js" defer></script>
+  </head>
+  <div id="barra"></div>
+  <body>
+    
+    
+    <div class="canvas">
      
-    <div class="portada">
-      <div class="overlay"></div>
-      <h1 class="titulo">Nuestra Historia</h1>
-      <p class="descripcion">
-        Caribbean House Studio nació en los años 2000 como un distribuidor de muebles en plena expansión de Playa del Carmen. Con el tiempo, comenzamos a fabricar muebles a la medida, respondiendo a las necesidades de nuestros clientes que buscaban soluciones prácticas y personalizadas para sus hogares. Así, poco a poco, fuimos dejando nuestra huella en muchos espacios únicos de la región.
+          <div class="portada">
+            <div class="overlay"></div>
+            <h1 class="titulo">Nuestra Historia</h1>
+            <p class="descripcion">
+              Caribbean House Studio nació en los años 2000 como un distribuidor de muebles en plena expansión de Playa del Carmen. Con el tiempo, comenzamos a fabricar muebles a la medida, respondiendo a las necesidades de nuestros clientes que buscaban soluciones prácticas y personalizadas para sus hogares. Así, poco a poco, fuimos dejando nuestra huella en muchos espacios únicos de la región.
 
-        A lo largo de los años, los gustos y estilos de nuestros amigos playenses han evolucionado, y nosotros hemos crecido con ellos, adaptando nuestra producción sin perder de vista nuestro compromiso con la calidad y el buen servicio. Después de más de 25 años, seguimos fieles a esta tradición, siempre con la misión de brindar comodidad y estilo a nuestra comunidad.
-        
-        Hoy, nuestro objetivo es seguir distribuyendo y fabricando mobiliario en la Riviera Maya de manera confiable, práctica y siempre con un toque especial.
-      </p>
-  </div>
+              A lo largo de los años, los gustos y estilos de nuestros amigos playenses han evolucionado, y nosotros hemos crecido con ellos, adaptando nuestra producción sin perder de vista nuestro compromiso con la calidad y el buen servicio. Después de más de 25 años, seguimos fieles a esta tradición, siempre con la misión de brindar comodidad y estilo a nuestra comunidad.
+              
+              Hoy, nuestro objetivo es seguir distribuyendo y fabricando mobiliario en la Riviera Maya de manera confiable, práctica y siempre con un toque especial.
 
-  <div class="images">
-    <div class="image-container">
-        <h3>Residencial</h3>
-        <img src="./public/ImagenesPaginas/1.jpg" alt="Residencial">
-    </div>
-    <div class="image-container">
-        <h3>Proyectos de Negocio y Alojamiento</h3>
-        <img src="./public/ImagenesPaginas/2.jpg" alt="Negocio y Alojamiento">
-    </div>
-    <div class="image-container">
-        <h3>Decoración y Accesorios</h3>
-        <img src="./public/ImagenesPaginas/3.jpg" alt="Decoración y Accesorios">
-    </div>
-</div>
+              
+            </p>
+        </div>
 
-  <!-- Sección de Opiniones -->
-  <div class="opiniones">
-      <h2>Opiniones</h2>
-      <div class="opiniones-container">
-          <div class="opinion">
-              <p><i>Caribbean House made a beautiful custom sofa for me with material I supplied. Fabulous workmanship and quality!</i></p>
-              <span class="autor">- Leslie Kelleher</span>
+        <div class="images">
+          <div class="image-container">
+              <h3>Residencial</h3>
+              <img src="./public/ImagenesPaginas/1.jpg" alt="Residencial">
           </div>
-          <div class="opinion">
-              <p><i>Beautiful Bed and Armoire, great craftsmanship and attention to details. I love the way the bedroom looks now. Great Job!</i></p>
-              <span class="autor">- Michelle Williams</span>
+          <div class="image-container">
+              <h3>Proyectos de Negocio y Alojamiento</h3>
+              <img src="./public/ImagenesPaginas/2.jpg" alt="Negocio y Alojamiento">
           </div>
-          <div class="opinion">
-              <p><i>Caribbean House Studio crafted a perfect, custom sliding door that is truly a work of art. The result exceeded expectations.</i></p>
-              <span class="autor">- Maria Elisa Rendon</span>
+          <div class="image-container">
+              <h3>Decoración y Accesorios</h3>
+              <img src="./public/ImagenesPaginas/3.jpg" alt="Decoración y Accesorios">
           </div>
       </div>
-  </div>
 
-  <!-- Sección de Detalles -->
-  <div class="detalle">
-      <div class="texto">
-          <h2>Detalles cuidadosamente considerados y combinación de belleza.</h2>
-          <a href="/catalogo" class="boton">Explorar Más</a>
-      </div>
-      <div class="imagen-detalle"></div>
-  </div>
+        <!-- Sección de Opiniones -->
+        <div class="opiniones">
+            <h2>Opiniones</h2>
+            <div class="opiniones-container">
+                <div class="opinion">
+                    <p><i>Caribbean House made a beautiful custom sofa for me with material I supplied. Fabulous workmanship and quality!</i></p>
+                    <span class="autor">- Leslie Kelleher</span>
+                </div>
+                <div class="opinion">
+                    <p><i>Beautiful Bed and Armoire, great craftsmanship and attention to details. I love the way the bedroom looks now. Great Job!</i></p>
+                    <span class="autor">- Michelle Williams</span>
+                </div>
+                <div class="opinion">
+                    <p><i>Caribbean House Studio crafted a perfect, custom sliding door that is truly a work of art. The result exceeded expectations.</i></p>
+                    <span class="autor">- Maria Elisa Rendon</span>
+                </div>
+            </div>
+        </div>
 
-  <div id="footer"></div>
+        <!-- Sección de Detalles -->
+        <div class="detalle">
+            <div class="texto">
+                <h2>Detalles cuidadosamente considerados y combinación de belleza.</h2>
+                <a href="/catalogo" class="boton">Explorar Más</a>
+            </div>
+            <div class="imagen-detalle"></div>
+        </div>
+        <div id="footer"></div>
+    </div>
+ 
       
 
 
         <!-- Script de Parallax -->
     <script>
+      window.onload = () => loadTemplates('nuestra-historia');
       document.addEventListener("scroll", function () {
           const scrollPos = window.scrollY;
           const portada = document.getElementById("portada");
@@ -99,106 +111,5 @@
 
       
     
-    <script>
-      
-
-      
-    window.onload = function () {
-      let claseAResaltar = "nuestra-historia";
-
-      // Cargar barra.html dinámicamente
-      fetch("/Templates/barra.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("barra").innerHTML = data;
-
-          // Aplicar el estilo para el elemento resaltado
-          let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
-          if (elementoAResaltar) {
-            elementoAResaltar.style.fontWeight = "bold";
-            elementoAResaltar.style.color = "var(--color-lightseagreen)";
-          }
-
-          // Por defecto, el login-wrapper3 redirige a /login
-          const loginWrapper = document.querySelector("#login-wrapper3");
-          const loginText = document.querySelector(".login5"); // El texto dentro del botón
-
-          // Asegúrate de seleccionar cartContainer DESPUÉS de que se cargue la barra
-          const cartContainer = document.getElementById("cart-container");
-
-          if (loginWrapper) {
-            loginWrapper.onclick = function () {
-              window.location.href = "/login";
-            }; // Redirige a /login por defecto
-          }
-
-          // Verificar la sesión para modificar el botón de login/logout si es necesario
-          fetch("/api/session")
-            .then((response) => response.json())
-            .then((data) => {
-              console.log("Sesión obtenida:", data);
-
-              if (data.isAuthenticated) {
-                // Cambiamos el color del contenedor (wrapper) a rojo chukum
-                loginWrapper.setAttribute(
-                  "style",
-                  "background-color: #C19A6B; top: -10;"
-                );
-
-                // Cambiamos el texto a "Mi Perfil"
-                loginText.textContent = "Mi Perfil";
-
-                // Cambiamos la acción a ir al perfil
-                loginWrapper.onclick = function () {
-                  window.location.href = "/perfil";
-                };
-
-                // Hacer visible el cartContainer
-                if (cartContainer) {
-                  cartContainer.style.display = "flex"; // O 'block', según el diseño
-                } else {
-                  console.warn("cart-container no encontrado en el DOM");
-                }
-
-                console.log("Sesión iniciada. Usuario:", data.correo);
-              } else {
-                console.log("No hay sesión iniciada.");
-                // Ocultar el cartContainer si no está autenticado
-                if (cartContainer) {
-                  cartContainer.style.display = "none";
-                }
-              }
-            })
-            .catch((error) => console.error("Error al cargar la sesión:", error));
-        })
-        .catch((error) => console.error("Error al cargar la barra:", error));
-
-      // Cargar el footer.html dinámicamente
-      fetch("/Templates/footer.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("footer").innerHTML = data;
-        })
-        .catch((error) => console.error("Error al cargar el footer:", error));
-    };
-
-
-      var logo = document.getElementById("logo");
-      if (logo) {
-        logo.addEventListener("click", function (e) {
-          window.location.href = "/";
-        });
-      }
-
-      function toggleMenu() {
-        const menu = document.querySelector('.menu-container');
-        menu.classList.toggle('active'); // Activa o desactiva el menú
-      }
-
-      function hideSidebar() {
-        const menu = document.querySelector('.menu-container');
-        menu.classList.remove('active'); // Oculta el menú
-      }
-      </script>
   </body>
 </html>
