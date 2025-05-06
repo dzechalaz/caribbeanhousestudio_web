@@ -4,7 +4,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+     "bs": "browser-sync start --proxy \"localhost:3000\" --files \"src/**/*.css\" --port 5500 --no-ui --no-notify"
+  
   },
   "keywords": [],
   "author": "",
@@ -26,6 +28,7 @@
     "express": "^4.19.2",
     "express-mysql-session": "^3.0.3",
     "express-session": "^1.18.1",
+    "live": "^0.1.25-beta.0",
     "lru-cache": "^6.0.0",
     "luxon": "^3.5.0",
     "mercadopago": "^2.3.0",
@@ -36,7 +39,14 @@
     "node-cron": "^3.0.3",
     "node-fetch": "^2.7.0",
     "nodemailer": "^6.9.16",
+    "server": "^1.0.41",
     "vexor": "^0.1.12"
   },
-  "description": " "
+  "description": " ",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+  
 }
+
+ 

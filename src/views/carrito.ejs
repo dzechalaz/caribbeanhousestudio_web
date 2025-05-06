@@ -21,6 +21,13 @@
   />
   <script src="https://sdk.mercadopago.com/js/v2"></script>
   <title>Carrito</title>
+
+  
+    <!-- Barra y Footer (van antes de tu propio JS) -->
+    <link rel="stylesheet" href="/barra.css" />
+    <link rel="stylesheet" href="/footer.css" />
+    <script src="/barra.js" defer></script> <!-- toggleMenu, hideSidebar -->
+    <script src="/global.js" defer></script>
 </head>
 <body>
   <div id="barra"></div>
@@ -149,92 +156,19 @@
 
 
       </div>
-    </div>
+    
+      <div id="footer" style="display: none;"></div>
+
+      </div>
     </div>
 
 
-  <div id="footer" class="footer"></div>
-  <div id="img" class="img"></div>
+
   <script src="./carrito.js"></script>
 
   <script>
     // barra y footer
-    window.onload = function () {
-      // Cargar barra y footer simultáneamente
-      Promise.all([
-        fetch("/Templates/barra.html").then((response) => response.text()),
-        fetch("/Templates/footer.html").then((response) => response.text()),
-      ])
-        .then(([barraHTML, footerHTML]) => {
-          // Insertar HTML de barra y footer en sus respectivos contenedores
-          document.getElementById("barra").innerHTML = barraHTML;
-          document.getElementById("footer").innerHTML = footerHTML;
-    
-          // Inicializar lógica adicional una vez que todo esté cargado
-          inicializarBarra();
-        })
-        .catch((error) => console.error("Error al cargar los templates:", error));
-    };
-    
-    // Función para inicializar la barra y agregar funcionalidades adicionales
-    function inicializarBarra() {
-      let claseAResaltar = "vacio";
-    
-      // Aplicar el estilo para el elemento resaltado
-      let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
-      if (elementoAResaltar) {
-        elementoAResaltar.style.fontWeight = "bold";
-        elementoAResaltar.style.color = "var(--color-lightseagreen)";
-      }
-    
-      const loginWrapper = document.querySelector("#login-wrapper3");
-      const loginText = document.querySelector(".login5");
-      const cartContainer = document.getElementById("cart-container");
-    
-      // Configuración predeterminada para el botón de login
-      if (loginWrapper) {
-        loginWrapper.onclick = function () {
-          window.location.href = "/login";
-        };
-      }
-    
-      // Verificar la sesión para modificar el botón de login/logout
-      fetch("/api/session")
-        .then((response) => response.json())
-        .then((data) => {
-          console.log("Sesión obtenida:", data);
-    
-          if (data.isAuthenticated) {
-            // Cambiar color y acción del botón de login para usuarios autenticados
-            loginWrapper.setAttribute(
-              "style",
-              "background-color: #C19A6B; top: -10;"
-            );
-            loginText.textContent = "Mi Perfil";
-            loginWrapper.onclick = function () {
-              window.location.href = "/perfil";
-            };
-    
-            // Mostrar el contenedor del carrito si está autenticado
-            if (cartContainer) {
-              cartContainer.style.display = "flex"; // O 'block', según el diseño
-            } else {
-              console.warn("cart-container no encontrado en el DOM");
-            }
-    
-            console.log("Sesión iniciada. Usuario:", data.correo);
-          } else {
-            console.log("No hay sesión iniciada.");
-    
-            // Ocultar el contenedor del carrito si no está autenticado
-            if (cartContainer) {
-              cartContainer.style.display = "none";
-            }
-          }
-        })
-        .catch((error) => console.error("Error al cargar la sesión:", error));
-    }
-    
+    window.onload = () => loadTemplates('carrito');
   </script>
 </body>
 </html>

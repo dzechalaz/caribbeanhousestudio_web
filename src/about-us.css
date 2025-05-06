@@ -18,7 +18,7 @@ body {
   font-family: 'Poppins', sans-serif;
   background-color: var(--chukum-beige);
   color: var(--text-dark);
-  scroll-behavior: smooth; /* Desplazamiento suave */
+  scroll-behavior: smooth;
 }
 
 /* 🏡 PORTADA CON PARALLAX */
@@ -58,13 +58,11 @@ body {
   max-width: 800px;
   font-size: 1.2rem;
   color: white;
-  
-  text-align: justify; /* Justifica el texto */
-  white-space: pre-line; /* Respeta los saltos de línea en el HTML */
+  text-align: justify;
+  white-space: pre-line;
   z-index: 2;
-  line-height: 1.6; /* Aumenta la legibilidad */
+  line-height: 1.6;
 }
-
 
 /* 💬 OPINIONES */
 .opiniones {
@@ -96,7 +94,7 @@ body {
   box-shadow: 2px 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.autor {
+.opinion .autor {
   display: block;
   font-weight: bold;
   margin-top: 1rem;
@@ -114,7 +112,6 @@ body {
   z-index: 4;
 }
 
-/* 🌿 Imagen de fondo con efecto multiply y opacidad */
 .detalle::before {
   content: "";
   position: absolute;
@@ -128,13 +125,12 @@ body {
   z-index: 0;
 }
 
-/* 📌 Asegurar que el contenido esté por encima del overlay */
-.texto, .imagen-detalle {
+.texto,
+.imagen-detalle {
   position: relative;
   z-index: 1;
 }
 
-/* 📌 Contenedor de texto */
 .texto {
   width: 50%;
   color: var(--text-dark);
@@ -151,7 +147,6 @@ body {
   max-width: 500px;
 }
 
-/* 🟡 Botón de Explorar */
 .boton {
   display: inline-block;
   background: var(--chukum-yellow);
@@ -168,7 +163,6 @@ body {
   background: #e0b85d;
 }
 
-/* 📷 Imagen de detalle */
 .imagen-detalle {
   width: 500px;
   height: 500px;
@@ -179,51 +173,126 @@ body {
   right: 10vh;
 }
 
-
 /* NUEVA PARTE */
-
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&display=swap');
 
 .images {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 100%;
-    padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 100%;
+  padding: 20px;
+  gap: 2rem;
 }
 
 .image-container {
-    text-align: center;
-    width: 30%;
+  text-align: center;
+  width: 30%;
 }
 
 .image-container h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2rem; /* Texto más grande */
-    font-weight: 700;
-    color: black;
-    
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: black;
 }
 
-/* Sombra moderna y minimalista */
 .image-container img {
-    margin-top: 20px;
-    width: 100%;
-    height: auto;
-    border-radius: 10px; /* Bordes ligeramente redondeados */
-    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.15), /* Sombra difusa moderna */
-                -5px -5px 15px rgba(255, 255, 255, 0.05); /* Efecto sutil en bordes */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-top: 20px;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow:
+    5px 5px 15px rgba(0, 0, 0, 0.15),
+    -5px -5px 15px rgba(255, 255, 255, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Efecto hover para más dinamismo */
 .image-container img:hover {
-    transform: translateY(-5px); /* Eleva ligeramente la imagen */
-    box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.2), /* Sombra más intensa */
-                -8px -8px 20px rgba(255, 255, 255, 0.1);
+  transform: translateY(-5px);
+  box-shadow:
+    8px 8px 20px rgba(0, 0, 0, 0.2),
+    -8px -8px 20px rgba(255, 255, 255, 0.1);
 }
 
-.images{
+.images {
   margin-top: 20px;
   margin-bottom: 20px;
+}
+
+/* ——— Responsive para .images ——— */
+@media screen and (max-width: 768px) {
+ 
+  .images {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0 1rem;
+  }
+  .image-container {
+    width: 100%;
+    max-width: 400px;
+  }
+}
+
+/* ——— Responsive para Opiniones ——— */
+@media screen and (max-width: 768px) {
+  
+  .opiniones-container {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 0 1rem;
+  }
+  .opinion {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+}
+
+/* ——— Ajustes Portada / Descripción (opcional) ——— */
+@media screen and (max-width: 768px) {
+  .titulo{
+    margin-top: 70px;
+    font-size: 2rem;
+  }
+  .portada {
+    height: auto;
+    
+  }
+  .descripcion {
+    margin-top: 15px;
+    max-height: 40vh;
+    overflow-y: auto;
+    font-size: .9rem;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 15%,
+      black 85%,
+      transparent 100%
+    );
+            mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 10%,
+      black 85%,
+      transparent 100%
+    );
+    
+    
+  }
+}
+
+/* ——— Ajustes Sección Detalle ——— */
+@media screen and (max-width: 768px) {
+  .detalle {
+    flex-direction: column;
+    padding: 2rem 1rem;
+  }
+  .imagen-detalle {
+    margin: 0 0 1.5rem 0;
+    width: 100%;
+    height: auto;
+  }
 }

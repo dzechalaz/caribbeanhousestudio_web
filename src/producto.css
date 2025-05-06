@@ -574,7 +574,7 @@
   height: 87px;
   font-size: var(--font-size-base);
 }
-.producto {
+.canvas {
   
   position: relative;
   background-color: var(--color-seashell);

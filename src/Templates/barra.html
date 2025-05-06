@@ -1,14 +1,4 @@
-<!DOCTYPE html>
-<html lang="es">
-<title>CARIBBEAN HOUSE STUDIO</title>
-<head>
-    <!-- Enlace al archivo de estilos barra.css según la ruta que mencionaste -->
-    <link rel="stylesheet" href="./barra.css">
-    <script src="/global.js" defer></script>
-</head>
-
-<body>
-  <header class="barra-pestaas5">
+<header class="barra-pestaas5">
   
     <div class="component-1-13">
       <div class="component-1-13-child">
@@ -39,7 +29,7 @@
     
       <a href="/about-us.html" style="text-decoration: none; color: inherit;"><div class="nuestra-historia" id="nh">NUESTRA HISTORIA</div></a>
       <a href="/compras" style="text-decoration: none; color: inherit;"><div class="seguimiento" id="seg">MIS COMPRAS</div></a>
-      <div class="vacio"></div> 
+
      
     
       <a href="/carrito" style="text-decoration: none; color: inherit; " class="cart-container" id="cart-container" style="display: none;">
@@ -62,51 +52,39 @@
     <!-- Menú desplegable para dispositivos móviles -->
     <div class="menu-container">
       <ul class="sidebar-burger">
-        <li onclick="hideSidebar()">
-          <a href="#">
-            <svg xmlns="http://www.w3.org/2000/svg" height="26" viewBox="0 96 960 960" width="26">
-              <path d="m249 849-42-42 231-231-231-231 42-42 231 231 231-231 42 42-231 231 231 231-42 42-231-231-231 231Z"/>
-            </svg>
+        <!-- cerrar -->
+        <li>
+          <div class="close-btn" onclick="hideSidebar()">✕</div>
+        </li>
+        <li><a href="/"            class="inicio">INICIO</a></li>
+        <li><a href="/catalogo"    class="catalogo">CATÁLOGO</a></li>
+        <li><a href="/about-us.html" class="nuestra-historia">NUESTRA HISTORIA</a></li>
+        <li><a href="/compras"     class="seguimiento">MIS COMPRAS</a></li>
+  
+        <!-- carrito móvil -->
+        <li>
+          <a href="/carrito" class="cart-link" style="display:none;">
+            <img src="/public/cart.svg" alt="Carrito" class="cart-icon" />
+            CARRITO
           </a>
         </li>
-        <li><a href="/">INICIO</a></li>
-        <li><a href="/catalogo">CATÁLOGO</a></li>
-        <li><a href="#">BLOG</a></li>
-        <li><a href="/about-us.html">NUESTRA HISTORIA</a></li>
-        <li><a href="/compras">SEGUIMIENTO</a></li>
-        <li><a href="/login">Login</a></li>
+  
+        <!-- login móvil -->
+        <li>
+          <a href="/login" class="login-link">Login</a>
+        </li>
+        <!-- perfil móvil -->
+        <li>
+          <a href="/perfil" class="perfil-link" style="display:none;">PERFIL</a>
+        </li>
       </ul>
     </div>
   
   </header>
   
-  <script>
-    function toggleMenu() {
-        const menu = document.querySelector('.menu-container');
-        menu.classList.toggle('active'); // Muestra/oculta el menú
-    }
+ 
   
-    function hideSidebar() {
-        const menu = document.querySelector('.menu-container');
-        menu.classList.remove('active'); // Oculta el menú
-    }
   
-    // Cerrar el menú cuando se hace clic fuera del menú o del botón
-    document.addEventListener('click', function(event) {
-        const menu = document.querySelector('.menu-container');
-        const button = document.querySelector('.menu-button');
-        if (menu && button && !menu.contains(event.target) && !button.contains(event.target)) {
-            menu.classList.remove('active');
-        }
-    });
 
 
-  </script>
-
-  
-
-  
-  
-</body>
-</html>
 
