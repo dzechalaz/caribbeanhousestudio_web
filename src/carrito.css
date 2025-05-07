@@ -6,8 +6,9 @@ body {
 }
 
 .container{
-  margin-bottom: 50px;
-  min-height: 80vh;
+
+  padding-bottom: 200px;
+
 
 }
 
@@ -32,7 +33,7 @@ body {
 
   position: relative;
   max-width: 700px;
-  width: 40%;
+  width: 90vw;
   margin: auto;
   padding: 20px;
   background-color: #C8D9CE; /* Verde azulado pastel tipo chukum */
@@ -40,6 +41,7 @@ body {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para darle un efecto elevado */
   margin-top: 12vh;
   margin-bottom: 12vhpx;
+  min-width: 500px;
 }
 
 /* Título */
@@ -336,3 +338,162 @@ h2 {
   font-weight: bold; /* Pone el texto en negritas */
   color: #38580f; /* Verde (Bootstrap success color) */
 }
+
+ 
+@media screen and (max-width: 1024px) { /*ipads*/
+  footer{
+    display: none;
+  }
+
+  .container{
+    margin-top: -60px;
+  }
+  /* … */
+}
+
+/* ===========================
+   Mobile (≤768px) – Carrito
+   =========================== */
+   @media screen and (max-width: 768px) {
+
+    .container{
+      background-color: #C8D9CE;
+      top: 0px;
+      left: 0px;
+      margin-top: 0px;
+      
+
+    }
+
+ 
+    /* Compactar cada tarjeta */
+    .cart-item {
+      padding: 0.5rem;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+  
+    /* Imagen más pequeña */
+    .product-image {
+      width: 120px;
+      height: auto;
+      border-radius: 8px;
+      margin: 0;
+    }
+  
+    /* Detalles se ajustan al lado o debajo */
+    .item-details {
+      flex: 1;
+      font-size: 0.85rem;
+      line-height: 1.3;
+    }
+    .item-details p {
+      margin: 0.25rem 0;
+    }
+  
+    /* Botones de cantidad más compactos */
+    .quantity-btn {
+      width: 28px;
+      height: 28px;
+      font-size: 1rem;
+    }
+    .quantity-input {
+      width: 40px;
+      font-size: 0.9rem;
+    }
+  
+    /* Botón “Eliminar” más pequeño */
+    .delete-item-btn {
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      margin-left: 0;
+    }
+  
+    /* Resumen con fondo suave y menos padding */
+    .cart-summary {
+      background: rgba(42, 127, 98, 0.1);
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .cart-summary p {
+      margin: 0.25rem 0;
+    }
+  
+    /* Acciones full-width y más compactas */
+    .cart-actions {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .cart-actions button {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 0.9rem;
+      border-radius: 8px;
+    }
+  
+          /* Reduce el padding general del panel */
+      .shipping-address {
+        padding: 10px 15px;       /* antes era 15px, ahora menos */
+        margin-bottom: 15px;      /* antes quizás era más */
+      }
+
+      /* Ajusta el título */
+      .shipping-address h3 {
+        margin: 0 0 8px;          /* menos espacio debajo del título */
+        font-size: 1.2rem;        /* o el tamaño que prefieras */
+      }
+
+      /* Contenedor de la dirección seleccionada: menos padding y gaps */
+      #selected-address {
+        padding: 8px;             /* compacta el contenido interno */
+        display: flex;
+        flex-direction: column;
+        gap: 4px;                 /* separa menos los elementos */
+      }
+
+      /* Párrafos dentro de #selected-address */
+      #selected-address p {
+        margin: 2px 0;            /* margen vertical muy pequeño */
+        line-height: 1.3;         /* línea más apretada */
+      }
+
+      /* Botón “Cambiar” pegado abajo a la derecha */
+      #change-address {
+        align-self: flex-end;     /* lo lleva al extremo derecho */
+        margin: 0;                /* quita márgenes extras */
+        padding: 4px 8px;         /* menos padding si quieres */
+        font-size: 0.9rem;
+      }
+
+
+    .profile-container{
+
+      min-width: 0 !important;
+      padding-bottom: 100px;
+  
+      left: 0;
+      right: 0px;
+      top: -40px;
+      height: 100%;
+      background-color: #00000000;
+      box-shadow: none;
+      justify-content: center;
+
+    }
+    #purchase-reference {
+      width:60vw;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .modal-content{
+      min-height: 0px;
+      min-width: 0px;
+      width: 80vw;
+    }
+    
+    
+  }
+  

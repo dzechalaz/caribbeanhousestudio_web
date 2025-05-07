@@ -100,6 +100,9 @@
       color: var(--color-darkslategray-100);
       font-family: var(--font-josefin-sans);
     }
+    .menu-items{
+      left: 250px;
+    }
   
 
 
@@ -108,18 +111,7 @@
       display: none;
     }
     
-    .menu-items {
-      position: relative;
-      display: flex;
-      align-items: center;
-      left: -250px;
-      gap: 0px;
-      top: -1vh;
-      margin-top: 3.5vh; /* Ajusta la altura */
-      width: 60%; /* Define el ancho del contenedor como el 60% de la página */
-      transform: translateX(60%); /* Mueve el menú hacia el 60% del ancho */
-      justify-content: flex-start; /* Mantén los elementos alineados desde el principio del contenedor */
-  }
+   
   .login-wrapper3 {
 
     left: 50px;
@@ -148,10 +140,13 @@
     position: relative;
     display: flex;
     align-items: center;
+    top: 50%;                 /* lo coloca a mitad de altura de su contenedor */
+    transform: translateY(-50%);
     gap: 50px;
-    margin-top: 3.4vh; /* Ajusta la altura */
+    right: -650px;
+                /* lo coloca a mitad de altura de su contenedor */
     width: 60%; /* Define el ancho del contenedor como el 60% de la página */
-    transform: translateX(60%); /* Mueve el menú hacia el 60% del ancho */
+  
     justify-content: flex-start; /* Mantén los elementos alineados desde el principio del contenedor */
 }
 
@@ -231,13 +226,14 @@
 }
 
 
+
+
 @media screen and (max-width: 1034px) {
   /* Sidebar: los enlaces activos se pintan de verde y en negrita */
 .sidebar-burger a.active {
   color: var(--color-lightseagreen) !important;
   font-weight: bold                   !important;
 }
-
 
   /* ─────────────────────────────────────
      1) MOVER EL SCROLL A .canvas

@@ -392,6 +392,8 @@
   
    }
 
+   
+   
 
    @media screen and (min-width: 500px) {
 
@@ -482,7 +484,7 @@
     }
     
     .product-title {
-      font-size: 2em;
+      font-size: 1.5em;
       color: #4A403A; /* Color de texto estilo chukum */
       margin: 0 0 10px;
       font-weight: bold;
@@ -721,4 +723,23 @@
       color: var(--outlet-text-color);
     }
      }
+
+
+     @media screen and (min-width: 900px) and (max-width: 1024px) {
+      /* Tus reglas para anchos entre 900px y 1024px */
     
+    
+      .product-card{
+        max-height: 240px;
+        margin-left: 7px;
+     
+        
+      }
+      .product-list{
+        width: 670px;
+      
+        
+      }
+     
+     }
+  
