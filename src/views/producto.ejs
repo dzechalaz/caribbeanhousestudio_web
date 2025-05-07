@@ -316,63 +316,82 @@ if (producto) {
       }
       
       
-document.addEventListener('DOMContentLoaded', function () {
-  const chart = LightweightCharts.createChart(document.getElementById('price-chart'), {
-    width: 1200,
-    height: 500,
-    layout: {
-      backgroundColor: '#eeeeee',
-      textColor: '#333',
-    },
-    grid: {
-      vertLines: { color: '#eeeeee' },
-      horzLines: { color: '#eeeeee' },
-    },
-    priceScale: {
-      borderColor: '#cccccc',
-      autoScale: true,
-      scaleMargins: {
-        top: 0.2,    // 20% de espacio arriba
-        bottom: 0.2, // 20% de espacio abajo
-      },
-    },
-    timeScale: {
-      borderColor: '#cccccc',
-      timeVisible: true,
-      secondsVisible: true,
-    },
-  });
-
-  const lineSeries = chart.addLineSeries({
-    color: '#a5d1ce',
-    lineWidth: 6,
-  });
-
-  let chartData = <%- JSON.stringify(chartData) %>;
-
-  try {
-    if (Array.isArray(chartData) && chartData.length > 0) {
-      chartData = chartData.map(data => ({
-        time: data.time,
-        value: parseFloat(data.value),
-      }));
-
-      chartData = interpolateData(chartData);
-
-      lineSeries.setData(chartData);
-      chart.timeScale().fitContent();
-    } else {
-      console.warn('No hay datos disponibles para el historial de precios.');
-    }
-  } catch (error) {
-    console.error('Error al procesar los datos del backend:', error);
-  }
-});
+      document.addEventListener('DOMContentLoaded', function () {
+        // ① Definir container antes de usarla
+        const container = document.getElementById('price-chart-container');
       
-
-
-
-
+        // ② Ahora sí podemos usar container.clientWidth dentro
+        function getChartOptions() {
+          const vw = window.innerWidth;
+          const w  = container.clientWidth;
+          let h, fs;
+      
+          if (vw < 768) {         // móvil
+            h  = 250;
+            fs = 12;
+          } else if (vw <= 1024) { // tablet
+            h  = 400;
+            fs = 20;
+          } else {                // desktop
+            h  = 500;
+            fs = 20;
+          }
+      
+          return { width: w, height: h, fontSize: fs };
+        }
+      
+        // ③ Obtenemos opciones y creamos el chart
+        let opts = getChartOptions();
+        const chart = LightweightCharts.createChart(container, {
+          width:   opts.width,
+          height: opts.height,
+          layout: {
+            backgroundColor: '#eeeeee',
+            textColor:       '#333',
+            fontSize:        opts.fontSize
+          },
+          grid: {
+            vertLines: { color: '#eeeeee' },
+            horzLines: { color: '#eeeeee' }
+          },
+          priceScale: {
+            borderColor: '#cccccc',
+            autoScale:   true,
+            scaleMargins: { top: 0.2, bottom: 0.2 }
+          },
+          timeScale: {
+            borderColor:    '#cccccc',
+            timeVisible:    true,
+            secondsVisible: true
+          },
+        });
+        const lineSeries = chart.addLineSeries({ color: '#a5d1ce', lineWidth: 6 });
+      
+        // ④ Setear los datos (tu lógica existente)
+        let chartData = <%- JSON.stringify(chartData) %>;
+        try {
+          if (Array.isArray(chartData) && chartData.length) {
+            chartData = chartData.map(d => ({ time: d.time, value: parseFloat(d.value) }));
+            chartData = interpolateData(chartData);
+            lineSeries.setData(chartData);
+            chart.timeScale().fitContent();
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      
+        // ⑤ Volver responsive al resize
+        window.addEventListener('resize', () => {
+          opts = getChartOptions();
+          chart.applyOptions({
+            width:  opts.width,
+            height: opts.height,
+            layout: { fontSize: opts.fontSize }
+          });
+          chart.timeScale().fitContent();
+        });
+      });
+      
 
 
 
