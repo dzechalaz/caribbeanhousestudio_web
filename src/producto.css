@@ -813,6 +813,7 @@
       width: 100vw;
       top: 500px;
       height: 25vw;
+      
     }
     .imagenes .a,
     .imagenes .b,
@@ -872,8 +873,9 @@
     }
 
     .caracteristicas{
-      top: 660px;
+      top: 670px;
       font-size: 1rem;
+      line-height: 1.6rem;
     }
     .descripcionbasica{
       top: 850px;
@@ -948,7 +950,14 @@
       }
       
       #availability-container{
+        position: absolute;
         margin-top: -20px;
+        top: -50px;
+        width: 100px;
+        line-height: 19px;
+      
+        left: 60vw;
+        text-align: end;
       }
 
       .description1{
@@ -1028,7 +1037,6 @@
     
 
 }
-
 
 
 #price-chart-container{
