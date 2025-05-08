@@ -49,6 +49,9 @@
     transform-origin: center; /* El origen del escalado es la esquina superior izquierda */
     height: 820px;
     margin-bottom: -20px;
+    justify-content: center;
+    justify-items: center;
+   
     
   }
 
@@ -66,7 +69,7 @@
   position: relative;
   width: 1200px; /* Ancho máximo */
   height: auto; /* Ajusta la altura automáticamente */
-  left: calc(50% - 600px); /* Centra el contenedor horizontalmente */
+ 
   transform-origin: top left; /* Define el punto de escala */
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* 3 columnas */
@@ -110,7 +113,7 @@
 
 .categoria-nombre {
   margin-top: 10px; /* Espaciado entre la imagen y el texto */
-
+  font-size: 2rem;
   font-weight: bold;
 }
 
@@ -468,4 +471,350 @@
 
 .chart-button:focus {
   outline: none; /* Elimina el contorno al enfocarse */
+}
+
+
+
+
+
+@media screen and (max-width: 768px) {
+.recent-items {
+  position: static;
+  
+  z-index: 2; /* Asegúrate de que esté por encima de los fondos */
+  
+  padding: 1px; /* Agrega un poco de espacio interior */
+  background-color: var(--color-seashell); /* Fondo para asegurarte de que el contenido sea legible */
+  height: 950px ;
+}
+.recent-items1 {
+  position: relative; /* Asegura que respete el flujo del documento */
+ 
+  margin-top: 80px;
+  max-width: 100%;
+  font-size: 1.5rem;
+  line-height: 30px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.product-image2 {
+  width: calc(100%); /* Tamaño ajustado para el margen de 20px en cada lado */
+  height: 60%;
+  object-fit: cover; /* Asegura que la imagen se recorte para encajar en el cuadro */
+  border-radius: 15px;
+  border: 3px solid #f0f0f0;
+  margin: 0 auto; /* Centra la imagen horizontalmente */
+  display: block;
+}
+
+.product-grid {
+  display: flex;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center; /* Centra verticalmente */
+  gap: 50px; /* Espacio entre elementos si hay más de uno */
+  margin-bottom: 30px;
+}
+
+
+.product-list {
+  top: 400px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Mantiene 6 columnas */
+  gap: 15px; /* Espaciado entre las tarjetas */
+  margin-top: 0px;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 0px;
+  justify-self: center;
+  left: 15px;
+  
+}
+.product-card2{
+    
+    border-radius: 8px;
+    padding: calc(15%);
+    width: calc(70%);
+    max-width: 200px;
+    height: 200px;
+    background-color: rgba(165, 209, 206, 0.7); /* Fondo estilo chukum */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    cursor: pointer; /* Cambia el cursor para indicar que es clicable */
+    left: 15px;
+  
+    opacity: 0; /* Ocultas al inicio */
+    transform: translateX(-50px); /* Desplazadas a la izquierda */
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    justify-content: center;
+    justify-items: center;
+}
+
+
+  .product-link {
+    text-decoration: none; /* Elimina el subrayado del enlace */
+    color: inherit; /* Mantiene el color original del texto */
+    
+  }
+
+  .product-image2 {
+    width: calc(100%);
+    aspect-ratio: 1;
+    height: auto; /* Tamaño ajustado para el margen de 20px en cada lado */
+    object-fit: cover; /* Asegura que la imagen se recorte para encajar en el cuadro */
+    border-radius: 15px;
+    border: 3px solid #f0f0f0;
+    margin: 0 auto; /* Centra la imagen horizontalmente */
+    display: block;
+  }
+  
+  .product-details {
+    margin-top: 0px;
+    text-align: left;
+  }
+
+  .product-price, .discounted-price {
+    margin-top: 10px;
+    left: 0px;
+    text-align: center;
+    font-size: 1.3rem;
+    width: 100%;
+  }
+  
+
+
+  
+  .product-title {
+    font-size: .8em;
+        color: #4A403A; /* Color de texto estilo chukum */
+    margin: 0px;
+    font-weight: bold;
+    display: -webkit-box; /* Para limitar líneas */
+    -webkit-line-clamp: 2; /* Limitar a 2 líneas */
+    -webkit-box-orient: vertical; /* Orientación del recorte */
+    overflow: hidden; /* Ocultar texto excedente */
+    text-overflow: ellipsis; /* Añadir "..." al texto truncado */
+    cursor: pointer; /* Cambiar cursor para indicar interacción */
+    position: relative; /* Necesario para el tooltip */
+  }
+  #price-chart-container .tv-lightweight-charts__price-axis {
+    display: none !important;
+   }
+
+
+
+
+/*#######categorias###*/
+
+.categorias {
+  position: static;
+  margin-top: -20px;
+  text-align: center;
+  
+  background-color: #dfe0e4;
+  align-items: center;
+  transform: scale(1); /* Escala al 50% */
+  transform-origin: center; /* El origen del escalado es la esquina superior izquierda */
+  height: 450px;
+  margin-bottom: -20px;
+
+  justify-content: center;
+  justify-items: center;
+ 
+  
+}
+
+.categorias1 {
+position: relative;
+top: 40px;
+text-align: center;
+font-size: 1.5rem;
+z-index: 3;
+margin-bottom: 0px;
+}
+.line-parent{
+  left:none;
+  width: 90%;
+  top: 60px;
+}
+.categoria{
+  height: 170px;
+  margin-bottom: 0px;
+}
+.categoria-icon {
+  width: 100%; /* Escala las imágenes proporcionalmente */
+  height: 100px; /* Ajusta todas las imágenes a la misma altura */
+  object-fit: contain; /* Recorta las imágenes para llenar el contenedor */
+  border-radius: 5px; /* Opcional: añade bordes redondeados para estética */
+  mix-blend-mode: multiply;
+}
+
+.containerLable{
+  display: none;
+}
+
+}
+
+
+
+
+
+@media screen and (max-width: 900px) {
+  .recent-items{
+    height: 700px;
+  }
+
+.product-list {
+  top: 400px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Mantiene 6 columnas */
+  gap: 15px; /* Espaciado entre las tarjetas */
+  margin-top: 0px;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 0px;
+  justify-self: center;
+  left: 15px;
+  
+}
+.product-card2{
+    
+    border-radius: 8px;
+    padding: calc(15%);
+    width: calc(70%);
+    max-width: 200px;
+    height: 200px;
+    background-color: rgba(165, 209, 206, 0.7); /* Fondo estilo chukum */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    cursor: pointer; /* Cambia el cursor para indicar que es clicable */
+    left: 15px;
+  
+    opacity: 0; /* Ocultas al inicio */
+    transform: translateX(-50px); /* Desplazadas a la izquierda */
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    justify-content: center;
+    justify-items: center;
+}
+
+
+  .product-link {
+    text-decoration: none; /* Elimina el subrayado del enlace */
+    color: inherit; /* Mantiene el color original del texto */
+    
+  }
+
+  .product-image2 {
+    width: calc(100%);
+    aspect-ratio: 1;
+    height: auto; /* Tamaño ajustado para el margen de 20px en cada lado */
+    object-fit: cover; /* Asegura que la imagen se recorte para encajar en el cuadro */
+    border-radius: 15px;
+    border: 3px solid #f0f0f0;
+    margin: 0 auto; /* Centra la imagen horizontalmente */
+    display: block;
+  }
+  
+  .product-details {
+    margin-top: 0px;
+    text-align: left;
+  }
+
+  .product-price, .discounted-price {
+    margin-top: 10px;
+    left: 0px;
+    text-align: center;
+    font-size: 1.3rem;
+    width: 100%;
+  }
+  
+
+
+  
+  .product-title {
+    font-size: .8em;
+        color: #4A403A; /* Color de texto estilo chukum */
+    margin: 0px;
+    font-weight: bold;
+    display: -webkit-box; /* Para limitar líneas */
+    -webkit-line-clamp: 2; /* Limitar a 2 líneas */
+    -webkit-box-orient: vertical; /* Orientación del recorte */
+    overflow: hidden; /* Ocultar texto excedente */
+    text-overflow: ellipsis; /* Añadir "..." al texto truncado */
+    cursor: pointer; /* Cambiar cursor para indicar interacción */
+    position: relative; /* Necesario para el tooltip */
+  }
+
+  .categoria-nombre{
+    font-size: 1.2rem;
+  }
+
+  .featured-items{
+    width: 100vw;
+    margin: 0px;
+    left: 0px;
+    padding: 0px;
+    height: 888px;
+  
+
+  }
+
+  .featured-content{
+    position: absolute;
+    scale: .6;
+    justify-content: center;
+    top: 10px;
+    width: 100%;
+    margin: 0px;
+    left: -10px;
+   
+
+  }
+
+  .featured-items-title{
+    font-size: 1.5rem;
+    width: 100%;
+   
+
+    position: absolute;
+    top: 80px;
+  }
+  #price-chart-container{
+    width: 100vw;
+    left: 0px;
+    border-radius: 20px;
+  }
+  
+  .chart-container{
+    background-color: #fbf8f7;
+    display: flex;
+    position: absolute;
+    top: 750px;
+    width: 100vw;
+    left: 0px;
+    right: 0px;
+    justify-items: center;
+    margin-left: 0px;
+    scale: 1.5;
+    padding: 0px;
+    height: 300px;
+    margin-right: 50px;
+    min-width: 300px;
+    left: 20px;
+    border-radius: 20px;
+
+  }
+
+  .chart-button-container{
+    display: NONE;
+  }
+  .chart-container h3{
+    display: none;
+  }
+
+}
+
+
+.featured-items-title{
+  margin-bottom:20px ;
 }

@@ -125,6 +125,7 @@ header{
   right: 0;
   left: 0;
   height: 59.3px;
+  pointer-events: none;
 }
 .imagen-icon {
   position: absolute;
@@ -238,6 +239,7 @@ header{
   position: absolute;
   font-size: var(--font-size-lg);
   text-align: center;
+  z-index: 600;
 }
 .reseg {
   top: calc(50% - 45.5px);
@@ -322,7 +324,8 @@ header{
 }
 .compra.animate {
   animation: 1s ease 0s 1 normal forwards slide-in-bottom;
-  overflow: hidden; 
+  overflow: visible;
+  
 }
 .seguimientopre {
   position: absolute;
@@ -604,6 +607,10 @@ header{
   position: static;
   max-width: 90vw;
   overflow: hidden; 
+  
+ }
+ .searchgroup{
+  pointer-events: none;
  }
 
 
@@ -638,7 +645,7 @@ header{
   text-align: center;
   overflow:visible;
   font-size: .9rem;
-  
+  pointer-events: auto;
   right: 30px;
  }
  .ima{
@@ -735,8 +742,8 @@ header{
   text-align: center;
   font-size: .8rem;
   height: 32px;
+  pointer-events: auto;
   
-
  }
 
  .verart{

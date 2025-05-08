@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
   <head>
+    <title>Caribbean House Studio</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
@@ -58,7 +59,7 @@
 
 
         <div class="featured-items">
-          <div class="featured-items-title">DESTACADOS</div>
+          <div class="featured-items-title">PRODUCTOS DESTACADOS</div>
           <div class="featured-content">
             <div class="product-grid2">
               <div class="destacados-grid">
@@ -307,6 +308,22 @@
       
         // Cargar nombres antes de usar la gráfica
         await cargarNombresProductos();
+         // ② Ahora sí podemos usar container.clientWidth dentro
+         function getChartOptions() {
+          const vw = window.innerWidth;
+          let h, fs;
+      
+          if (vw < 768) {         // móvil
+            fs = 16;
+          } else if (vw <= 1024) { // tablet
+            fs = 20;
+          } else {                // desktop
+            fs = 20;
+          }
+      
+          return { fontSize: fs };
+        }
+        let opts = getChartOptions();
       
         // 2) Crear la gráfica con LightweightCharts
         let chart = LightweightCharts.createChart(chartContainer, {
@@ -315,7 +332,7 @@
           layout: {
             backgroundColor: 'rgba(0, 0, 0, 0)',
             textColor: '#000',
-            fontSize: 20,
+            fontSize: opts.fontSize,
           },
           grid: {
             vertLines: { color: '#eeeeee' },
