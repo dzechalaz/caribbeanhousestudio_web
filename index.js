@@ -2478,11 +2478,16 @@ app.get('/comprasbuscar', (req, res) => {
 });
 
 //########################################## Catálogo ##################################################
+app.get('/producto', (req, res) => {
+  const productoId = req.query.id;
+  if (!productoId) return res.status(400).send('ID de producto no especificado');
+  res.redirect(`/producto/${productoId}`);
+});
+
 app.get('/producto/:id/:slug?', async (req, res) => {
   const productoId = req.params.id;
 
   try {
-    // Paso 1: Consultar el producto en la base de datos
     const [productoResult] = await db.promise().query(
       'SELECT * FROM Productos WHERE producto_id = ?',
       [productoId]
@@ -2494,7 +2499,12 @@ app.get('/producto/:id/:slug?', async (req, res) => {
 
     const producto = productoResult[0];
 
-    // Paso 2: Consultar los detalles del producto
+    const slug = producto.nombre
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quita acentos
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
     const [detallesResult] = await db.promise().query(
       'SELECT * FROM Productos_detalles WHERE producto_id = ?',
       [productoId]
@@ -2502,7 +2512,6 @@ app.get('/producto/:id/:slug?', async (req, res) => {
 
     const detalles = detallesResult.length > 0 ? detallesResult[0] : {};
 
-    // Registrar la visita
     const queryInsertVisita = `
       INSERT INTO Registros (product_id, evento, fecha, precio)
       SELECT ?, 'visita', NOW(), precio
@@ -2511,7 +2520,6 @@ app.get('/producto/:id/:slug?', async (req, res) => {
     `;
     await db.promise().query(queryInsertVisita, [productoId, productoId]);
 
-    // Paso 3: Compras del último mes
     const lastMonthDate = new Date();
     lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
 
@@ -2532,15 +2540,15 @@ app.get('/producto/:id/:slug?', async (req, res) => {
       value: compra.precio,
     }));
 
-    // Paso 4: Productos relacionados
     const [relatedProducts] = await db.promise().query(
       'SELECT * FROM Productos WHERE categoria = ? AND producto_id != ? ORDER BY RAND() LIMIT 3',
       [producto.categoria, productoId]
     );
 
-    // Renderizar plantilla
+    // 👇 Aquí mandas también el slug
     res.render('producto', {
       producto,
+      slug, // 👈 IMPORTANTE
       descripcion1: detalles.descripcion1 || 'No disponible',
       descripcion2: detalles.descripcion2 || 'No disponible',
       material: detalles.material || 'No disponible',
@@ -2555,7 +2563,6 @@ app.get('/producto/:id/:slug?', async (req, res) => {
     res.status(500).send('Error interno del servidor');
   }
 });
-
 
 
 app.get('/colores', async (req, res) => {
