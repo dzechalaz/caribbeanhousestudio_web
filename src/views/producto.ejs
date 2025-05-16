@@ -223,7 +223,16 @@ if (producto) {
 
           document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
-            const productoId = params.get('id');
+                        let productoId = params.get('id');
+
+            if (!productoId) {
+              const pathParts = window.location.pathname.split('/');
+              // Ejemplo: ['', 'producto', '42', 'silla-frankfurt']
+              if (pathParts.length >= 3 && pathParts[1] === 'producto') {
+                productoId = pathParts[2]; // esto extrae el ID desde la URL
+              }
+            }
+
             const colorGrid = document.getElementById('color-grid');
             const colorNameElement = document.getElementById('color-name');
             const mainImage = document.getElementById('mainImage');
