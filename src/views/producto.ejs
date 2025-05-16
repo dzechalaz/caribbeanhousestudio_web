@@ -30,6 +30,9 @@ if (producto) {
     <script src="/barra.js" defer></script> <!-- toggleMenu, hideSidebar -->
     <script src="/global.js" defer></script>
 
+    <title><%= producto.nombre %> | Caribbean House Studio</title>
+    <meta name="description" content="<%= descripcion1.slice(0, 160) %>">
+    <link rel="canonical" href="https://www.caribbeanhousestudio.com/producto/<%= producto.producto_id %>/<%= slug %>">
 
 
     <script type="application/ld+json">

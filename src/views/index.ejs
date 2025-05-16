@@ -63,20 +63,30 @@
           <div class="featured-content">
             <div class="product-grid2">
               <div class="destacados-grid">
+                <% function slugify(nombre) {
+                    return nombre.toLowerCase()
+                      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                      .replace(/\s+/g, "-")
+                      .replace(/[^\w\-]+/g, "");
+                } %>
+
                 <% destacados.forEach(function(producto) { %>
-                  <div class="product-card" 
-                      data-id="<%= producto.producto_id %>" 
-                      data-color="<%= producto.color %>">
-                    <img src="<%= producto.imagePath %>" alt="<%= producto.nombre %>" class="product-image">
-                    <div class="product-details">
-                      <h3 class="product-title"><%= producto.nombre %></h3>
-                      <% function formatPrice(price) { 
-                        return new Intl.NumberFormat("es-MX", { minimumFractionDigits: 2 }).format(price);
-                      } %>
-                      <p class="product-price">$<%= formatPrice(producto.precio) %></p>
+                  <a href="/producto/<%= producto.producto_id %>/<%= slugify(producto.nombre) %>" class="product-link">
+                    <div class="product-card" 
+                        data-id="<%= producto.producto_id %>" 
+                        data-color="<%= producto.color %>">
+                      <img src="<%= producto.imagePath %>" alt="<%= producto.nombre %>" class="product-image">
+                      <div class="product-details">
+                        <h3 class="product-title"><%= producto.nombre %></h3>
+                        <% function formatPrice(price) { 
+                          return new Intl.NumberFormat("es-MX", { minimumFractionDigits: 2 }).format(price);
+                        } %>
+                        <p class="product-price">$<%= formatPrice(producto.precio) %></p>
+                      </div>
                     </div>
-                  </div>
+                  </a>
                 <% }); %>
+
               </div>
             </div>
             <!-- Contenedor de la gráfica -->
