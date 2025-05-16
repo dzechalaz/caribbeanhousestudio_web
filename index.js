@@ -2477,16 +2477,11 @@ app.get('/comprasbuscar', (req, res) => {
   });
 });
 
-
-
 //########################################## Catálogo ##################################################
-app.get('/producto', async (req, res) => {
-  const productoId = req.query.id;
+app.get('/producto/:id/:slug?', async (req, res) => {
+  const productoId = req.params.id;
 
   try {
-    // Obtener disponibilidad mediante la función
-    
-
     // Paso 1: Consultar el producto en la base de datos
     const [productoResult] = await db.promise().query(
       'SELECT * FROM Productos WHERE producto_id = ?',
@@ -2499,7 +2494,7 @@ app.get('/producto', async (req, res) => {
 
     const producto = productoResult[0];
 
-    // Paso 2: Consultar los detalles del producto en la tabla Productos_detalles
+    // Paso 2: Consultar los detalles del producto
     const [detallesResult] = await db.promise().query(
       'SELECT * FROM Productos_detalles WHERE producto_id = ?',
       [productoId]
@@ -2507,7 +2502,7 @@ app.get('/producto', async (req, res) => {
 
     const detalles = detallesResult.length > 0 ? detallesResult[0] : {};
 
-    // **Registrar la visita en la tabla Registros**
+    // Registrar la visita
     const queryInsertVisita = `
       INSERT INTO Registros (product_id, evento, fecha, precio)
       SELECT ?, 'visita', NOW(), precio
@@ -2516,7 +2511,7 @@ app.get('/producto', async (req, res) => {
     `;
     await db.promise().query(queryInsertVisita, [productoId, productoId]);
 
-    // Paso 3: Consultar las compras del último mes
+    // Paso 3: Compras del último mes
     const lastMonthDate = new Date();
     lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
 
@@ -2525,11 +2520,11 @@ app.get('/producto', async (req, res) => {
        FROM Registros
        WHERE product_id = ? 
          AND fecha IS NOT NULL
-         AND fecha >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) -- 🔥 Solo últimos 30 días
-         AND (evento = 'compra' OR evento = 'sim') -- Filtra por compra o sim
+         AND fecha >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+         AND (evento = 'compra' OR evento = 'sim')
        GROUP BY DATE(fecha)
        ORDER BY fecha ASC`,
-      [productoId, lastMonthDate]
+      [productoId]
     );
 
     const chartData = comprasMes.map((compra) => ({
@@ -2537,15 +2532,13 @@ app.get('/producto', async (req, res) => {
       value: compra.precio,
     }));
 
-    console.log('Datos obtenidos para chartData:', chartData);
-
-    // Paso 4: Seleccionar productos relacionados
+    // Paso 4: Productos relacionados
     const [relatedProducts] = await db.promise().query(
       'SELECT * FROM Productos WHERE categoria = ? AND producto_id != ? ORDER BY RAND() LIMIT 3',
       [producto.categoria, productoId]
     );
 
-    // Renderizar la plantilla EJS con los datos del producto y disponibilidad
+    // Renderizar plantilla
     res.render('producto', {
       producto,
       descripcion1: detalles.descripcion1 || 'No disponible',
@@ -2556,14 +2549,12 @@ app.get('/producto', async (req, res) => {
       color: detalles.color || 'No disponible',
       productosRelacionados: relatedProducts,
       chartData,
-      
     });
   } catch (err) {
     console.error('Error en el servidor:', err);
     res.status(500).send('Error interno del servidor');
   }
 });
-// Endpoint para colores con stock y disponibilidad
 
 
 
@@ -4753,33 +4744,39 @@ await transporter.sendMail(mailOptions);
 });
 
 app.get('/sitemap.xml', async (req, res) => {
-  const baseUrl = 'https://www.caribbeanhousestudio.com';
-  const [productos] = await db.promise().query('SELECT producto_id, nombre FROM Productos');
+  try {
+    const baseUrl = 'https://www.caribbeanhousestudio.com';
+    const [productos] = await db.promise().query('SELECT producto_id, nombre FROM Productos');
 
-  const urls = productos.map(p => {
-    const slug = encodeURIComponent(
-      p.nombre.toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quitar acentos
-        .replace(/\s+/g, "-") // espacios por guiones
-    );
+    const urls = productos.map(p => {
+      const slug = p.nombre
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, '')  // Quitar acentos
+        .replace(/\s+/g, '-')                             // Espacios por guiones
+        .replace(/[^\w\-]+/g, '')                         // Eliminar símbolos raros
 
-    return `
-      <url>
-        <loc>${baseUrl}/producto?id=${p.producto_id}/${slug}</loc>
-        <changefreq>weekly</changefreq>
-        <priority>0.8</priority>
-      </url>
-    `;
-  }).join('');
+      return `
+        <url>
+          <loc>${baseUrl}/producto/${p.producto_id}/${slug}</loc>
+          <changefreq>weekly</changefreq>
+          <priority>0.8</priority>
+        </url>
+      `;
+    }).join('');
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-  <urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
-    ${urls}
-  </urlset>`;
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+    <urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
+      ${urls}
+    </urlset>`;
 
-  res.header('Content-Type', 'application/xml');
-  res.send(xml);
+    res.header('Content-Type', 'application/xml');
+    res.send(xml);
+  } catch (err) {
+    console.error('Error generando sitemap:', err);
+    res.status(500).send('Error al generar el sitemap');
+  }
 });
+
 
 
 
