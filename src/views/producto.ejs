@@ -31,6 +31,51 @@ if (producto) {
     <script src="/global.js" defer></script>
 
 
+
+    <script type="application/ld+json">
+      <%- JSON.stringify({
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": producto.nombre,
+        "image": [`${CFI}/Products/${producto.producto_id}/a.webp`],
+        "description": descripcion1,
+        "sku": producto.codigo, // ← El SKU correcto, ej: SYB0004
+        "brand": {
+          "@type": "Brand",
+          "name": "Caribbean House Studio"
+        },
+        "offers": {
+          "@type": "Offer",
+          "url": `https://www.caribbeanhousestudio.com/producto?id=${producto.producto_id}`,
+          "priceCurrency": "MXN",
+          "price": producto.precio,
+          "availability": producto.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+          "itemCondition": "https://schema.org/NewCondition"
+        }
+      }, null, 2) %>
+      </script>
+      
+      <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Caribbean House Studio",
+        "image": "https://www.caribbeanhousestudio.com/logo.png",
+        "url": "https://www.caribbeanhousestudio.com",
+        "telephone": "+52-999-000-0000",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Dirección real si aplica",
+          "addressLocality": "Mérida",
+          "addressRegion": "Yucatán",
+          "postalCode": "97000",
+          "addressCountry": "MX"
+        },
+        "openingHours": "Mo-Sa 10:00-18:00"
+      }
+      </script>
+      
+
   </head>
 
   <body>
