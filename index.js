@@ -4752,6 +4752,35 @@ await transporter.sendMail(mailOptions);
   }
 });
 
+app.get('/sitemap.xml', async (req, res) => {
+  const baseUrl = 'https://www.caribbeanhousestudio.com';
+  const [productos] = await db.promise().query('SELECT producto_id, nombre FROM Productos');
+
+  const urls = productos.map(p => {
+    const slug = encodeURIComponent(
+      p.nombre.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quitar acentos
+        .replace(/\s+/g, "-") // espacios por guiones
+    );
+
+    return `
+      <url>
+        <loc>${baseUrl}/producto?id=${p.producto_id}/${slug}</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+      </url>
+    `;
+  }).join('');
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  <urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
+    ${urls}
+  </urlset>`;
+
+  res.header('Content-Type', 'application/xml');
+  res.send(xml);
+});
+
 
 
 
