@@ -64,6 +64,7 @@ dotenv.config();
 // Constante para el bucket de imágenes de Cloudflare
 const CFI = process.env.CFI || "https://pub-9eb3385798dc4bcba46fb69f616dc1a0.r2.dev";
 
+
 // Hacer que la constante esté disponible para todas las vistas
 app.use((req, res, next) => {
   res.locals.CFI = CFI; // Esto hace que `CFI` esté disponible en EJS
@@ -1129,30 +1130,42 @@ app.get('/colaborador/ordenes/compras/:orden_id', authMiddleware, (req, res) => 
   const ordenId = req.params.orden_id;
 
   const query = `
-    SELECT 
-      c.compra_id,
-      COALESCE(p.nombre, pc.nombre) AS producto_nombre,
-      c.cantidad,
-      c.fecha_compra,
-      CONCAT(
-        d.calle, ', ',
-        d.colonia, ', ',
-        d.ciudad, ', ',
-        d.estado, ' CP:', d.cp
-      ) AS direccion_envio,
-      c.estado,
-      c.color,
-      CASE
-        WHEN ca.color_id IS NOT NULL THEN CONCAT('${CFI}', '/Colors/', c.producto_id, '/', ca.color_id, '/a.webp')
-        ELSE CONCAT('${CFI}', '/Products/', c.producto_id, '/a.webp')
-      END AS path_imagen
-    FROM Compras c
-    LEFT JOIN Productos p ON c.producto_id = p.producto_id
-    LEFT JOIN ProductCostum pc ON c.CostumProduct_id = pc.CostumProduct_id
-    LEFT JOIN Direcciones d ON c.direccion_envio = d.direccion_id
-    LEFT JOIN ColoresAlternos ca ON c.producto_id = ca.producto_id AND c.color = ca.color
-    WHERE c.orden_id = ?
-  `;
+  SELECT 
+    c.compra_id,
+    COALESCE(p.nombre, pc.nombre) AS producto_nombre,
+    c.cantidad,
+    c.fecha_compra,
+    CONCAT(
+      d.calle, ', ',
+      d.colonia, ', ',
+      d.ciudad, ', ',
+      d.estado, ' CP:', d.cp
+    ) AS direccion_envio,
+    c.estado,
+    c.color,
+    CASE
+      -- 1) Si es un producto custom, usar siempre su imagen “principal”
+      WHEN c.CostumProduct_id IS NOT NULL 
+        THEN CONCAT('${CFI}', '/CustomProducts/', c.CostumProduct_id, '/principal.webp')
+      -- 2) Si no es custom, pero hay color alterno, usar esa variante
+      WHEN ca.color_id IS NOT NULL 
+        THEN CONCAT('${CFI}', '/Colors/', c.producto_id, '/', ca.color_id, '/a.webp')
+      -- 3) Finalmente, imagen por defecto en Products
+      ELSE CONCAT('${CFI}', '/Products/', c.producto_id, '/a.webp')
+    END AS path_imagen
+  FROM Compras c
+  LEFT JOIN Productos p 
+    ON c.producto_id = p.producto_id
+  LEFT JOIN ProductCostum pc 
+    ON c.CostumProduct_id = pc.CostumProduct_id
+  LEFT JOIN Direcciones d 
+    ON c.direccion_envio = d.direccion_id
+  LEFT JOIN ColoresAlternos ca 
+    ON c.producto_id = ca.producto_id 
+    AND c.color = ca.color
+  WHERE c.orden_id = ?
+`;
+
 
   db.query(query, [ordenId], (err, results) => {
     if (err) {
