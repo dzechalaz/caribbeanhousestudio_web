@@ -72,22 +72,27 @@ app.use((req, res, next) => {
 });
 
 const MySQLStore = MySQLStoreFactory(session);
-const db = mysql.createConnection({
-  host: DB_HOST,
-  user: DB_USER,
-  password: DB_PASSWORD,
-  port: DB_PORT,
-  database: DB_NAME
-});
 
-// Configuración de la sesión
-const sessionStore = new MySQLStore({
+// Usa POOL (no createConnection)
+const db = mysql.createPool({
   host: DB_HOST,
   user: DB_USER,
   password: DB_PASSWORD,
   database: DB_NAME,
-  port: DB_PORT
+  port: DB_PORT,
+  waitForConnections: true,
+  connectionLimit: 10,
+  maxIdle: 5,
+  idleTimeout: 60_000,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
 });
+
+// Reusa el MISMO pool para la sesión (no abras otra conexión)
+const sessionStore = new MySQLStore(
+  { createDatabaseTable: true }, // opcional: que cree la tabla si no existe
+  db
+);
 
 app.use(session({
   key: 'caribbeanhouse_session', // Cambia el nombre de la cookie si lo deseas
@@ -100,13 +105,15 @@ app.use(session({
   }
 }));
 
-db.connect((err) => {
-  if (err) {
-    console.error('Error connecting to MySQL:', err);
-    return;
-  }
-  console.log('Connected to MySQL');
-});
+setInterval(() => {
+  db.ping((err) => {
+    if (err) {
+      console.error('Error pinging MySQL:', err);
+    } else {
+      console.log('MySQL connection is alive');
+    }
+  });
+}, 300000); // 5 min
 
 // Mantener la conexión viva usando un ping cada 5 minutos (300000 ms)
 setInterval(() => {
