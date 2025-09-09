@@ -1,6 +1,13 @@
 $(document).ready(function () {
   // Inicializar DataTable
-  const tablaOrdenes = $('#ordenes-table').DataTable();
+  const tablaOrdenes = $('#ordenes-table').DataTable({
+  language:{ url:'https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json' },
+  columnDefs:[
+    { targets:[5,6], orderable:false, searchable:false } // botones
+  ],
+  order:[[0,'desc']]
+});
+
 
   // Función para cargar las órdenes desde el backend
   function cargarOrdenes() {
