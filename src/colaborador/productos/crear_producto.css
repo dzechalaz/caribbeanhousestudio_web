@@ -23,6 +23,9 @@ body {
     text-align: center;
     transition: max-width 0.3s ease; /* Transición suave para el cambio de ancho */
     margin: 0 auto;   /* Centrar el contenido */
+    position: relative;
+    top: 120px;
+   
     
 }
 
