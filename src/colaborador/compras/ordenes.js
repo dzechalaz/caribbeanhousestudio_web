@@ -20,13 +20,15 @@ $(document).ready(function () {
                       });
 
                       tablaOrdenes.row.add([
-                          orden.numero_orden,
-                          orden.cliente_nombre,
-                          orden.referencia,
-                          fechaFormateada,
-                          `<button class="ver-orden-btn" data-orden-id="${orden.orden_id}">Ver Orden</button>`,
-                          `<button class="eliminar-orden-btn" data-orden-id="${orden.orden_id}">Eliminar</button>`
-                      ]);
+                        orden.numero_orden,
+                        orden.cliente_nombre,
+                        orden.referencia,
+                        fechaFormateada,
+                        renderEstado(orden.estado), // <-- NUEVO (después de Fecha de Orden)
+                        `<button class="ver-orden-btn" data-orden-id="${orden.orden_id}">Ver Orden</button>`,
+                        `<button class="eliminar-orden-btn" data-orden-id="${orden.orden_id}">Eliminar</button>`
+                        ]);
+
                   });
 
                   // Dibujar la tabla con los datos actualizados
@@ -36,8 +38,26 @@ $(document).ready(function () {
           .catch(error => console.error('Error al cargar órdenes:', error));
   }
 
+    // NUEVO: mapa de estado numérico a texto
+const ESTADO_TEXTO = {
+  0: 'Registrado',
+  1: 'Confirmado',
+  2: 'Insumos listos',
+  3: 'Maquilado',
+  4: 'Barniz',
+  5: 'Armado',
+  6: 'Enviado',
+  7: 'Entregado'
+};
+function renderEstado(n) {
+  const txt = ESTADO_TEXTO[n] ?? 'Desconocido';
+  return `<span class="pill pill-${n}">${txt}</span>`;
+}
+
   // Cargar las órdenes al cargar la página
   cargarOrdenes();
+
+
 
   // Delegación de eventos para manejar el clic en "Ver Orden"
   $('#ordenes-table').on('click', '.ver-orden-btn', function () {

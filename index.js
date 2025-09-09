@@ -106,26 +106,10 @@ app.use(session({
 }));
 
 setInterval(() => {
-  db.ping((err) => {
-    if (err) {
-      console.error('Error pinging MySQL:', err);
-    } else {
-      console.log('MySQL connection is alive');
-    }
+  db.query('SELECT 1', (err) => {
+    if (err) console.error('DB heartbeat error:', err.message);
   });
-}, 300000); // 5 min
-
-// Mantener la conexión viva usando un ping cada 5 minutos (300000 ms)
-setInterval(() => {
-  db.ping((err) => {
-    if (err) {
-      console.error('Error pinging MySQL:', err);
-    } else {
-      console.log('MySQL connection is alive');
-    }
-  });
-}, 300000); // 5 minutos en milisegundos
-
+}, 300000);
 
 
 // ✅ Definir `__dirname` manualmente en ES Modules
@@ -1113,14 +1097,18 @@ app.get('/colaborador/ordenes', authMiddleware, (req, res) => {
 
 app.get('/colaborador/ordenes/data', authMiddleware, (req, res) => {
   const query = `
-    SELECT 
-      ordenes.orden_id,  -- Asegúrate de incluir este campo
-      ordenes.numero_orden, 
-      Usuarios.nombre AS cliente_nombre, 
-      ordenes.referencia, 
-      ordenes.fecha_orden 
-    FROM ordenes
-    INNER JOIN Usuarios ON ordenes.usuario_id = Usuarios.usuario_id
+    SELECT
+      o.orden_id,
+      o.numero_orden,
+      u.nombre AS cliente_nombre,
+      o.referencia,
+      o.fecha_orden,
+      COALESCE(MAX(c.estado), 0) AS estado
+    FROM ordenes AS o
+    INNER JOIN Usuarios AS u ON o.usuario_id = u.usuario_id
+    LEFT JOIN Compras AS c     ON c.orden_id = o.orden_id
+    GROUP BY o.orden_id, o.numero_orden, u.nombre, o.referencia, o.fecha_orden
+    ORDER BY o.fecha_orden DESC
   `;
 
   db.query(query, (err, results) => {
@@ -1128,7 +1116,7 @@ app.get('/colaborador/ordenes/data', authMiddleware, (req, res) => {
       console.error('Error fetching orders:', err);
       return res.status(500).json({ error: 'Error fetching orders' });
     }
-
+    // Devolver tal cual; el front ya formatea fecha y mapea estado a texto
     res.json({ ordenes: results });
   });
 });
