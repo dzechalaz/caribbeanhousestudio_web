@@ -108,3 +108,15 @@ button:hover {
 .btn-rojo-chukum:hover {
   background: #B5483E; /* Más oscuro en hover */
 }
+
+
+/* ordenes.css */
+.pill{padding:.25rem .5rem;border-radius:999px;font-weight:600;display:inline-block}
+.pill-0{background:#eee;color:#333}
+.pill-1{background:#cfe8ff;color:#084298}
+.pill-2{background:#e7f3ff;color:#084298}
+.pill-3{background:#e6ffe6;color:#0f5132}
+.pill-4{background:#fff3cd;color:#664d03}
+.pill-5{background:#ffe8cc;color:#663c00}
+.pill-6{background:#fde2e1;color:#842029}
+.pill-7{background:#d1e7dd;color:#0f5132}
