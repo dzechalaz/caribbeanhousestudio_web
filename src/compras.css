@@ -759,3 +759,41 @@ header{
 
 }
 
+
+.compra-realizada{
+  position: relative;   /* quita el absolute */
+  top: auto; 
+  left: auto;
+  display: block;
+  width: 100%;          /* ajusta al contenedor .compra */
+  max-width: 100%;
+  box-sizing: border-box;
+  background: #bdbdbd;  /* el gris que usabas */
+  padding: 12px 16px;   /* padding más razonable */
+  border: 0;
+  border-radius: 16px 16px 0 0; /* que se integre al card */
+  overflow: hidden;
+  z-index: 1;           /* por debajo de botones/imagen si hace falta */
+}
+
+
+
+/* En pantallas muy chicas: aún más compactos */
+@media (max-width: 400px){
+  .reseg, .verart{
+    padding: 1px 1px;
+    font-style: bold;
+    left: 50%;
+    
+    
+ 
+    margin-left: 0px;
+    width: 30%;
+  }
+  .verart{
+    transform: translateX(-45%);
+  }
+  .reseg{
+    transform: translateX(60px);
+  }
+}
