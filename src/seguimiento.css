@@ -1238,3 +1238,98 @@ body{
   border: 2px solid #38AFA7;
   opacity: 1; 
 }
+
+
+/* Por defecto, el vertical NO se muestra en desktop */
+.timeline-vertical { display: none; }
+
+/* ===== Escalar TODO el bloque de seguimiento por debajo de 1300px ===== */
+:root{
+  --segu-base: 1363;   /* ancho base (px) del diseño desktop de seguimiento-bloque */
+}
+
+@media (max-width: 1300px){
+  /* evita scroll horizontal por el ancho original sin escalar */
+  html, body { overflow-x: hidden; }
+
+  .seguimiento-bloque{
+    /* calcula factor de escala para llenar el ancho del viewport */
+    --gutter: 0px;  /* si quieres dejar margen lateral, pon 24px por ejemplo */
+    --scale: calc( (100vw - (var(--gutter) * 2)) / (var(--segu-base) * 1px) );
+
+    width: calc(var(--segu-base) * 1px) !important;  /* conserva ancho base */
+    max-width: none !important;
+
+    position: relative !important;
+    left: 50% !important;
+    transform-origin: top center;
+    transform: translateX(-50%) scale(var(--scale));  /* ← escala uniforme */
+    /* mantiene tu fondo/bordes y todo el contenido dentro */
+  }
+  .mueble-credenza-material-mad-container, 
+  .el-mueble-ha,
+  .detalles-de-la,
+  .nombre-juan-quintana
+  {
+    font-size: 1.5rem;
+  }
+
+  .textos-container{
+    font-size: 1.2rem;
+  }
+}
+
+/* ====== FIX SCROLL ≤600px ====== */
+@media (max-width: 200px){
+  /* 1) el documento puede crecer */
+  html, body{
+    height: auto;
+    min-height: 1900px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* 2) el wrapper principal que contiene todo */
+  .seguimiento3{
+    position: relative;
+    height: auto !important;     /* quita el alto fijo de 1503px */
+    min-height: 100vh;           /* al menos una pantalla */
+    overflow: visible;           /* deja que crezca */
+  }
+
+  /* 3) el bloque grande NO escalado y con alto auto */
+  .seguimiento-bloque{
+    width: 100% !important;
+    max-width: 100% !important;
+    left: 0 !important;
+    transform: none !important;
+    transform-origin: initial !important;
+    height: 1900px !important;     /* ← crítico */
+    min-height: 100%;            /* deja respirar */
+  }
+
+  /* 4) capas decorativas que podrían “tapar” el scroll en iOS */
+  .bef28-e2d2-463c-ae04-d69b5960f-icon2,
+  .path-253-icon3 {
+    pointer-events: none;        /* no interceptan gestos */
+  }
+
+
+  /* esconder timeline horizontal */
+  .seguimiento4,
+  .etapas-container,
+  .textos-container,
+  .linea-base,
+  .linea-Proceso,
+  .linea-naranja,
+  .linea-Segment{
+    display: none !important;
+  }
+
+  /* mostrar timeline vertical */
+  .timeline-vertical{
+    display: block !important;
+  }
+
+ 
+}

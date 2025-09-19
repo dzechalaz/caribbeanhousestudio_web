@@ -82,6 +82,8 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
                     </div>
                   <% } %>
                 </div>
+
+
                 <div class="linea-Proceso" style="width: calc(<%= ((estado - 1) / 7 * 90) - 10 %>%)"> </div>
                     <div class="linea-base"></div>
                     <div class="linea-naranja" style="width: calc(<%= (estado - 1) / 7 * 90 %>%)"> </div>
@@ -99,6 +101,37 @@ const estadoActual = estado; // Aquí 'estado' es el valor obtenido de la base d
                 
               </div>
             </div>
+
+            <!-- Timeline vertical (solo móvil) -->
+            <div class="timeline-vertical">
+            <% 
+                const steps = [
+                {label:'Pedido Confirmado',  icon:'bill.svg'},
+                {label:'Insumos Listos',     icon:'sumply.svg'},
+                {label:'Maquila en Proceso', icon:'saw.svg'},
+                {label:'Barniz',             icon:'brush.svg'},
+                {label:'Armado',             icon:'hammer.svg'},
+                {label:'En Camino',          icon:'truck.svg'},
+                {label:'Entrega',            icon:'entregado.svg'}
+                ];
+            %>
+            <ul class="tv">
+                <% steps.forEach((s, i) => { 
+                    const step = i + 1;
+                    const state = step < estado ? 'done' : (step === estado ? 'current' : 'todo');
+                %>
+                <li class="tv-step <%= state %>">
+                    <span class="tv-bullet">
+                    <% if (state === 'done') { %>✓<% } else { %>
+                        <img src="/public/<%= s.icon %>" alt="" />
+                    <% } %>
+                    </span>
+                    <span class="tv-label"><%= s.label %></span>
+                </li>
+                <% }) %>
+            </ul>
+            </div>
+
             <div class="informacion">
                 <div class="divisor"></div>
                 <div class="imagespace"></div>
