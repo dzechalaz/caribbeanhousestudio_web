@@ -4552,7 +4552,7 @@ app.post('/compras/notificacion-estado', async (req, res) => {
 
 
     const mailOptions = {
-      from: `"Pedido Personalizado" <${EMAIL_USER}>`, // debe ser la misma del login SMTP
+      from: `"Pedido Personalizado " <${EMAIL_USER}>`, // debe ser la misma del login SMTP
       to: recipientEmail,                              // EMPRESA_EMAIL
       replyTo: email || EMAIL_USER,                    // para que al responder vaya al cliente
       subject: `Nuevo Pedido Personalizado de ${name}`,
