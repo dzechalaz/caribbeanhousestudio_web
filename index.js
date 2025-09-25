@@ -15,6 +15,8 @@ import { fileURLToPath } from "url";
 import archiver from "archiver";
 import dotenv from 'dotenv';
 
+
+
 // 7 de abril 2024
 
 // Definir dominio global
@@ -4400,17 +4402,37 @@ app.post('/api/orden/crear', async (req, res) => {
 
 
 // 📩 **CREDENCIALES DEL CORREO EMISOR (TU CUENTA GMAIL)**
-const EMAIL_USER = "noreply.caribbeanhousestudio@gmail.com"; // 📌 Tu correo de Gmail
-const EMAIL_PASS = "zwnt jfcn xesw aohg"; // 📌 Contraseña de aplicación
+//const EMAIL_USER = "noreply.caribbeanhousestudio@gmail.com"; // 📌 Tu correo de Gmail
+//const EMAIL_PASS = "zwnt jfcn xesw aohg"; // 📌 Contraseña de aplicación
 
-// Configuración de Nodemailer
+import dotenv from "dotenv";
+dotenv.config();
+
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS;
+
+
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,        // 465 = TLS implícito
+  secure: true,     // true para 465; si usas 587, pon secure:false
   auth: {
     user: EMAIL_USER,
     pass: EMAIL_PASS,
   },
+  connectionTimeout: 15000,
+  greetingTimeout: 10000,
+  socketTimeout: 20000,
 });
+
+// Opcional, pero útil para debug:
+try {
+  await transporter.verify();
+  console.log("📧 SMTP listo para enviar correos");
+} catch (e) {
+  console.error("❌ SMTP no disponible:", e);
+}
+
 
 // Mapeo de estados y sus mensajes
 const estados = {
@@ -4529,12 +4551,14 @@ app.post('/compras/notificacion-estado', async (req, res) => {
       `;
 
 
-    // 4. Configurar las opciones del correo
     const mailOptions = {
-      from: EMAIL_USER,
-      to: usuario.correo,
-      subject: email_subject,
-      html: email_body
+      from: `"Pedido Personalizado" <${EMAIL_USER}>`, // debe ser la misma del login SMTP
+      to: recipientEmail,                              // EMPRESA_EMAIL
+      replyTo: email || EMAIL_USER,                    // para que al responder vaya al cliente
+      subject: `Nuevo Pedido Personalizado de ${name}`,
+      html: htmlContent,
+      attachments,
+      // text: "fallback de texto plano (opcional)"
     };
 
     // 5. Enviar el correo
