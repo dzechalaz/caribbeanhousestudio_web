@@ -27,7 +27,7 @@ const dominio = "https://www.caribbeanhousestudio.com"; // ✅ URL actual en uso
 
 
 // ====== EMAIL CONFIG (SIN ENV VARS) ======
-const RESEND_API_KEY = "zwnt jfcn xesw aohg";  // <-- pega aquí tu key
+const RESEND_API_KEY = "re_YNWga2b4_6taJChiqdj4LXJfkgJF2UqQV";  // <-- pega aquí tu key
 const FROM_EMAIL     = "noreply.caribbeanhousestudio@gmail.com"; // remitente verificado en Resend
 //const EMPRESA_EMAIL = "diochoglez@gmail.com"; // Aquí defines el correo de la empresa contacto@caribbeanhousestudio.com
 const EMPRESA_EMAIL = "contacto@caribbeanhousestudio.com"; 
