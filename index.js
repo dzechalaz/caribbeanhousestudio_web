@@ -4552,7 +4552,7 @@ app.post('/compras/notificacion-estado', async (req, res) => {
 
 
 
-// 📌 **Endpoint para notificar compras **
+// 📌 **Endpoint para notificar compras**
 app.post("/compras/send-order-notification", async (req, res) => {
   try {
     const { orden_id, precio_envio } = req.body;
