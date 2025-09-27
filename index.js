@@ -4401,16 +4401,22 @@ app.post('/api/orden/crear', async (req, res) => {
 
 // 📩 **CREDENCIALES DEL CORREO EMISOR (TU CUENTA GMAIL)**
 const EMAIL_USER = "noreply.caribbeanhousestudio@gmail.com"; // 📌 Tu correo de Gmail
-const EMAIL_PASS = "zwnt jfcn xesw aohg"; // 📌 Contraseña de aplicación
+const EMAIL_PASS = "zwntjfcnxeswaohg"; // 📌 Contraseña de aplicación
 
 // Configuración de Nodemailer
 const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASS,
-  },
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // true para 465
+  auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+  connectionTimeout: 15000,
+  greetingTimeout: 10000,
+  socketTimeout: 20000,
 });
+
+// Opcional para diagnosticar rápido:
+try { await transporter.verify(); console.log("📧 SMTP listo"); }
+catch (e) { console.error("❌ SMTP no disponible:", e); }
 
 // Mapeo de estados y sus mensajes
 const estados = {
