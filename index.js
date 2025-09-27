@@ -4401,37 +4401,22 @@ app.post('/api/orden/crear', async (req, res) => {
 
 
 
+
+
+
 // 📩 **CREDENCIALES DEL CORREO EMISOR (TU CUENTA GMAIL)**
-//const EMAIL_USER = "noreply.caribbeanhousestudio@gmail.com"; // 📌 Tu correo de Gmail
-//const EMAIL_PASS = "zwnt jfcn xesw aohg"; // 📌 Contraseña de aplicación
-
-import dotenv from "dotenv";
-dotenv.config();
-
-const EMAIL_USER = process.env.EMAIL_USER;
-const EMAIL_PASS = process.env.EMAIL_PASS;
+const EMAIL_USER = "noreply.caribbeanhousestudio@gmail.com"; // 📌 Tu correo de Gmail
+const EMAIL_PASS = "zwnt jfcn xesw aohg"; // 📌 Contraseña de aplicación
 
 
+// Configuración de Nodemailer
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,        // 465 = TLS implícito
-  secure: true,     // true para 465; si usas 587, pon secure:false
+  service: "gmail",
   auth: {
     user: EMAIL_USER,
     pass: EMAIL_PASS,
   },
-  connectionTimeout: 15000,
-  greetingTimeout: 10000,
-  socketTimeout: 20000,
 });
-
-// Opcional, pero útil para debug:
-try {
-  await transporter.verify();
-  console.log("📧 SMTP listo para enviar correos");
-} catch (e) {
-  console.error("❌ SMTP no disponible:", e);
-}
 
 
 // Mapeo de estados y sus mensajes
@@ -4446,14 +4431,17 @@ const estados = {
   7: 'El producto ha sido entregado al cliente.'
 };
 
+
 // Endpoint para notificar el cambio de estado de una compra
 app.post('/compras/notificacion-estado', async (req, res) => {
   try {
     const { compra_id } = req.body;
 
+
     if (!compra_id) {
       return res.status(400).json({ error: "Se requiere el ID de compra" });
     }
+
 
     // 1. Buscar la compra en la tabla Compras
     const [compraRows] = await db.promise().query(
@@ -4461,13 +4449,16 @@ app.post('/compras/notificacion-estado', async (req, res) => {
       [compra_id]
     );
 
+
     if (compraRows.length === 0) {
       return res.status(404).json({ error: "Compra no encontrada" });
     }
 
+
     const compra = compraRows[0];
     const estadoActual = compra.estado;
     const mensajeEstado = estados[estadoActual] || "Estado desconocido";
+
 
     // 2. Obtener la información del usuario (nombre y correo)
     const [usuarioRows] = await db.promise().query(
@@ -4475,11 +4466,14 @@ app.post('/compras/notificacion-estado', async (req, res) => {
       [compra.usuario_id]
     );
 
+
     if (usuarioRows.length === 0) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
+
     const usuario = usuarioRows[0];
+
 
     // 3. Construir el asunto y cuerpo del correo
     const email_subject = `Actualización del estado de tu compra`;
@@ -4551,21 +4545,24 @@ app.post('/compras/notificacion-estado', async (req, res) => {
       `;
 
 
+
+
+    // 4. Configurar las opciones del correo
     const mailOptions = {
-      from: `"Pedido Personalizado " <${EMAIL_USER}>`, // debe ser la misma del login SMTP
-      to: recipientEmail,                              // EMPRESA_EMAIL
-      replyTo: email || EMAIL_USER,                    // para que al responder vaya al cliente
-      subject: `Nuevo Pedido Personalizado de ${name}`,
-      html: htmlContent,
-      attachments,
-      // text: "fallback de texto plano (opcional)"
+      from: EMAIL_USER,
+      to: usuario.correo,
+      subject: email_subject,
+      html: email_body
     };
+
 
     // 5. Enviar el correo
     await transporter.sendMail(mailOptions);
 
+
     // Imprimir en consola el correo al que se envió la notificación
     console.log("Correo enviado a:", usuario.correo);
+
 
     res.status(200).json({ success: true, message: "Notificación enviada correctamente" });
   } catch (error) {
@@ -4573,6 +4570,9 @@ app.post('/compras/notificacion-estado', async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
+
+
+
 
 
 
@@ -4584,6 +4584,7 @@ app.post("/compras/send-order-notification", async (req, res) => {
       return res.status(400).json({ error: "Se requiere orden_id y precio_envio" });
     }
 
+
     // 🛒 **1. Obtener información de la orden**
     const [ordenRows] = await db.promise().query(
       `SELECT numero_orden, usuario_id, fecha_orden FROM ordenes WHERE orden_id = ?`,
@@ -4593,6 +4594,7 @@ app.post("/compras/send-order-notification", async (req, res) => {
       return res.status(404).json({ error: "Orden no encontrada" });
     }
     const { numero_orden, usuario_id, fecha_orden } = ordenRows[0];
+
 
     // 👤 **2. Obtener información del usuario**
     const [usuarioRows] = await db.promise().query(
@@ -4604,26 +4606,31 @@ app.post("/compras/send-order-notification", async (req, res) => {
     }
     const { nombre, correo } = usuarioRows[0];
 
+
     // 🏠 **3. Obtener dirección de envío desde `Compras`**
     const [direccionCompraRows] = await db.promise().query(
       `SELECT direccion_envio FROM Compras WHERE orden_id = ? LIMIT 1`,
       [orden_id]
     );
 
+
     if (direccionCompraRows.length === 0) {
       return res.status(404).json({ error: "No se encontró dirección de envío para la orden" });
     }
 
+
     let direccion_envio = direccionCompraRows[0].direccion_envio;
     let direccion_completa;
+
 
     if (!isNaN(direccion_envio)) {
       // Si `direccion_envio` es un número, buscar en la tabla `Direcciones`
       const [direccionRows] = await db.promise().query(
-        `SELECT calle, colonia, ciudad, estado, cp FROM Direcciones 
+        `SELECT calle, colonia, ciudad, estado, cp FROM Direcciones
          WHERE direccion_id = ? LIMIT 1`,
         [direccion_envio]
       );
+
 
       if (direccionRows.length === 0) {
         direccion_completa = "Dirección no encontrada";
@@ -4636,6 +4643,7 @@ app.post("/compras/send-order-notification", async (req, res) => {
       direccion_completa = direccion_envio;
     }
 
+
     // 📦 **4. Obtener los productos comprados**
     const [comprasRows] = await db.promise().query(
       `SELECT c.producto_id, c.cantidad, c.color, p.nombre AS producto_nombre, p.precio
@@ -4645,9 +4653,11 @@ app.post("/compras/send-order-notification", async (req, res) => {
       [orden_id]
     );
 
+
     if (comprasRows.length === 0) {
       return res.status(404).json({ error: "No hay productos en la orden" });
     }
+
 
     // 🧮 **5. Calcular el total de la compra**
     let total_productos = 0;
@@ -4658,10 +4668,12 @@ app.post("/compras/send-order-notification", async (req, res) => {
       productos_list += `- ${compra.producto_nombre} (${compra.color}): ${compra.cantidad} x $${compra.precio} = $${subtotal}\n`;
     });
 
+
     const total_compra = total_productos + parseFloat(precio_envio);
 
+
     // 📧 **6. Enviar correo con los detalles**
-    
+   
     const email_subject = `Nueva orden recibida: ${numero_orden}`;
     const email_body = `
     <!DOCTYPE html>
@@ -4747,7 +4759,7 @@ app.post("/compras/send-order-notification", async (req, res) => {
           <div class="productos">
             <h3>📦 Productos comprados:</h3>
             <ul>
-              ${comprasRows.map(compra => 
+              ${comprasRows.map(compra =>
                 `<li><strong>${compra.producto_nombre} (${compra.color})</strong>: ${compra.cantidad} x $${compra.precio} = <strong>$${compra.precio * compra.cantidad}</strong></li>`
               ).join('')}
             </ul>
@@ -4765,6 +4777,7 @@ app.post("/compras/send-order-notification", async (req, res) => {
     </html>
     `;
 
+
 const mailOptions = {
   from: EMAIL_USER,
   to: EMPRESA_EMAIL,
@@ -4772,7 +4785,10 @@ const mailOptions = {
   html: email_body, // Ahora enviamos HTML mejorado
 };
 
+
 await transporter.sendMail(mailOptions);
+
+
 
 
     res.status(200).json({ success: true, message: "Correo de notificación enviado correctamente" });
@@ -4782,10 +4798,12 @@ await transporter.sendMail(mailOptions);
   }
 });
 
+
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const baseUrl = 'https://www.caribbeanhousestudio.com';
     const [productos] = await db.promise().query('SELECT producto_id, nombre FROM Productos');
+
 
     const urls = productos.map(p => {
       const slug = p.nombre
@@ -4793,6 +4811,7 @@ app.get('/sitemap.xml', async (req, res) => {
         .normalize("NFD").replace(/[\u0300-\u036f]/g, '')  // Quitar acentos
         .replace(/\s+/g, '-')                             // Espacios por guiones
         .replace(/[^\w\-]+/g, '')                         // Eliminar símbolos raros
+
 
       return `
         <url>
@@ -4803,10 +4822,12 @@ app.get('/sitemap.xml', async (req, res) => {
       `;
     }).join('');
 
+
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
     <urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
       ${urls}
     </urlset>`;
+
 
     res.header('Content-Type', 'application/xml');
     res.send(xml);
@@ -4815,6 +4836,17 @@ app.get('/sitemap.xml', async (req, res) => {
     res.status(500).send('Error al generar el sitemap');
   }
 });
+
+
+
+
+
+
+
+
+
+
+
 
 
 
