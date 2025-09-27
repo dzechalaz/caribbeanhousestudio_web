@@ -3146,16 +3146,14 @@ app.post("/pedido-custom", upload.array("images"), async (req, res) => {
     </div>
   `;
 
-  // Configuración de Nodemailer
-   // Configuración del transportador de Nodemailer
-   const transporter = nodemailer.createTransport({
+  const transporter = nodemailer.createTransport({
     service: "gmail",
-    auth: {
-      user: EMAIL_USER,
-      pass: EMAIL_PASS,
-    },
+    auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+    logger: true,
+    debug: true,
+    connectionTimeout: 15000, // opcional
   });
-  
+
   // Opciones del correo
   const mailOptions = {
     from: '"Pedido Personalizado" <tu_correo@gmail.com>',
@@ -4410,15 +4408,13 @@ const EMAIL_USER = "noreply.caribbeanhousestudio@gmail.com"; // 📌 Tu correo d
 const EMAIL_PASS = "zwnt jfcn xesw aohg"; // 📌 Contraseña de aplicación
 
 
-// Configuración de Nodemailer
 const transporter = nodemailer.createTransport({
   service: "gmail",
-  auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASS,
-  },
+  auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+  logger: true,
+  debug: true,
+  connectionTimeout: 15000, // opcional
 });
-
 
 // Mapeo de estados y sus mensajes
 const estados = {
