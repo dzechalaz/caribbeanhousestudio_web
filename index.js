@@ -26,9 +26,49 @@ const dominio = "https://www.caribbeanhousestudio.com"; // ✅ URL actual en uso
 
 
 
-
+// ====== EMAIL CONFIG (SIN ENV VARS) ======
+const RESEND_API_KEY = "zwnt jfcn xesw aohg";  // <-- pega aquí tu key
+const FROM_EMAIL     = "noreply.caribbeanhousestudio@gmail.com"; // remitente verificado en Resend
 //const EMPRESA_EMAIL = "diochoglez@gmail.com"; // Aquí defines el correo de la empresa contacto@caribbeanhousestudio.com
 const EMPRESA_EMAIL = "contacto@caribbeanhousestudio.com"; 
+
+
+
+
+async function sendEmailHTTP({ to, subject, html, attachments = [] }) {
+  // attachments: [{ filename, contentBase64 }]
+  const body = {
+    from: FROM_EMAIL,
+    to: Array.isArray(to) ? to : [to],
+    subject,
+    html,
+  };
+  if (attachments.length) {
+    body.attachments = attachments.map(a => ({
+      filename: a.filename,
+      content: a.contentBase64,
+    }));
+  }
+
+  const resp = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`Resend ${resp.status}: ${text}`);
+  }
+  return resp.json();
+}
+
+
+
+
 
 import cors from "cors";
 
@@ -3108,24 +3148,16 @@ app.get("/api/muebles", (req, res) => {
 
 
 
-
 app.post("/pedido-custom", upload.array("images"), async (req, res) => {
   const { name, email, phone, referenceItem, description, dimensions, material, finish, generalNotes } = req.body;
   const images = req.files || [];
 
-  // Email receptor (correo de los colaboradores)
-  const recipientEmail = EMPRESA_EMAIL;
-  let attachments = [];
+  // Adjuntos -> base64
+  const attachments = images.map((file, index) => ({
+    filename: `imagen_${index + 1}.${file.mimetype.split("/")[1] || "bin"}`,
+    contentBase64: file.buffer.toString("base64"),
+  }));
 
-  // Procesar imágenes como adjuntos
-  if (images.length) {
-    attachments = images.map((file, index) => ({
-      filename: `imagen_${index + 1}.${file.mimetype.split("/")[1]}`, // Nombre dinámico
-      content: file.buffer,
-    }));
-  }
-
-  // Contenido del correo
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; border-radius: 10px; color: #333;">
       <h2 style="color: #8EAA6D;">Nuevo Pedido Personalizado</h2>
@@ -3138,42 +3170,28 @@ app.post("/pedido-custom", upload.array("images"), async (req, res) => {
       <p><strong>Material:</strong> ${material}</p>
       <p><strong>Acabado:</strong> ${finish}</p>
       <p><strong>Notas Generales:</strong> ${generalNotes || "Sin notas adicionales."}</p>
-      ${
-        attachments.length
-          ? `<h3>Imágenes de Referencia:</h3><p>Se han adjuntado ${attachments.length} imagen(es).</p>`
-          : "<p><strong>No se subieron imágenes.</strong></p>"
-      }
+      ${attachments.length ? `<h3>Imágenes de Referencia:</h3><p>Se han adjuntado ${attachments.length} imagen(es).</p>` : "<p><strong>No se subieron imágenes.</strong></p>"}
     </div>
   `;
 
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: { user: EMAIL_USER, pass: EMAIL_PASS },
-    logger: true,
-    debug: true,
-    connectionTimeout: 15000, // opcional
-  });
-
-  // Opciones del correo
-  const mailOptions = {
-    from: '"Pedido Personalizado" <tu_correo@gmail.com>',
-    to: recipientEmail,
-    subject: `Nuevo Pedido Personalizado de ${name}`,
-    html: htmlContent,
-    attachments, // Adjuntar imágenes
-  };
-
-  // Enviar correo
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Correo enviado:", info.response);
+    await sendEmailHTTP({
+      to: EMPRESA_EMAIL,                          // correo de tu equipo
+      subject: `Nuevo Pedido Personalizado de ${name}`,
+      html: htmlContent,
+      attachments,
+    });
+
+    // (opcional) avisar al cliente también:
+    // await sendEmailHTTP({ to: email, subject: "Recibimos tu solicitud", html: "<p>Gracias por tu pedido...</p>" });
+
+    console.log("Pedido personalizado enviado a:", EMPRESA_EMAIL);
     res.json({ success: true, message: "Pedido enviado correctamente" });
   } catch (error) {
-    console.error("Error al enviar el correo:", error);
+    console.error("Error al enviar el correo de pedido:", error?.message);
     res.status(500).json({ success: false, message: "Error al enviar el pedido" });
   }
 });
-
 
 //###################### ESTADISTICAS ######################
 app.get('/api/estadisticas', authMiddleware , async (req, res) => {
@@ -4403,9 +4421,6 @@ app.post('/api/orden/crear', async (req, res) => {
 
 
 
-// 📩 **CREDENCIALES DEL CORREO EMISOR (TU CUENTA GMAIL)**
-const EMAIL_USER = "noreply.caribbeanhousestudio@gmail.com"; // 📌 Tu correo de Gmail
-const EMAIL_PASS = "zwnt jfcn xesw aohg"; // 📌 Contraseña de aplicación
 
 
 const transporter = nodemailer.createTransport({
@@ -4430,99 +4445,43 @@ const estados = {
 
 
 // Endpoint para notificar el cambio de estado de una compra
+
 app.post('/compras/notificacion-estado', async (req, res) => {
   try {
     const { compra_id } = req.body;
+    if (!compra_id) return res.status(400).json({ error: "Se requiere el ID de compra" });
 
-
-    if (!compra_id) {
-      return res.status(400).json({ error: "Se requiere el ID de compra" });
-    }
-
-
-    // 1. Buscar la compra en la tabla Compras
     const [compraRows] = await db.promise().query(
       `SELECT compra_id, usuario_id, estado FROM Compras WHERE compra_id = ?`,
       [compra_id]
     );
-
-
-    if (compraRows.length === 0) {
-      return res.status(404).json({ error: "Compra no encontrada" });
-    }
-
+    if (!compraRows.length) return res.status(404).json({ error: "Compra no encontrada" });
 
     const compra = compraRows[0];
-    const estadoActual = compra.estado;
-    const mensajeEstado = estados[estadoActual] || "Estado desconocido";
+    const mensajeEstado = estados[compra.estado] || "Estado desconocido";
 
-
-    // 2. Obtener la información del usuario (nombre y correo)
     const [usuarioRows] = await db.promise().query(
       `SELECT usuario_id, nombre, correo FROM Usuarios WHERE usuario_id = ?`,
       [compra.usuario_id]
     );
-
-
-    if (usuarioRows.length === 0) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
-    }
-
+    if (!usuarioRows.length) return res.status(404).json({ error: "Usuario no encontrado" });
 
     const usuario = usuarioRows[0];
 
-
-    // 3. Construir el asunto y cuerpo del correo
-    const email_subject = `Actualización del estado de tu compra`;
-    const email_body = `
-      <!DOCTYPE html>
-      <html lang="es">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    const subject = `Actualización del estado de tu compra`;
+    const html = `
+      <!DOCTYPE html><html lang="es"><head>
+        <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Actualización de estado</title>
         <style>
-          body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-          }
-          .container {
-            max-width: 600px;
-            margin: 30px auto;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-          }
-          .header {
-            background-color: #444;
-            color: #fff;
-            text-align: center;
-            padding: 16px;
-            font-size: 20px;
-            font-weight: bold;
-          }
-          .content {
-            padding: 20px;
-            font-size: 16px;
-            line-height: 1.5;
-          }
-          .footer {
-            text-align: center;
-            padding: 10px;
-            background-color: #eee;
-            font-size: 14px;
-            color: #777;
-          }
-          strong {
-            color: #555;
-          }
+          body { margin:0; padding:0; font-family: Arial, sans-serif; background:#f5f5f5; color:#333; }
+          .container { max-width:600px; margin:30px auto; background:#fff; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,.1); overflow:hidden; }
+          .header { background:#444; color:#fff; text-align:center; padding:16px; font-size:20px; font-weight:bold; }
+          .content { padding:20px; font-size:16px; line-height:1.5; }
+          .footer { text-align:center; padding:10px; background:#eee; font-size:14px; color:#777; }
+          strong { color:#555; }
         </style>
-      </head>
-      <body>
+      </head><body>
         <div class="container">
           <div class="header">Actualización de estado de tu compra</div>
           <div class="content">
@@ -4530,46 +4489,22 @@ app.post('/compras/notificacion-estado', async (req, res) => {
             <p>Queremos informarte que el estado de tu compra ha cambiado.</p>
             <p><strong>Nuevo estado:</strong> ${mensajeEstado}</p>
             <p>Muchas gracias por tu preferencia.</p>
-            <p>Atentamente,<br>
-            Caribbean House Studio</p>
+            <p>Atentamente,<br>Caribbean House Studio</p>
           </div>
-          <div class="footer">
-            &copy; ${new Date().getFullYear()} Caribbean House Studio
-          </div>
+          <div class="footer">&copy; ${new Date().getFullYear()} Caribbean House Studio</div>
         </div>
-      </body>
-      </html>
-      `;
+      </body></html>
+    `;
 
+    await sendEmailHTTP({ to: usuario.correo, subject, html });
 
-
-
-    // 4. Configurar las opciones del correo
-    const mailOptions = {
-      from: EMAIL_USER,
-      to: usuario.correo,
-      subject: email_subject,
-      html: email_body
-    };
-
-
-    // 5. Enviar el correo
-    await transporter.sendMail(mailOptions);
-
-
-    // Imprimir en consola el correo al que se envió la notificación
     console.log("Correo enviado a:", usuario.correo);
-
-
     res.status(200).json({ success: true, message: "Notificación enviada correctamente" });
   } catch (error) {
-    console.error("Error enviando notificación de estado:", error);
+    console.error("Error enviando notificación de estado:", error?.message);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
-
-
-
 
 
 
@@ -4581,67 +4516,43 @@ app.post("/compras/send-order-notification", async (req, res) => {
       return res.status(400).json({ error: "Se requiere orden_id y precio_envio" });
     }
 
-
-    // 🛒 **1. Obtener información de la orden**
     const [ordenRows] = await db.promise().query(
       `SELECT numero_orden, usuario_id, fecha_orden FROM ordenes WHERE orden_id = ?`,
       [orden_id]
     );
-    if (ordenRows.length === 0) {
-      return res.status(404).json({ error: "Orden no encontrada" });
-    }
+    if (!ordenRows.length) return res.status(404).json({ error: "Orden no encontrada" });
     const { numero_orden, usuario_id, fecha_orden } = ordenRows[0];
 
-
-    // 👤 **2. Obtener información del usuario**
     const [usuarioRows] = await db.promise().query(
       `SELECT nombre, correo FROM Usuarios WHERE usuario_id = ?`,
       [usuario_id]
     );
-    if (usuarioRows.length === 0) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
-    }
+    if (!usuarioRows.length) return res.status(404).json({ error: "Usuario no encontrado" });
     const { nombre, correo } = usuarioRows[0];
 
-
-    // 🏠 **3. Obtener dirección de envío desde `Compras`**
     const [direccionCompraRows] = await db.promise().query(
       `SELECT direccion_envio FROM Compras WHERE orden_id = ? LIMIT 1`,
       [orden_id]
     );
-
-
-    if (direccionCompraRows.length === 0) {
-      return res.status(404).json({ error: "No se encontró dirección de envío para la orden" });
-    }
-
+    if (!direccionCompraRows.length) return res.status(404).json({ error: "No se encontró dirección de envío para la orden" });
 
     let direccion_envio = direccionCompraRows[0].direccion_envio;
     let direccion_completa;
 
-
     if (!isNaN(direccion_envio)) {
-      // Si `direccion_envio` es un número, buscar en la tabla `Direcciones`
       const [direccionRows] = await db.promise().query(
-        `SELECT calle, colonia, ciudad, estado, cp FROM Direcciones
-         WHERE direccion_id = ? LIMIT 1`,
+        `SELECT calle, colonia, ciudad, estado, cp FROM Direcciones WHERE direccion_id = ? LIMIT 1`,
         [direccion_envio]
       );
-
-
-      if (direccionRows.length === 0) {
-        direccion_completa = "Dirección no encontrada";
-      } else {
+      if (!direccionRows.length) direccion_completa = "Dirección no encontrada";
+      else {
         const { calle, colonia, ciudad, estado, cp } = direccionRows[0];
         direccion_completa = `${calle}, ${colonia}, ${ciudad}, ${estado}, CP: ${cp}`;
       }
     } else {
-      // Si `direccion_envio` no es un número (ej. "Recoger en tienda"), usarlo tal cual
-      direccion_completa = direccion_envio;
+      direccion_completa = direccion_envio; // p.ej. "Recoger en tienda"
     }
 
-
-    // 📦 **4. Obtener los productos comprados**
     const [comprasRows] = await db.promise().query(
       `SELECT c.producto_id, c.cantidad, c.color, p.nombre AS producto_nombre, p.precio
        FROM Compras c
@@ -4649,152 +4560,66 @@ app.post("/compras/send-order-notification", async (req, res) => {
        WHERE c.orden_id = ?`,
       [orden_id]
     );
+    if (!comprasRows.length) return res.status(404).json({ error: "No hay productos en la orden" });
 
-
-    if (comprasRows.length === 0) {
-      return res.status(404).json({ error: "No hay productos en la orden" });
-    }
-
-
-    // 🧮 **5. Calcular el total de la compra**
     let total_productos = 0;
-    let productos_list = "";
-    comprasRows.forEach((compra) => {
-      const subtotal = compra.precio * compra.cantidad;
-      total_productos += subtotal;
-      productos_list += `- ${compra.producto_nombre} (${compra.color}): ${compra.cantidad} x $${compra.precio} = $${subtotal}\n`;
-    });
-
-
+    comprasRows.forEach((compra) => total_productos += (compra.precio * compra.cantidad));
     const total_compra = total_productos + parseFloat(precio_envio);
 
-
-    // 📧 **6. Enviar correo con los detalles**
-   
-    const email_subject = `Nueva orden recibida: ${numero_orden}`;
-    const email_body = `
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Orden Confirmada</title>
-      <style>
-        body {
-          font-family: "Arial", sans-serif;
-          background-color: #F4EDE1;
-          margin: 0;
-          padding: 0;
-          color: #3D2C2A;
-        }
-        .container {
-          max-width: 600px;
-          margin: 20px auto;
-          background: #ffffff;
-          border-radius: 12px;
-          box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-          padding: 20px;
-        }
-        .header {
-          background-color: #A46D42;
-          color: white;
-          padding: 18px;
-          text-align: center;
-          font-size: 22px;
-          font-weight: bold;
-          border-top-left-radius: 12px;
-          border-top-right-radius: 12px;
-        }
-        .content {
-          padding: 20px;
-        }
-        .info, .productos, .direccion {
-          padding: 18px;
-          border-radius: 10px;
-          margin-bottom: 20px;
-          font-size: 18px;
-        }
-        .info {
-          background: #E8D3C0;
-        }
-        .productos {
-          background: #F9E8D9;
-        }
-        .direccion {
-          background: #C8D8B8;
-        }
-        h3 {
-          font-size: 20px;
-          color: #8B4A32;
-          margin-bottom: 8px;
-        }
-        .total {
-          font-size: 22px;
-          font-weight: bold;
-          text-align: center;
-          color: #BF3B2B;
-          margin-top: 20px;
-        }
-        .footer {
-          text-align: center;
-          padding: 15px;
-          font-size: 16px;
-          color: #777;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">🛒 Nueva compra realizada</div>
-        <div class="content">
-          <div class="info">
-            <p><strong>Cliente:</strong> ${nombre}</p>
-            <p><strong>Email:</strong> ${correo}</p>
-            <p><strong>Fecha de la orden:</strong> ${new Date(fecha_orden).toLocaleDateString()}</p>
-            <p><strong>Número de orden:</strong> ${numero_orden}</p>
+    const subject = `Nueva orden recibida: ${numero_orden}`;
+    const html = `
+      <!DOCTYPE html><html lang="es"><head>
+        <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Orden Confirmada</title>
+        <style>
+          body { font-family: Arial, sans-serif; background-color: #F4EDE1; margin:0; padding:0; color:#3D2C2A; }
+          .container { max-width:600px; margin:20px auto; background:#fff; border-radius:12px; box-shadow:0 4px 8px rgba(0,0,0,.1); padding:20px; }
+          .header { background:#A46D42; color:#fff; padding:18px; text-align:center; font-size:22px; font-weight:bold; border-top-left-radius:12px; border-top-right-radius:12px; }
+          .content { padding:20px; }
+          .info,.productos,.direccion { padding:18px; border-radius:10px; margin-bottom:20px; font-size:18px; }
+          .info { background:#E8D3C0; } .productos { background:#F9E8D9; } .direccion { background:#C8D8B8; }
+          h3 { font-size:20px; color:#8B4A32; margin-bottom:8px; }
+          .total { font-size:22px; font-weight:bold; text-align:center; color:#BF3B2B; margin-top:20px; }
+          .footer { text-align:center; padding:15px; font-size:16px; color:#777; }
+        </style>
+      </head><body>
+        <div class="container">
+          <div class="header">🛒 Nueva compra realizada</div>
+          <div class="content">
+            <div class="info">
+              <p><strong>Cliente:</strong> ${nombre}</p>
+              <p><strong>Email:</strong> ${correo}</p>
+              <p><strong>Fecha de la orden:</strong> ${new Date(fecha_orden).toLocaleDateString()}</p>
+              <p><strong>Número de orden:</strong> ${numero_orden}</p>
+            </div>
+            <div class="productos">
+              <h3>📦 Productos comprados:</h3>
+              <ul>
+                ${comprasRows.map(c =>
+                  `<li><strong>${c.producto_nombre} (${c.color})</strong>: ${c.cantidad} x $${c.precio} = <strong>$${c.precio * c.cantidad}</strong></li>`
+                ).join('')}
+              </ul>
+            </div>
+            <div class="direccion">
+              <h3>🚚 Envío a:</h3>
+              <p><strong>${direccion_completa}</strong></p>
+              <p><strong>Costo de envío:</strong> $${precio_envio}</p>
+            </div>
+            <div class="total">💰 Total pagado: <strong>$${total_compra}</strong></div>
           </div>
-          <div class="productos">
-            <h3>📦 Productos comprados:</h3>
-            <ul>
-              ${comprasRows.map(compra =>
-                `<li><strong>${compra.producto_nombre} (${compra.color})</strong>: ${compra.cantidad} x $${compra.precio} = <strong>$${compra.precio * compra.cantidad}</strong></li>`
-              ).join('')}
-            </ul>
-          </div>
-          <div class="direccion">
-            <h3>🚚 Envío a:</h3>
-            <p><strong>${direccion_completa}</strong></p>
-            <p><strong>Costo de envío:</strong> $${precio_envio}</p>
-          </div>
-          <div class="total">💰 Total pagado: <strong>$${total_compra}</strong></div>
+          <div class="footer">Gracias por tu compra | Caribbean House Studio</div>
         </div>
-        <div class="footer">Gracias por tu compra | Caribbean House Studio</div>
-      </div>
-    </body>
-    </html>
+      </body></html>
     `;
 
-
-const mailOptions = {
-  from: EMAIL_USER,
-  to: EMPRESA_EMAIL,
-  subject: email_subject,
-  html: email_body, // Ahora enviamos HTML mejorado
-};
-
-
-await transporter.sendMail(mailOptions);
-
-
-
+    await sendEmailHTTP({ to: EMPRESA_EMAIL, subject, html });
 
     res.status(200).json({ success: true, message: "Correo de notificación enviado correctamente" });
   } catch (error) {
-    console.error("Error al enviar la notificación de compra:", error);
+    console.error("Error al enviar la notificación de compra:", error?.message);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
-
 
 app.get('/sitemap.xml', async (req, res) => {
   try {
