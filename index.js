@@ -15,6 +15,8 @@ import { fileURLToPath } from "url";
 import archiver from "archiver";
 import dotenv from 'dotenv';
 
+
+
 // 7 de abril 2024
 
 // Definir dominio global
@@ -4418,6 +4420,7 @@ const transporter = nodemailer.createTransport({
 try { await transporter.verify(); console.log("📧 SMTP listo"); }
 catch (e) { console.error("❌ SMTP no disponible:", e); }
 
+
 // Mapeo de estados y sus mensajes
 const estados = {
   0: 'Tu pedido ha sido registrado, pero aún no ha sido confirmado. Una vez revisado, se asignará una fecha de entrega. Te notificaremos cuando avance en el proceso.',
@@ -4535,12 +4538,14 @@ app.post('/compras/notificacion-estado', async (req, res) => {
       `;
 
 
-    // 4. Configurar las opciones del correo
     const mailOptions = {
-      from: EMAIL_USER,
-      to: usuario.correo,
-      subject: email_subject,
-      html: email_body
+      from: `"Pedido Personalizado " <${EMAIL_USER}>`, // debe ser la misma del login SMTP
+      to: recipientEmail,                              // EMPRESA_EMAIL
+      replyTo: email || EMAIL_USER,                    // para que al responder vaya al cliente
+      subject: `Nuevo Pedido Personalizado de ${name}`,
+      html: htmlContent,
+      attachments,
+      // text: "fallback de texto plano (opcional)"
     };
 
     // 5. Enviar el correo
