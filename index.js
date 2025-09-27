@@ -4420,17 +4420,6 @@ app.post('/api/orden/crear', async (req, res) => {
 
 
 
-
-
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: { user: EMAIL_USER, pass: EMAIL_PASS },
-  logger: true,
-  debug: true,
-  connectionTimeout: 15000, // opcional
-});
-
 // Mapeo de estados y sus mensajes
 const estados = {
   0: 'Tu pedido ha sido registrado, pero aún no ha sido confirmado. Una vez revisado, se asignará una fecha de entrega. Te notificaremos cuando avance en el proceso.',
