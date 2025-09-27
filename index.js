@@ -4402,36 +4402,23 @@ app.post('/api/orden/crear', async (req, res) => {
 
 
 // 📩 **CREDENCIALES DEL CORREO EMISOR (TU CUENTA GMAIL)**
-//const EMAIL_USER = "noreply.caribbeanhousestudio@gmail.com"; // 📌 Tu correo de Gmail
-//const EMAIL_PASS = "zwnt jfcn xesw aohg"; // 📌 Contraseña de aplicación
+const EMAIL_USER = "noreply.caribbeanhousestudio@gmail.com"; // 📌 Tu correo de Gmail
+const EMAIL_PASS = "zwntjfcnxeswaohg"; // 📌 Contraseña de aplicación
 
-import dotenv from "dotenv";
-dotenv.config();
-
-const EMAIL_USER = process.env.EMAIL_USER;
-const EMAIL_PASS = process.env.EMAIL_PASS;
-
-
+// Configuración de Nodemailer
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 465,        // 465 = TLS implícito
-  secure: true,     // true para 465; si usas 587, pon secure:false
-  auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASS,
-  },
+  port: 465,
+  secure: true, // true para 465
+  auth: { user: EMAIL_USER, pass: EMAIL_PASS },
   connectionTimeout: 15000,
   greetingTimeout: 10000,
   socketTimeout: 20000,
 });
 
-// Opcional, pero útil para debug:
-try {
-  await transporter.verify();
-  console.log("📧 SMTP listo para enviar correos");
-} catch (e) {
-  console.error("❌ SMTP no disponible:", e);
-}
+// Opcional para diagnosticar rápido:
+try { await transporter.verify(); console.log("📧 SMTP listo"); }
+catch (e) { console.error("❌ SMTP no disponible:", e); }
 
 
 // Mapeo de estados y sus mensajes
@@ -4576,7 +4563,7 @@ app.post('/compras/notificacion-estado', async (req, res) => {
 
 
 
-// 📌 **Endpoint para notificar compras **
+// 📌 **Endpoint para notificar compras**
 app.post("/compras/send-order-notification", async (req, res) => {
   try {
     const { orden_id, precio_envio } = req.body;
