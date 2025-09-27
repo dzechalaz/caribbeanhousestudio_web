@@ -3483,7 +3483,7 @@ app.post('/api/registros/:codigo/sync', async (req, res) => {
 });
 
 
-//#################### carrito de compras ######################
+//#################### carrito de  compras ###################### 
 
 app.get('/carrito', (req, res) => {
   const userId = req.session.userId;
