@@ -4397,6 +4397,7 @@ app.post('/api/orden/crear', async (req, res) => {
 });
 
 
+
 //////////////////////////////////////////////// notificaciones //////////////////////////////////////////////////////////////////
 
 
@@ -4836,7 +4837,6 @@ app.get('/sitemap.xml', async (req, res) => {
     res.status(500).send('Error al generar el sitemap');
   }
 });
-
 
 
 
