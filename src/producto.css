@@ -57,7 +57,7 @@
 .description1 {
   position: absolute;
   top: 92px;
-  left: calc(50% - 278px);
+  left: calc(50% - 129px);
 }
 .desc {
   white-space: pre-wrap; /* Respeta los saltos de línea y ajusta el texto automáticamente */
@@ -672,9 +672,11 @@
     min-width: 0px;
     max-width: 100vw;
   }
-  footer, .divisor3, .background-icon, .adderContainer, .fondobajo {
+ 
+  footer, .divisor3, .background-icon, .fondobajo {
     display: none;
   }
+
   #price-chart-container, .tv-lightweight-charts{
     display: flex;
     position: relative;
@@ -778,7 +780,7 @@
     
   }
 
-  @media screen and (max-width: 767px) {
+  @media screen and (max-width: 766px) {
     .review {display: none;}
     .canvas{
       background-color: #ffffff;
@@ -852,7 +854,7 @@
     .nombreproducto {
       margin-top: 18px;
       /* 1) Tamaño y altura de línea */
-      font-size: 2.2rem;
+      font-size: 1rem;
       line-height: 1.2;              /* 1.2 × 2.2rem ≈ 2.64rem por línea */
     
       /* 2) Limitar altura al equivalente de 2 líneas */
@@ -1038,6 +1040,68 @@
 
 }
 
+
+/* Botón "Añadir al carrito" pegado abajo en tablets/móvil */
+@media screen and (max-width: 1100px) {
+  .adderContainer{
+    position: fixed;
+    top: 700px;
+    left: 60%;
+    transform: translateX(0%);
+    z-index: 1000;
+    width: min(300px, 520px);
+    display: flex;
+    justify-content: center;
+    pointer-events: none; /* para que solo el hijo reciba el click */
+  }
+
+  .addcart{
+   
+    width: 100%;
+    height: 35px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;  /* habilita los clicks en el botón */
+  }
+
+  .add-to-cart{
+    font-weight: 600;
+    letter-spacing: .5px;
+    font-size: 16px;
+    height: inherit;
+ 
+  } .nombreproducto {
+      margin-top: 18px;
+      /* 1) Tamaño y altura de línea */
+      font-size: 1.6rem;
+      line-height: 1.2;              /* 1.2 × 2.2rem ≈ 2.64rem por línea */
+    }
+}
+
+@media screen and (max-width: 700px) {
+    .adderContainer{
+    position: fixed;
+    top: 450px;
+    left: 48%;
+    transform: translateX(0%);
+    z-index: 1000;
+    width: min(50vw, 520px);
+    display: flex;
+    justify-content: center;
+    pointer-events: none; /* para que solo el hijo reciba el click */
+  }
+   .add-to-cart{
+    font-weight: 600;
+    letter-spacing: .5px;
+    font-size: 13px;
+    height: inherit;
+ 
+  }
+
+
+}
 
 #price-chart-container{
 
