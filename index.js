@@ -4043,110 +4043,123 @@ app.post('/api/actualizar-precio/130', async (req, res) => {
 
 
 
+// ############################################## Mercado Pago TEST##############################################
+import { MercadoPagoConfig, Preference } from "mercadopago";
 
-// ############################################## mercado pago ##############################################
+const IS_TEST  = (process.env.MP_MODE || "prod").toLowerCase() === "test";
+const MP_TOKEN = IS_TEST ? process.env.MP_ACCESS_TOKEN_TEST : process.env.MP_ACCESS_TOKEN;
 
-import { MercadoPagoConfig, Preference } from 'mercadopago';
+// Usa SIEMPRE la env DOMINIO
+const DOMINIO = process.env.DOMINIO;
 
-// ✅ Configuración de Mercado Pago
-const client = new MercadoPagoConfig({
-  accessToken: "APP_USR-7149075560158894-022517-61e2404d04f9052fb3cca2b8c4b82cfc-1755966178", //prod
-  //accessToken: "APP_USR-4766218969963872-030421-97a2948590998bec1e7d7edd1462103d-2306587214", //test
+const client = new MercadoPagoConfig({ accessToken: MP_TOKEN });
+
+// debug opcional
+app.get("/debug/env", (_req, res) => {
+  res.json({
+    mode: IS_TEST ? "test" : "prod",
+    tokenLoaded: Boolean(MP_TOKEN),
+    dominio: DOMINIO
+  });
 });
 
-
-// ✅ Ruta para generar `preferenceId`
-app.post("/create_preference", async (req, res) => {
+// ✅ Ruta para generar `preferenceId` — versión “antifraude”
+app.post("/create_preference_test", async (req, res) => {
   const userId = req.session.userId;
-
-  if (!userId) {
-    console.error("❌ Usuario no autenticado");
-    return res.status(401).json({ error: "Usuario no autenticado." });
-  }
+  if (!userId) return res.status(401).json({ error: "Usuario no autenticado." });
 
   try {
-    // 🔹 Obtener productos del carrito y el flete de la dirección seleccionada en una sola consulta
+    // Carrito + dirección seleccionada
     const [carrito] = await db.promise().query(
       `SELECT 
-          c.cantidad, c.color, p.nombre, p.precio,
-          COALESCE(d.flete, 0) AS flete -- 🔹 Si no hay dirección seleccionada, el flete será 0
+          c.cantidad, c.color,
+          p.nombre, p.precio,
+          COALESCE(d.flete, 0) AS flete,
+          d.calle, d.colonia, d.ciudad, d.estado, d.cp
        FROM carrito c
        JOIN Productos p ON c.producto_id = p.producto_id
        LEFT JOIN Direcciones d ON d.usuario_id = c.usuario_id AND d.Seleccionada = 't'
-       WHERE c.usuario_id = ?`, 
+       WHERE c.usuario_id = ?`,
       [userId]
     );
+    if (!carrito.length) return res.status(400).json({ error: "El carrito está vacío." });
 
-    if (carrito.length === 0) {
-      return res.status(400).json({ error: "El carrito está vacío." });
-    }
+    // Datos del usuario (para "payer")
+    const [usrRows] = await db.promise().query(
+      `SELECT nombre, apellido, email, telefono FROM Usuarios WHERE usuario_id = ?`,
+      [userId]
+    );
+    const usr = usrRows?.[0] || {};
 
-    // 🔹 Generar la descripción de los productos con colores y cantidades
-    let productosDescripcion = carrito
-      .map(prod => {
-        const nombreConColor = prod.color ? `${prod.nombre} (${prod.color})` : prod.nombre;
-        return `${nombreConColor} x${prod.cantidad}`;
-      })
-      .join(", ");
+    // Ítems detallados (uno por producto)
+    const items = carrito.map(prod => ({
+      title: prod.color ? `${prod.nombre} (${prod.color})` : prod.nombre,
+      quantity: Number(prod.cantidad),
+      unit_price: Number(prod.precio),
+      currency_id: "MXN",
+    }));
 
-    // 🔹 Calcular el precio total de los productos del carrito
-    let precioTotal = carrito.reduce((total, prod) => total + (prod.precio * prod.cantidad), 0);
+    const precioTotal = carrito.reduce((t, p) => t + (Number(p.precio) * Number(p.cantidad)), 0);
+    const flete = Number(carrito[0].flete || 0);
+    const totalConEnvio = precioTotal + flete;
+    if (totalConEnvio <= 0) return res.status(400).json({ error: "El total debe ser mayor a 0." });
 
-    // 🔹 Obtener el flete (todas las filas tendrán el mismo valor, tomamos el primero)
-    let flete = carrito.length > 0 ? parseFloat(carrito[0].flete) : 0;
-    let totalConEnvio = precioTotal + flete;
+    // Dirección del receptor (si existe)
+    const dir = carrito[0];
+    const receiver_address = dir?.cp ? {
+      zip_code: String(dir.cp || ""),
+      street_name: [dir.calle, dir.colonia].filter(Boolean).join(", "),
+      city_name: dir.ciudad || "",
+      state_name: dir.estado || "",
+    } : undefined;
 
-    // 🔹 Si hay flete, agregar "+ Envío ($500)" a la descripción de la compra
-    if (flete > 0) {
-      productosDescripcion += ` + Envío ($${flete})`;
-    }
-
-    if (totalConEnvio <= 0) {
-      console.error("❌ Error: El total debe ser mayor a 0.");
-      return res.status(400).json({ error: "El total debe ser mayor a 0." });
-    }
-
-    // 🔹 Crear la preferencia de pago en Mercado Pago
     const preferenceClient = new Preference(client);
-
-    const items = [
-      {
-        title: productosDescripcion, // ✅ Productos + Envío si aplica
-        quantity: 1,
-        unit_price: totalConEnvio // ✅ Se usa el total con el flete incluido
-      },
-    ];
-
     const response = await preferenceClient.create({
       body: {
-        items: items,
-        back_urls: {
-          success: `${dominio}/compras`, 
-          failure: `${dominio}/carrito`,
-          pending: `${dominio}/carrito`,
+        items,
+        // costo de envío declarado (no pegado al título)
+        shipments: flete > 0 ? { cost: flete, mode: "not_specified", receiver_address } : undefined,
+        // datos del pagador: ayuda mucho al scoring antifraude
+        payer: {
+          name: usr?.nombre || undefined,
+          surname: usr?.apellido || undefined,
+          email: usr?.email || undefined,
+          phone: usr?.telefono ? { area_code: "", number: usr.telefono } : undefined,
+          address: receiver_address ? {
+            zip_code: receiver_address.zip_code,
+            street_name: receiver_address.street_name,
+          } : undefined,
         },
-        external_reference: userId.toString(),
+        external_reference: String(userId),
+
+        back_urls: {
+          success: `${DOMINIO}/compras`,
+          failure: `${DOMINIO}/carrito`,
+          pending:  `${DOMINIO}/carrito`,
+        },
+
+        // 🔔 MUY IMPORTANTE para que tu backend se entere
+        notification_url: `${DOMINIO}/api/mercadopago/webhook_test`,
+
+
         payment_methods: {
           excluded_payment_types: [
-            { id: "ticket" }, // Excluye pagos en efectivo (OXXO, Pago Fácil, etc.)
-            { id: "atm" } // Excluye pagos en cajero automático
+            { id: "ticket" }, // dejas fuera efectivo
+            { id: "atm" }
           ],
         },
-        auto_return: "approved", // ✅ Redirección automática si el pago es exitoso
+
+        auto_return: "approved",
+        binary_mode: true,                 // solo approved o rejected (sin in_process)
+        statement_descriptor: "CARIBBEAN", // texto corto en estado de cuenta (<=22 chars)
       },
     });
 
-    // ✅ Acceder correctamente a `preferenceId`
     const preferenceId = response.id;
-
-    if (!preferenceId) {
-      console.error("❌ No se recibió preferenceId de Mercado Pago");
-      return res.status(500).json({ error: "No se recibió preferenceId de Mercado Pago" });
-    }
+    if (!preferenceId) return res.status(500).json({ error: "No se recibió preferenceId de Mercado Pago" });
 
     console.log("✅ Preference creada con éxito:", preferenceId);
-
-    res.json({ preferenceId }); // ✅ Enviar `preferenceId` al frontend
+    res.json({ preferenceId });
 
   } catch (error) {
     console.error("❌ Error al crear la preferencia:", error);
@@ -4154,88 +4167,254 @@ app.post("/create_preference", async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
-// ############################# Compra en línea #######################
-
-app.post("/api/mercadopago/webhook", async (req, res) => {
+// ############################# Webhook (Compra en línea) #######################
+app.post("/api/mercadopago/webhook_test", async (req, res) => {
   try {
-    console.log("📌 Webhook recibido de Mercado Pago.");
+    console.log("📌 Webhook recibido de Mercado Pago:", JSON.stringify(req.body));
 
     const paymentId = req.body.data?.id;
-    if (!paymentId) {
-      console.log("⚠️ No se recibió un ID de pago válido.");
-      return res.sendStatus(400);
-    }
+    if (!paymentId) return res.sendStatus(400);
 
     console.log(`🔍 Consultando detalles del pago con ID: ${paymentId}`);
 
-    // ✅ Consultar Mercado Pago para obtener detalles del pago
     const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
       method: "GET",
       headers: {
-        //"Authorization": `Bearer APP_USR-4766218969963872-030421-97a2948590998bec1e7d7edd1462103d-2306587214`, //Test
-        "Authorization": `Bearer APP_USR-7149075560158894-022517-61e2404d04f9052fb3cca2b8c4b82cfc-1755966178`, //prod
+        Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`, // ← ENV
         "Content-Type": "application/json",
       },
     });
 
     if (!response.ok) {
-      console.error(`❌ Error en la consulta a Mercado Pago: ${response.statusText}`);
+      console.error(`❌ Error en la consulta a MP: ${response.status} ${response.statusText}`);
       return res.sendStatus(500);
     }
 
     const paymentData = await response.json();
+    const status        = paymentData.status;
+    const statusDetail  = paymentData.status_detail; // ← útil para rechazos (ej. cc_rejected_high_risk)
+    const amount        = paymentData.transaction_amount;
+    const userId        = paymentData.external_reference;
 
-    const status = paymentData.status;
-    const amount = paymentData.transaction_amount;
-    const userId = paymentData.external_reference; // 🔹 Obtener el userId correctamente
+    console.log("MP status:", status, "detail:", statusDetail);
 
-    if (!userId) {
-      console.log("⚠️ El userId no está presente en el pago.");
-      return res.sendStatus(400);
-    }
+    if (!userId) return res.sendStatus(400);
 
     if (status === "approved") {
       console.log(`✅ Pago aprobado. Monto: $${amount} MXN para usuario ${userId}`);
 
-      // ✅ Crear orden en la base de datos
       const referencia = `MP-${paymentId}`;
-
-      const ordenResponse = await fetch(`${dominio}/api/orden/crear`, {
+      const ordenResponse = await fetch(`${DOMINIO}/api/orden/crear`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          referencia: referencia,
-          userId: userId, // 🔹 Ahora enviamos el userId correctamente
-        }),
+        body: JSON.stringify({ referencia, userId }),
       });
 
       const ordenData = await ordenResponse.json();
-
       if (ordenData.success) {
         console.log(`🎉 Orden creada con éxito. ID de orden: ${ordenData.ordenId}`);
       } else {
         console.log(`⚠️ No se pudo crear la orden. Motivo: ${ordenData.message}`);
       }
-
     } else {
-      console.log(`⚠️ Pago no aprobado. Estado actual: ${status}, Monto: $${amount} MXN`);
+      console.log(`⚠️ Pago no aprobado. Estado: ${status} (${statusDetail}), Monto: $${amount} MXN`);
     }
 
-    res.sendStatus(200);
-
+    return res.sendStatus(200);
   } catch (error) {
     console.error("❌ Error en el webhook:", error);
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+// ############################################## Mercado Pago pPRODUCTION##############################################
+
+
+// (Opcional útil) Verificar que el token se cargó
+app.get("/debug/mp", (_req, res) => {
+  res.json({ mpTokenLoaded: Boolean(process.env.MP_ACCESS_TOKEN), dominio: DOMINIO });
+});
+
+// ✅ Ruta para generar `preferenceId` — versión “antifraude”
+app.post("/create_preference", async (req, res) => {
+  const userId = req.session.userId;
+  if (!userId) return res.status(401).json({ error: "Usuario no autenticado." });
+
+  try {
+    // Carrito + dirección seleccionada
+    const [carrito] = await db.promise().query(
+      `SELECT 
+          c.cantidad, c.color,
+          p.nombre, p.precio,
+          COALESCE(d.flete, 0) AS flete,
+          d.calle, d.colonia, d.ciudad, d.estado, d.cp
+       FROM carrito c
+       JOIN Productos p ON c.producto_id = p.producto_id
+       LEFT JOIN Direcciones d ON d.usuario_id = c.usuario_id AND d.Seleccionada = 't'
+       WHERE c.usuario_id = ?`,
+      [userId]
+    );
+    if (!carrito.length) return res.status(400).json({ error: "El carrito está vacío." });
+
+    // Datos del usuario (para "payer")
+    const [usrRows] = await db.promise().query(
+      `SELECT nombre, apellido, email, telefono FROM Usuarios WHERE usuario_id = ?`,
+      [userId]
+    );
+    const usr = usrRows?.[0] || {};
+
+    // Ítems detallados (uno por producto)
+    const items = carrito.map(prod => ({
+      title: prod.color ? `${prod.nombre} (${prod.color})` : prod.nombre,
+      quantity: Number(prod.cantidad),
+      unit_price: Number(prod.precio),
+      currency_id: "MXN",
+    }));
+
+    const precioTotal = carrito.reduce((t, p) => t + (Number(p.precio) * Number(p.cantidad)), 0);
+    const flete = Number(carrito[0].flete || 0);
+    const totalConEnvio = precioTotal + flete;
+    if (totalConEnvio <= 0) return res.status(400).json({ error: "El total debe ser mayor a 0." });
+
+    // Dirección del receptor (si existe)
+    const dir = carrito[0];
+    const receiver_address = dir?.cp ? {
+      zip_code: String(dir.cp || ""),
+      street_name: [dir.calle, dir.colonia].filter(Boolean).join(", "),
+      city_name: dir.ciudad || "",
+      state_name: dir.estado || "",
+    } : undefined;
+
+    const preferenceClient = new Preference(client);
+    const response = await preferenceClient.create({
+      body: {
+        items,
+        // costo de envío declarado (no pegado al título)
+        shipments: flete > 0 ? { cost: flete, mode: "not_specified", receiver_address } : undefined,
+        // datos del pagador: ayuda mucho al scoring antifraude
+        payer: {
+          name: usr?.nombre || undefined,
+          surname: usr?.apellido || undefined,
+          email: usr?.email || undefined,
+          phone: usr?.telefono ? { area_code: "", number: usr.telefono } : undefined,
+          address: receiver_address ? {
+            zip_code: receiver_address.zip_code,
+            street_name: receiver_address.street_name,
+          } : undefined,
+        },
+        external_reference: String(userId),
+
+        back_urls: {
+          success: `${DOMINIO}/compras`,
+          failure: `${DOMINIO}/carrito`,
+          pending:  `${DOMINIO}/carrito`,
+        },
+
+        // 🔔 MUY IMPORTANTE para que tu backend se entere
+        notification_url: `${DOMINIO}/api/mercadopago/webhook`,
+
+
+        payment_methods: {
+          excluded_payment_types: [
+            { id: "ticket" }, // dejas fuera efectivo
+            { id: "atm" }
+          ],
+        },
+
+        auto_return: "approved",
+        binary_mode: true,                 // solo approved o rejected (sin in_process)
+        statement_descriptor: "CARIBBEAN", // texto corto en estado de cuenta (<=22 chars)
+      },
+    });
+
+    const preferenceId = response.id;
+    if (!preferenceId) return res.status(500).json({ error: "No se recibió preferenceId de Mercado Pago" });
+
+    console.log("✅ Preference creada con éxito:", preferenceId);
+    res.json({ preferenceId });
+
+  } catch (error) {
+    console.error("❌ Error al crear la preferencia:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ############################# Webhook (Compra en línea) #######################
+app.post("/api/mercadopago/webhook", async (req, res) => {
+  try {
+    console.log("📌 Webhook recibido de Mercado Pago:", JSON.stringify(req.body));
+
+    const paymentId = req.body.data?.id;
+    if (!paymentId) return res.sendStatus(400);
+
+    console.log(`🔍 Consultando detalles del pago con ID: ${paymentId}`);
+
+    const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`, // ← ENV
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`❌ Error en la consulta a MP: ${response.status} ${response.statusText}`);
+      return res.sendStatus(500);
+    }
+
+    const paymentData = await response.json();
+    const status        = paymentData.status;
+    const statusDetail  = paymentData.status_detail; // ← útil para rechazos (ej. cc_rejected_high_risk)
+    const amount        = paymentData.transaction_amount;
+    const userId        = paymentData.external_reference;
+
+    console.log("MP status:", status, "detail:", statusDetail);
+
+    if (!userId) return res.sendStatus(400);
+
+    if (status === "approved") {
+      console.log(`✅ Pago aprobado. Monto: $${amount} MXN para usuario ${userId}`);
+
+      const referencia = `MP-${paymentId}`;
+      const ordenResponse = await fetch(`${DOMINIO}/api/orden/crear`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ referencia, userId }),
+      });
+
+      const ordenData = await ordenResponse.json();
+      if (ordenData.success) {
+        console.log(`🎉 Orden creada con éxito. ID de orden: ${ordenData.ordenId}`);
+      } else {
+        console.log(`⚠️ No se pudo crear la orden. Motivo: ${ordenData.message}`);
+      }
+    } else {
+      console.log(`⚠️ Pago no aprobado. Estado: ${status} (${statusDetail}), Monto: $${amount} MXN`);
+    }
+
+    return res.sendStatus(200);
+  } catch (error) {
+    console.error("❌ Error en el webhook:", error);
+    return res.sendStatus(500);
+  }
+});
+
+
+
+
+
+
 
 
 
