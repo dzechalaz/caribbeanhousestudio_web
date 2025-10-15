@@ -100,32 +100,38 @@
           
           
 
-          <script>
-          (async () => {
-            // 1) Trae mode + publicKey del backend
-            const { mode, publicKey } = await fetch("/api/mp-config").then(r => r.json());
-            const createUrl = mode === "test" ? "/create_preference_test" : "/create_preference";
+        <script>
+        (async () => {
+          // backend ya te dice si estás en test o prod
+          const { mode } = await fetch("/debug/env").then(r => r.json());
 
-            // 2) Instancia MP
-            const mp = new MercadoPago(publicKey, { locale: "es-MX" });
+          // AQUÍ sí inyectamos las keys que pasaste desde res.render(...)
+          const PUBLIC_KEY_TEST = "<%= MP_PUBLIC_KEY_TEST %>";
+          const PUBLIC_KEY_PROD = "<%= MP_PUBLIC_KEY %>";
 
-            // 3) Crea preferencia
-            const resp = await fetch(createUrl, { method: "POST", headers: { "Content-Type": "application/json" } });
-            if (!resp.ok) throw new Error(`No se pudo crear la preferencia. HTTP ${resp.status}`);
-            const { preferenceId } = await resp.json();
-            if (!preferenceId) throw new Error("El backend no devolvió preferenceId");
+          const publicKey = mode === "test" ? PUBLIC_KEY_TEST : PUBLIC_KEY_PROD;
+          const createUrl = mode === "test" ? "/create_preference_test" : "/create_preference";
 
-            // 4) Render del Brick
-            await mp.bricks().create("wallet", "wallet_container", {
-              initialization: { preferenceId },
-              customization: { texts: { valueProp: "security_safety", action: "pay" }, visual: { style: { theme: "dark" } } }
-            });
-          })().catch(err => {
-            console.error(err);
-            document.getElementById("wallet_container").innerHTML =
-              "<p style='color:red'>No se pudo iniciar el pago. Revisa consola.</p>";
+          // Instanciar MP con la key correcta
+          const mp = new MercadoPago(publicKey, { locale: "es-MX" });
+
+          // Crear preferencia
+          const resp = await fetch(createUrl, { method: "POST", headers: { "Content-Type": "application/json" } });
+          if (!resp.ok) throw new Error(`No se pudo crear la preferencia. HTTP ${resp.status}`);
+          const { preferenceId } = await resp.json();
+          if (!preferenceId) throw new Error("El backend no devolvió preferenceId");
+
+          // Render del Brick
+          await mp.bricks().create("wallet", "wallet_container", {
+            initialization: { preferenceId },
+            customization: { texts: { valueProp: "security_safety", action: "pay" }, visual: { style: { theme: "dark" } } }
           });
-          </script>
+        })().catch(err => {
+          console.error(err);
+          document.getElementById("wallet_container").innerHTML =
+            "<p style='color:red'>No se pudo iniciar el pago. Revisa consola.</p>";
+        });
+        </script>
 
         </div>
         
