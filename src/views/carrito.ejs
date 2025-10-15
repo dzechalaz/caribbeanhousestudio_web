@@ -97,46 +97,54 @@
           
         
          
-         <script src="https://sdk.mercadopago.com/js/v3"></script>
-          <script>
-            (async () => {
-              // 1) Detecta si estás en test o prod
-              const { mode } = await fetch("/debug/env").then(r => r.json());
+          <script src="https://sdk.mercadopago.com/js/v3"></script>
+          
+      <script>
+          (async () => {
+            // 1) Detectar modo desde tu backend
+            const { mode } = await fetch("/debug/env").then(r => r.json());
 
-              // 2) Public keys provistas por el servidor (ver paso 2 abajo)
-              const PUBLIC_KEY_TEST = "<%= MP_PUBLIC_KEY_TEST %>";
-              const PUBLIC_KEY_PROD = "<%= MP_PUBLIC_KEY %>";
+            // 2) Public keys: pon aquí TUS claves públicas (no las de access token)
+            //    TEST -> la que empieza normalmente con "TEST-"
+            //    PROD -> la que empieza normalmente con "APP_USR-"
+            const PUBLIC_KEY_TEST = "MP_PUBLIC_KEY_TEST";
+            const PUBLIC_KEY_PROD = "MP_PUBLIC_KEY";
 
-              const publicKey = mode === "test" ? PUBLIC_KEY_TEST : PUBLIC_KEY_PROD;
-              const createUrl = mode === "test" ? "/create_preference_test" : "/create_preference";
+            const publicKey = mode === "test" ? PUBLIC_KEY_TEST : PUBLIC_KEY_PROD;
+            const createUrl = mode === "test" ? "/create_preference_test" : "/create_preference";
 
-              // 3) Instancia MP con la public key correcta
-              const mp = new MercadoPago(publicKey, { locale: "es-MX" });
+            // 3) Instanciar MP con la public key correcta
+            const mp = new MercadoPago(publicKey, { locale: "es-MX" });
 
-              // 4) Crea la preferencia en tu backend
-              const resp = await fetch(createUrl, { method: "POST", headers: { "Content-Type": "application/json" } });
-              if (!resp.ok) {
-                const txt = await resp.text();
-                throw new Error(`No se pudo crear la preferencia: HTTP ${resp.status} – ${txt}`);
-              }
-              const { preferenceId } = await resp.json();
-              if (!preferenceId) throw new Error("El backend no devolvió preferenceId");
-
-              // 5) Renderiza el Wallet Brick
-              await mp.bricks().create("wallet", "wallet_container", {
-                initialization: { preferenceId },
-                customization: {
-                  texts: { valueProp: "security_safety", action: "pay" },
-                  visual: { style: { theme: "dark" } }
-                }
-              });
-            })().catch(err => {
-              console.error("Error al cargar el botón de pago:", err);
-              document.getElementById("wallet_container").innerHTML =
-                "<p style='color:red'>No se pudo iniciar el pago. Revisa consola.</p>";
+            // 4) Crear preferencia en tu backend
+            const resp = await fetch(createUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" }
             });
-          </script>
 
+            if (!resp.ok) {
+              const txt = await resp.text();
+              throw new Error(`No se pudo crear la preferencia: HTTP ${resp.status} – ${txt}`);
+            }
+
+            const data = await resp.json();
+            const preferenceId = data.preferenceId;
+            if (!preferenceId) throw new Error("El backend no devolvió preferenceId");
+
+            // 5) Renderizar el Brick Wallet
+            await mp.bricks().create("wallet", "wallet_container", {
+              initialization: { preferenceId },
+              customization: {
+                texts: { valueProp: "security_safety", action: "pay" },
+                visual: { style: { theme: "dark" } }
+              }
+            });
+          })().catch(err => {
+            console.error("Error al cargar el botón de pago:", err);
+            document.getElementById("wallet_container").innerHTML =
+              "<p style='color:red'>No se pudo iniciar el pago. Revisa consola.</p>";
+          });
+        </script>
 
 
         </div>
