@@ -4267,59 +4267,66 @@ app.post("/api/mercadopago/webhook_test", async (req, res) => {
 
 
 
+// ========================= PRODUCCIÓN =========================
 
-// ############################################## Mercado Pago pPRODUCTION##############################################
-
-
-// (Opcional útil) Verificar que el token se cargó
+// (opcional) debug
 app.get("/debug/mp", (_req, res) => {
-  res.json({ mpTokenLoaded: Boolean(process.env.MP_ACCESS_TOKEN), dominio: DOMINIO });
+  res.json({
+    mpTokenLoaded: Boolean(process.env.MP_ACCESS_TOKEN),
+    dominio: DOMINIO
+  });
 });
 
-// ✅ Ruta para generar `preferenceId` — versión “antifraude”
+// 👉 Mismas validaciones/limpieza que dejaste en TEST
 app.post("/create_preference", async (req, res) => {
   const userId = req.session.userId;
   if (!userId) return res.status(401).json({ error: "Usuario no autenticado." });
 
   try {
-    // Carrito + dirección seleccionada
+    // 1) Carrito
     const [carrito] = await db.promise().query(
       `SELECT 
-          c.cantidad, c.color,
-          p.nombre, p.precio,
-          COALESCE(d.flete, 0) AS flete,
-          d.calle, d.colonia, d.ciudad, d.estado, d.cp
+         c.cantidad, c.color,
+         p.nombre, p.precio,
+         COALESCE(d.flete, 0) AS flete,
+         d.calle, d.colonia, d.ciudad, d.estado, d.cp
        FROM carrito c
        JOIN Productos p ON c.producto_id = p.producto_id
-       LEFT JOIN Direcciones d ON d.usuario_id = c.usuario_id AND d.Seleccionada = 't'
+       LEFT JOIN Direcciones d 
+         ON d.usuario_id = c.usuario_id AND d.Seleccionada = 't'
        WHERE c.usuario_id = ?`,
       [userId]
     );
     if (!carrito.length) return res.status(400).json({ error: "El carrito está vacío." });
 
-    // Datos del usuario (para "payer")
+    // 2) Payer
     const [usrRows] = await db.promise().query(
-       `SELECT nombre, correo AS email, telefono FROM Usuarios WHERE usuario_id = ?`,
+      `SELECT nombre, correo AS email, telefono FROM Usuarios WHERE usuario_id = ?`,
       [userId]
     );
     const usr = usrRows?.[0] || {};
     const { name: payerName, surname: payerSurname } = splitName(usr.nombre);
 
+    // 3) Items saneados (igual que en test)
+    const items = carrito
+      .map(prod => {
+        const qty = parseInt(prod.cantidad, 10);
+        const price = Number(prod.precio);
+        if (!qty || qty < 1 || !Number.isFinite(price) || price <= 0) return null;
+        return {
+          title: prod.color ? `${prod.nombre} (${prod.color})` : prod.nombre,
+          quantity: qty,
+          unit_price: price,
+          currency_id: "MXN",
+        };
+      })
+      .filter(Boolean);
 
-    // Ítems detallados (uno por producto)
-    const items = carrito.map(prod => ({
-      title: prod.color ? `${prod.nombre} (${prod.color})` : prod.nombre,
-      quantity: Number(prod.cantidad),
-      unit_price: Number(prod.precio),
-      currency_id: "MXN",
-    }));
+    console.log("🧾 MP items payload (PROD):", JSON.stringify(items));
+    if (!items.length) return res.status(400).json({ error: "Carrito inválido." });
 
-    const precioTotal = carrito.reduce((t, p) => t + (Number(p.precio) * Number(p.cantidad)), 0);
+    // 4) Envío/dirección
     const flete = Number(carrito[0].flete || 0);
-    const totalConEnvio = precioTotal + flete;
-    if (totalConEnvio <= 0) return res.status(400).json({ error: "El total debe ser mayor a 0." });
-
-    // Dirección del receptor (si existe)
     const dir = carrito[0];
     const receiver_address = dir?.cp ? {
       zip_code: String(dir.cp || ""),
@@ -4328,16 +4335,15 @@ app.post("/create_preference", async (req, res) => {
       state_name: dir.estado || "",
     } : undefined;
 
+    // 5) Crear preferencia usando el client ya configurado con token PROD
     const preferenceClient = new Preference(client);
     const response = await preferenceClient.create({
       body: {
         items,
-        // costo de envío declarado (no pegado al título)
         shipments: flete > 0 ? { cost: flete, mode: "not_specified", receiver_address } : undefined,
-        // datos del pagador: ayuda mucho al scoring antifraude
         payer: {
-          name: usr?.nombre || undefined,
-          surname: usr?.apellido || undefined,
+          name: payerName,
+          surname: payerSurname,
           email: usr?.email || undefined,
           phone: usr?.telefono ? { area_code: "", number: usr.telefono } : undefined,
           address: receiver_address ? {
@@ -4346,102 +4352,92 @@ app.post("/create_preference", async (req, res) => {
           } : undefined,
         },
         external_reference: String(userId),
-
         back_urls: {
           success: `${DOMINIO}/compras`,
           failure: `${DOMINIO}/carrito`,
-          pending:  `${DOMINIO}/carrito`,
+          pending: `${DOMINIO}/carrito`,
         },
-
-        // 🔔 MUY IMPORTANTE para que tu backend se entere
-        notification_url: `${DOMINIO}/api/mercadopago/webhook`,
-
-
+        notification_url: `${DOMINIO}/api/mercadopago/webhook`, // PROD
         payment_methods: {
-          excluded_payment_types: [
-            { id: "ticket" }, // dejas fuera efectivo
-            { id: "atm" }
-          ],
+          excluded_payment_types: [{ id: "ticket" }, { id: "atm" }],
         },
-
         auto_return: "approved",
-        binary_mode: true,                 // solo approved o rejected (sin in_process)
-        statement_descriptor: "CARIBBEAN", // texto corto en estado de cuenta (<=22 chars)
+        binary_mode: true,
+        statement_descriptor: "CARIBBEAN", // <=22 chars
       },
     });
 
     const preferenceId = response.id;
     if (!preferenceId) return res.status(500).json({ error: "No se recibió preferenceId de Mercado Pago" });
 
-    console.log("✅ Preference creada con éxito:", preferenceId);
+    console.log("✅ Preference PROD creada:", preferenceId);
     res.json({ preferenceId });
 
   } catch (error) {
-    console.error("❌ Error al crear la preferencia:", error);
-    res.status(500).json({ error: error.message });
+    const safe = {
+      message: error?.message,
+      error: error?.error,
+      status: error?.status,
+      cause: error?.cause,
+    };
+    console.error("❌ Error al crear la preferencia (PROD):", safe);
+    res.status(500).json(safe);
   }
 });
+
+
+
+
+
 
 // ############################# Webhook (Compra en línea) #######################
 app.post("/api/mercadopago/webhook", async (req, res) => {
   try {
-    console.log("📌 Webhook recibido de Mercado Pago:", JSON.stringify(req.body));
-
+    console.log("📌 Webhook PROD:", JSON.stringify(req.body));
     const paymentId = req.body.data?.id;
     if (!paymentId) return res.sendStatus(400);
-
-    console.log(`🔍 Consultando detalles del pago con ID: ${paymentId}`);
 
     const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`, // ← ENV
+        Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`, // PROD
         "Content-Type": "application/json",
       },
     });
 
     if (!response.ok) {
-      console.error(`❌ Error en la consulta a MP: ${response.status} ${response.statusText}`);
+      console.error(`❌ Error MP (PROD): ${response.status} ${response.statusText}`);
       return res.sendStatus(500);
     }
 
     const paymentData = await response.json();
-    const status        = paymentData.status;
-    const statusDetail  = paymentData.status_detail; // ← útil para rechazos (ej. cc_rejected_high_risk)
-    const amount        = paymentData.transaction_amount;
-    const userId        = paymentData.external_reference;
-
-    console.log("MP status:", status, "detail:", statusDetail);
+    const { status, status_detail: statusDetail, transaction_amount: amount, external_reference: userId } = paymentData;
+    console.log("MP PROD status:", status, "detail:", statusDetail);
 
     if (!userId) return res.sendStatus(400);
 
     if (status === "approved") {
-      console.log(`✅ Pago aprobado. Monto: $${amount} MXN para usuario ${userId}`);
-
+      console.log(`✅ Pago aprobado PROD $${amount} MXN para usuario ${userId}`);
       const referencia = `MP-${paymentId}`;
       const ordenResponse = await fetch(`${DOMINIO}/api/orden/crear`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ referencia, userId }),
       });
-
       const ordenData = await ordenResponse.json();
-      if (ordenData.success) {
-        console.log(`🎉 Orden creada con éxito. ID de orden: ${ordenData.ordenId}`);
-      } else {
-        console.log(`⚠️ No se pudo crear la orden. Motivo: ${ordenData.message}`);
-      }
+      console.log(ordenData.success
+        ? `🎉 Orden creada. ID: ${ordenData.ordenId}`
+        : `⚠️ No se pudo crear la orden: ${ordenData.message}`);
     } else {
-      console.log(`⚠️ Pago no aprobado. Estado: ${status} (${statusDetail}), Monto: $${amount} MXN`);
+      console.log(`⚠️ Pago no aprobado (PROD). Estado: ${status} (${statusDetail}), Monto: $${amount} MXN`);
     }
 
     return res.sendStatus(200);
-  } catch (error) {
-    console.error("❌ Error en el webhook:", error);
+  } catch (err) {
+    console.error("❌ Error webhook PROD:", err);
     return res.sendStatus(500);
   }
 });
-
 
 
 
