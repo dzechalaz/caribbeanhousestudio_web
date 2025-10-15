@@ -97,58 +97,54 @@
           
         
          
-          <script src="https://sdk.mercadopago.com/js/v2"></script>
+          <script src="https://sdk.mercadopago.com/js/v3"></script>
           
-          <script>
-            const mp = new MercadoPago("APP_USR-9460b890-6cf0-4cac-a5fd-6f4f44dbabd6", {//prod
-            //const mp = new MercadoPago("APP_USR-911c67da-b81d-487f-96d0-5363482bc89d", { //test
-              locale: "es-MX",
+      <script>
+          (async () => {
+            // 1) Detectar modo desde tu backend
+            const { mode } = await fetch("/debug/env").then(r => r.json());
+
+            // 2) Public keys: pon aquí TUS claves públicas (no las de access token)
+            //    TEST -> la que empieza normalmente con "TEST-"
+            //    PROD -> la que empieza normalmente con "APP_USR-"
+            const PUBLIC_KEY_TEST = "TU_PUBLIC_KEY_TEST_AQUI";
+            const PUBLIC_KEY_PROD = "TU_PUBLIC_KEY_PROD_AQUI";
+
+            const publicKey = mode === "test" ? PUBLIC_KEY_TEST : PUBLIC_KEY_PROD;
+            const createUrl = mode === "test" ? "/create_preference_test" : "/create_preference";
+
+            // 3) Instanciar MP con la public key correcta
+            const mp = new MercadoPago(publicKey, { locale: "es-MX" });
+
+            // 4) Crear preferencia en tu backend
+            const resp = await fetch(createUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" }
             });
-        
-            async function loadPaymentButton() {
-              try {
-                // ✅ Obtener la preferenceId desde el backend
-                const response = await fetch("/create_preference", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                });
-                const data = await response.json();
-                const preferenceId = data.preferenceId;
-        
-                if (!preferenceId) {
-                  throw new Error("No se recibió preferenceId");
-                }
-        
-                // ✅ Configurar el botón de pago con la preferenceId
-                mp.bricks().create("wallet", "wallet_container", {
-                  initialization: {
-                    preferenceId: preferenceId,
-                  },
-                  
-                  customization: {
-                    texts: {
-                      valueProp: "security_safety", // Otras opciones: 'default', 'none'
-                      action: "pay", // Texto del botón de pago
-                    },
-                    
-                    visual: {
-                      buttonBackground: 'black',
-                      style: {
-                        theme: "dark", // Opciones: 'default', 'dark', 'custom'
-                      },
-                    },
-                    
-                  },
-                });
-              } catch (error) {
-                console.error("Error al cargar el botón de pago:", error);
-                document.getElementById("wallet_container").innerHTML =
-                  "<p style='color: red;'>El carrito se encuentra vacío</p>";
-              }
+
+            if (!resp.ok) {
+              const txt = await resp.text();
+              throw new Error(`No se pudo crear la preferencia: HTTP ${resp.status} – ${txt}`);
             }
-        
-            loadPaymentButton();
-          </script>
+
+            const data = await resp.json();
+            const preferenceId = data.preferenceId;
+            if (!preferenceId) throw new Error("El backend no devolvió preferenceId");
+
+            // 5) Renderizar el Brick Wallet
+            await mp.bricks().create("wallet", "wallet_container", {
+              initialization: { preferenceId },
+              customization: {
+                texts: { valueProp: "security_safety", action: "pay" },
+                visual: { style: { theme: "dark" } }
+              }
+            });
+          })().catch(err => {
+            console.error("Error al cargar el botón de pago:", err);
+            document.getElementById("wallet_container").innerHTML =
+              "<p style='color:red'>No se pudo iniciar el pago. Revisa consola.</p>";
+          });
+        </script>
 
 
         </div>
