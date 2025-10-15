@@ -4138,10 +4138,10 @@ app.post("/create_preference_test", async (req, res) => {
         body: {
           // ...
           payer: {
-            name: payerName,                 // ✅
-            surname: payerSurname,           // ✅ puede ser undefined, no pasa nada
-            email: usr.email,                // ✅ ya aliaste correo AS email
-            phone: usr.telefono ? { area_code: "", number: usr.telefono } : undefined,
+            name: payerName || undefined,
+            surname: payerSurname || undefined,
+            email: usr?.email || undefined,
+            phone: usr?.telefono ? { area_code: "", number: usr.telefono } : undefined,
             address: receiver_address ? {
               zip_code: receiver_address.zip_code,
               street_name: receiver_address.street_name,
