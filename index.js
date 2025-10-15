@@ -4081,50 +4081,61 @@ app.get("/debug/env", (_req, res) => {
   });
 });
 
-// ✅ Ruta para generar `preferenceId` — versión “antifraude”
+// --- create_preference_test (igual aplica a create_preference) ---
 app.post("/create_preference_test", async (req, res) => {
   const userId = req.session.userId;
   if (!userId) return res.status(401).json({ error: "Usuario no autenticado." });
 
   try {
-    // Carrito + dirección seleccionada
+    // 1) Carrito
     const [carrito] = await db.promise().query(
       `SELECT 
-          c.cantidad, c.color,
-          p.nombre, p.precio,
-          COALESCE(d.flete, 0) AS flete,
-          d.calle, d.colonia, d.ciudad, d.estado, d.cp
+         c.cantidad, c.color,
+         p.nombre, p.precio,
+         COALESCE(d.flete, 0) AS flete,
+         d.calle, d.colonia, d.ciudad, d.estado, d.cp
        FROM carrito c
        JOIN Productos p ON c.producto_id = p.producto_id
-       LEFT JOIN Direcciones d ON d.usuario_id = c.usuario_id AND d.Seleccionada = 't'
+       LEFT JOIN Direcciones d 
+         ON d.usuario_id = c.usuario_id AND d.Seleccionada = 't'
        WHERE c.usuario_id = ?`,
       [userId]
     );
     if (!carrito.length) return res.status(400).json({ error: "El carrito está vacío." });
 
-    // Datos del usuario (para "payer")
+    // 2) Datos del pagador
     const [usrRows] = await db.promise().query(
-       `SELECT nombre, correo AS email, telefono FROM Usuarios WHERE usuario_id = ?`,
+      `SELECT nombre, correo AS email, telefono FROM Usuarios WHERE usuario_id = ?`,
       [userId]
     );
     const usr = usrRows?.[0] || {};
     const { name: payerName, surname: payerSurname } = splitName(usr.nombre);
 
+    // 3) Construir items (sanitizados) ✅
+    const items = carrito
+      .map(prod => {
+        const qty = parseInt(prod.cantidad, 10);
+        const price = Number(prod.precio); // asegura número
+        if (!qty || qty < 1 || !Number.isFinite(price) || price <= 0) return null;
 
-    // Ítems detallados (uno por producto)
-    const items = carrito.map(prod => ({
-      title: prod.color ? `${prod.nombre} (${prod.color})` : prod.nombre,
-      quantity: Number(prod.cantidad),
-      unit_price: Number(prod.precio),
-      currency_id: "MXN",
-    }));
+        return {
+          title: prod.color ? `${prod.nombre} (${prod.color})` : prod.nombre,
+          quantity: qty,
+          unit_price: price,
+          currency_id: "MXN",
+        };
+      })
+      .filter(Boolean);
 
-    const precioTotal = carrito.reduce((t, p) => t + (Number(p.precio) * Number(p.cantidad)), 0);
+    // DEBUG: ver exactamente qué se está enviando a MP
+    console.log("🧾 MP items payload:", JSON.stringify(items));
+
+    if (!items.length) {
+      return res.status(400).json({ error: "Carrito inválido: items vacíos o con cantidades/precios inválidos." });
+    }
+
+    // 4) Flete y dirección
     const flete = Number(carrito[0].flete || 0);
-    const totalConEnvio = precioTotal + flete;
-    if (totalConEnvio <= 0) return res.status(400).json({ error: "El total debe ser mayor a 0." });
-
-    // Dirección del receptor (si existe)
     const dir = carrito[0];
     const receiver_address = dir?.cp ? {
       zip_code: String(dir.cp || ""),
@@ -4133,42 +4144,35 @@ app.post("/create_preference_test", async (req, res) => {
       state_name: dir.estado || "",
     } : undefined;
 
+    // 5) Crear preferencia
     const preferenceClient = new Preference(client);
-      const response = await preferenceClient.create({
-        body: {
-          // ...
-          payer: {
-            name: payerName || undefined,
-            surname: payerSurname || undefined,
-            email: usr?.email || undefined,
-            phone: usr?.telefono ? { area_code: "", number: usr.telefono } : undefined,
-            address: receiver_address ? {
-              zip_code: receiver_address.zip_code,
-              street_name: receiver_address.street_name,
-            } : undefined,
-          },
+    const response = await preferenceClient.create({
+      body: {
+        items,
+        shipments: flete > 0 ? { cost: flete, mode: "not_specified", receiver_address } : undefined,
+        payer: {
+          name: payerName,
+          surname: payerSurname,
+          email: usr?.email || undefined,
+          phone: usr?.telefono ? { area_code: "", number: usr.telefono } : undefined,
+          address: receiver_address ? {
+            zip_code: receiver_address.zip_code,
+            street_name: receiver_address.street_name,
+          } : undefined,
+        },
         external_reference: String(userId),
-
         back_urls: {
           success: `${DOMINIO}/compras`,
           failure: `${DOMINIO}/carrito`,
-          pending:  `${DOMINIO}/carrito`,
+          pending: `${DOMINIO}/carrito`,
         },
-
-        // 🔔 MUY IMPORTANTE para que tu backend se entere
         notification_url: `${DOMINIO}/api/mercadopago/webhook_test`,
-
-
         payment_methods: {
-          excluded_payment_types: [
-            { id: "ticket" }, // dejas fuera efectivo
-            { id: "atm" }
-          ],
+          excluded_payment_types: [{ id: "ticket" }, { id: "atm" }],
         },
-
         auto_return: "approved",
-        binary_mode: true,                 // solo approved o rejected (sin in_process)
-        statement_descriptor: "CARIBBEAN", // texto corto en estado de cuenta (<=22 chars)
+        binary_mode: true,
+        statement_descriptor: "CARIBBEAN",
       },
     });
 
@@ -4179,8 +4183,15 @@ app.post("/create_preference_test", async (req, res) => {
     res.json({ preferenceId });
 
   } catch (error) {
-    console.error("❌ Error al crear la preferencia:", error);
-    res.status(500).json({ error: error.message });
+    // Muestra bien el error que devuelve MP para que lo veas en logs
+    const safe = {
+      message: error?.message,
+      error: error?.error,
+      status: error?.status,
+      cause: error?.cause,
+    };
+    console.error("❌ Error al crear la preferencia:", safe);
+    res.status(500).json(safe);
   }
 });
 
