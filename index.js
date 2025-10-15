@@ -4044,6 +4044,15 @@ app.post('/api/actualizar-precio/130', async (req, res) => {
 
 
 // ############################################## Mercado Pago TEST##############################################
+
+app.get("/api/mp-config", (_req, res) => {
+  const IS_TEST  = (process.env.MP_MODE || "prod").toLowerCase() === "test";
+  res.json({
+    mode: IS_TEST ? "test" : "prod",
+    publicKey: IS_TEST ? process.env.MP_PUBLIC_KEY_TEST : process.env.MP_PUBLIC_KEY
+  });
+});
+
 import { MercadoPagoConfig, Preference } from "mercadopago";
 
 const IS_TEST  = (process.env.MP_MODE || "prod").toLowerCase() === "test";
