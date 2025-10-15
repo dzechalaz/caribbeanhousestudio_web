@@ -3503,16 +3503,15 @@ app.post('/api/registros/:codigo/sync', async (req, res) => {
 
 app.get('/carrito', (req, res) => {
   const userId = req.session.userId;
-  if (!userId) {
-    return res.redirect('/login');
-  }
+  if (!userId) return res.redirect('/login');
 
-  res.render("carrito", {
-    MP_PUBLIC_KEY: process.env.MP_PUBLIC_KEY,           // PROD
-    MP_PUBLIC_KEY_TEST: process.env.MP_PUBLIC_KEY_TEST  // TEST
+  // ⬇️ PASA LAS KEYS A LA VISTA
+  res.render('carrito', {
+    MP_PUBLIC_KEY: process.env.MP_PUBLIC_KEY,           // prod
+    MP_PUBLIC_KEY_TEST: process.env.MP_PUBLIC_KEY_TEST, // test
   });
-  
 });
+
 
 app.get('/api/carrito', (req, res) => {
   const userId = req.session.userId;
