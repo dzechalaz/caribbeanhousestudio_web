@@ -3507,7 +3507,10 @@ app.get('/carrito', (req, res) => {
     return res.redirect('/login');
   }
 
-  res.render('carrito');
+  res.render("carrito", {
+    MP_PUBLIC_KEY: process.env.MP_PUBLIC_KEY,           // PROD
+    MP_PUBLIC_KEY_TEST: process.env.MP_PUBLIC_KEY_TEST  // TEST
+  });
   
 });
 
