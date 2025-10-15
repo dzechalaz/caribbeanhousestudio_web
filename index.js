@@ -4041,6 +4041,13 @@ app.post('/api/actualizar-precio/130', async (req, res) => {
 
 
 
+function splitName(fullname = "") {
+  const parts = String(fullname).trim().split(/\s+/);
+  return {
+    name: parts.shift() || undefined,
+    surname: parts.length ? parts.join(" ") : undefined
+  };
+}
 
 
 // ############################################## Mercado Pago TEST##############################################
@@ -4095,10 +4102,12 @@ app.post("/create_preference_test", async (req, res) => {
 
     // Datos del usuario (para "payer")
     const [usrRows] = await db.promise().query(
-      `SELECT nombre, apellido, email, telefono FROM Usuarios WHERE usuario_id = ?`,
+       `SELECT nombre, correo AS email, telefono FROM Usuarios WHERE usuario_id = ?`,
       [userId]
     );
     const usr = usrRows?.[0] || {};
+    const { name: payerName, surname: payerSurname } = splitName(usr.nombre);
+
 
     // Ítems detallados (uno por producto)
     const items = carrito.map(prod => ({
@@ -4278,10 +4287,12 @@ app.post("/create_preference", async (req, res) => {
 
     // Datos del usuario (para "payer")
     const [usrRows] = await db.promise().query(
-      `SELECT nombre, apellido, email, telefono FROM Usuarios WHERE usuario_id = ?`,
+       `SELECT nombre, correo AS email, telefono FROM Usuarios WHERE usuario_id = ?`,
       [userId]
     );
     const usr = usrRows?.[0] || {};
+    const { name: payerName, surname: payerSurname } = splitName(usr.nombre);
+
 
     // Ítems detallados (uno por producto)
     const items = carrito.map(prod => ({
