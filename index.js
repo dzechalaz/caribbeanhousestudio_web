@@ -4134,22 +4134,19 @@ app.post("/create_preference_test", async (req, res) => {
     } : undefined;
 
     const preferenceClient = new Preference(client);
-    const response = await preferenceClient.create({
-      body: {
-        items,
-        // costo de envío declarado (no pegado al título)
-        shipments: flete > 0 ? { cost: flete, mode: "not_specified", receiver_address } : undefined,
-        // datos del pagador: ayuda mucho al scoring antifraude
-        payer: {
-          name: usr?.nombre || undefined,
-          surname: usr?.apellido || undefined,
-          email: usr?.email || undefined,
-          phone: usr?.telefono ? { area_code: "", number: usr.telefono } : undefined,
-          address: receiver_address ? {
-            zip_code: receiver_address.zip_code,
-            street_name: receiver_address.street_name,
-          } : undefined,
-        },
+      const response = await preferenceClient.create({
+        body: {
+          // ...
+          payer: {
+            name: payerName,                 // ✅
+            surname: payerSurname,           // ✅ puede ser undefined, no pasa nada
+            email: usr.email,                // ✅ ya aliaste correo AS email
+            phone: usr.telefono ? { area_code: "", number: usr.telefono } : undefined,
+            address: receiver_address ? {
+              zip_code: receiver_address.zip_code,
+              street_name: receiver_address.street_name,
+            } : undefined,
+          },
         external_reference: String(userId),
 
         back_urls: {
@@ -4197,13 +4194,15 @@ app.post("/api/mercadopago/webhook_test", async (req, res) => {
 
     console.log(`🔍 Consultando detalles del pago con ID: ${paymentId}`);
 
+    // /api/mercadopago/webhook_test
     const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`, // ← ENV
+        Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN_TEST}`, // ✅ token de test
         "Content-Type": "application/json",
       },
     });
+
 
     if (!response.ok) {
       console.error(`❌ Error en la consulta a MP: ${response.status} ${response.statusText}`);
