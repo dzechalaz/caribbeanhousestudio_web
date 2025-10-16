@@ -123,9 +123,10 @@
               initialization: { preferenceId },
               customization: {
                 texts: { valueProp: "security_safety", action: "pay" },
-                visual: { style: { theme: "dark" }, buttonBackground: "black" }
+                visual: { style: { theme: "dark" } }
               }
             });
+
           } catch (err) {
             console.error("Error al cargar el botón de pago:", err);
             document.getElementById("wallet_container").innerHTML =
