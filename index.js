@@ -4269,7 +4269,8 @@ app.post("/api/mercadopago/webhook_test", async (req, res) => {
 
 // ========================= PRODUCCIÓN =========================
 
-// ========================= PRODUCCIÓN =========================
+
+// 👉 Mismas validaciones/limpieza que dejaste en TEST
 app.post("/create_preference", async (req, res) => {
   const userId = req.session.userId;
   if (!userId) return res.status(401).json({ error: "Usuario no autenticado." });
@@ -4287,11 +4288,11 @@ app.post("/create_preference", async (req, res) => {
        LEFT JOIN Direcciones d 
          ON d.usuario_id = c.usuario_id AND d.Seleccionada = 't'
        WHERE c.usuario_id = ?`,
-      [req.session.userId]
+      [userId]
     );
     if (!carrito.length) return res.status(400).json({ error: "El carrito está vacío." });
 
-    // 2) Pagador
+    // 2) Datos del pagador
     const [usrRows] = await db.promise().query(
       `SELECT nombre, correo AS email, telefono FROM Usuarios WHERE usuario_id = ?`,
       [userId]
@@ -4299,14 +4300,15 @@ app.post("/create_preference", async (req, res) => {
     const usr = usrRows?.[0] || {};
     const { name: payerName, surname: payerSurname } = splitName(usr.nombre);
 
-    // 3) Ítems (sanitizados)
+    // 3) Construir items (sanitizados) ✅
     const items = carrito
-      .map(p => {
-        const qty = parseInt(p.cantidad, 10);
-        const price = Number(p.precio);
+      .map(prod => {
+        const qty = parseInt(prod.cantidad, 10);
+        const price = Number(prod.precio); // asegura número
         if (!qty || qty < 1 || !Number.isFinite(price) || price <= 0) return null;
+
         return {
-          title: p.color ? `${p.nombre} (${p.color})` : p.nombre,
+          title: prod.color ? `${prod.nombre} (${prod.color})` : prod.nombre,
           quantity: qty,
           unit_price: price,
           currency_id: "MXN",
@@ -4314,20 +4316,24 @@ app.post("/create_preference", async (req, res) => {
       })
       .filter(Boolean);
 
-    console.log("🧾 MP PROD items:", JSON.stringify(items));
-    if (!items.length) return res.status(400).json({ error: "Carrito inválido." });
+    // DEBUG: ver exactamente qué se está enviando a MP
+    console.log("🧾 MP items payload:", JSON.stringify(items));
 
-    // 4) Envío/dirección
+    if (!items.length) {
+      return res.status(400).json({ error: "Carrito inválido: items vacíos o con cantidades/precios inválidos." });
+    }
+
+    // 4) Flete y dirección
     const flete = Number(carrito[0].flete || 0);
-    const d = carrito[0];
-    const receiver_address = d?.cp ? {
-      zip_code: String(d.cp || ""),
-      street_name: [d.calle, d.colonia].filter(Boolean).join(", "),
-      city_name: d.ciudad || "",
-      state_name: d.estado || "",
+    const dir = carrito[0];
+    const receiver_address = dir?.cp ? {
+      zip_code: String(dir.cp || ""),
+      street_name: [dir.calle, dir.colonia].filter(Boolean).join(", "),
+      city_name: dir.ciudad || "",
+      state_name: dir.estado || "",
     } : undefined;
 
-    // 5) Preferencia (usa access token de PROD)
+    // 5) Crear preferencia
     const preferenceClient = new Preference(client);
     const response = await preferenceClient.create({
       body: {
@@ -4349,9 +4355,10 @@ app.post("/create_preference", async (req, res) => {
           failure: `${DOMINIO}/carrito`,
           pending: `${DOMINIO}/carrito`,
         },
-        // 👇 CORRECTO EN PROD
         notification_url: `${DOMINIO}/api/mercadopago/webhook`,
-        payment_methods: { excluded_payment_types: [{ id: "ticket" }, { id: "atm" }] },
+        payment_methods: {
+          excluded_payment_types: [{ id: "ticket" }, { id: "atm" }],
+        },
         auto_return: "approved",
         binary_mode: true,
         statement_descriptor: "CARIBBEAN",
@@ -4359,47 +4366,79 @@ app.post("/create_preference", async (req, res) => {
     });
 
     const preferenceId = response.id;
-    if (!preferenceId) return res.status(500).json({ error: "No se recibió preferenceId" });
+    if (!preferenceId) return res.status(500).json({ error: "No se recibió preferenceId de Mercado Pago" });
 
-    console.log("✅ Preference PROD:", preferenceId);
+    console.log("✅ Preference creada con éxito:", preferenceId);
     res.json({ preferenceId });
 
   } catch (error) {
-    const safe = { message: error?.message, error: error?.error, status: error?.status, cause: error?.cause };
-    console.error("❌ Error create_preference PROD:", safe);
+    // Muestra bien el error que devuelve MP para que lo veas en logs
+    const safe = {
+      message: error?.message,
+      error: error?.error,
+      status: error?.status,
+      cause: error?.cause,
+    };
+    console.error("❌ Error al crear la preferencia:", safe);
     res.status(500).json(safe);
   }
 });
 
-// Webhook PROD (usa MP_ACCESS_TOKEN de PROD)
+
+
+
+
+// ############################# Webhook (Compra en línea) #######################
 app.post("/api/mercadopago/webhook", async (req, res) => {
   try {
     console.log("📌 Webhook PROD:", JSON.stringify(req.body));
     const paymentId = req.body.data?.id;
     if (!paymentId) return res.sendStatus(400);
 
-    const r = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+    const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
       method: "GET",
-      headers: { Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`, "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`, // PROD
+        "Content-Type": "application/json",
+      },
     });
-    if (!r.ok) return res.sendStatus(500);
 
-    const p = await r.json();
-    const { status, status_detail, transaction_amount: amount, external_reference: userId } = p;
+    if (!response.ok) {
+      console.error(`❌ Error MP (PROD): ${response.status} ${response.statusText}`);
+      return res.sendStatus(500);
+    }
+
+    const paymentData = await response.json();
+    const { status, status_detail: statusDetail, transaction_amount: amount, external_reference: userId } = paymentData;
+    console.log("MP PROD status:", status, "detail:", statusDetail);
+
+    if (!userId) return res.sendStatus(400);
 
     if (status === "approved") {
+      console.log(`✅ Pago aprobado PROD $${amount} MXN para usuario ${userId}`);
       const referencia = `MP-${paymentId}`;
-      await fetch(`${DOMINIO}/api/orden/crear`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+      const ordenResponse = await fetch(`${DOMINIO}/api/orden/crear`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ referencia, userId }),
       });
+      const ordenData = await ordenResponse.json();
+      console.log(ordenData.success
+        ? `🎉 Orden creada. ID: ${ordenData.ordenId}`
+        : `⚠️ No se pudo crear la orden: ${ordenData.message}`);
+    } else {
+      console.log(`⚠️ Pago no aprobado (PROD). Estado: ${status} (${statusDetail}), Monto: $${amount} MXN`);
     }
-    res.sendStatus(200);
+
+    return res.sendStatus(200);
   } catch (err) {
     console.error("❌ Error webhook PROD:", err);
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 });
+
+
+
 
 
 
