@@ -100,55 +100,43 @@
           <div id="wallet_container"></div>
 
           <script>
-            async function initMP() {
-              try {
-                // 1) Modo (lo devuelve tu backend)
-                const { mode } = await fetch("/debug/env").then(r => r.json());
+        async function initMP() {
+          try {
+            const { mode } = await fetch("/debug/env").then(r => r.json());
 
-                // 2) Keys inyectadas por EJS desde res.render(...)
-                const PUBLIC_KEY_TEST = "<%= MP_PUBLIC_KEY_TEST %>";
-                const PUBLIC_KEY_PROD = "<%= MP_PUBLIC_KEY %>";
+            // 👇 OJO: EJS correcto con % no con &
+            const PUBLIC_KEY_TEST = "<%= MP_PUBLIC_KEY_TEST %>";
+            const PUBLIC_KEY_PROD = "<%= MP_PUBLIC_KEY %>";
 
-                // 3) Elegir key/endpoint según el modo
-                const publicKey = mode === "test" ? PUBLIC_KEY_TEST : PUBLIC_KEY_PROD;
-                const createUrl = mode === "test" ? "/create_preference_test" : "/create_preference";
+            const publicKey = mode === "test" ? PUBLIC_KEY_TEST : PUBLIC_KEY_PROD;
+            const createUrl = mode === "test" ? "/create_preference_test" : "/create_preference";
 
-                if (!publicKey || publicKey.includes("<%=")) {
-                  throw new Error("La public key no fue inyectada en la vista.");
-                }
+            const mp = new window.MercadoPago(publicKey, { locale: "es-MX" });
 
-                // 4) Instanciar SDK
-                const mp = new window.MercadoPago(publicKey, { locale: "es-MX" });
+            const resp = await fetch(createUrl, { method: "POST", headers: { "Content-Type": "application/json" } });
+            if (!resp.ok) throw new Error(`No se pudo crear la preferencia: HTTP ${resp.status} – ${await resp.text()}`);
 
-                // 5) Pedir preferencia
-                const resp = await fetch(createUrl, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" }
-                });
-                if (!resp.ok) throw new Error(`No se pudo crear la preferencia: HTTP ${resp.status} – ${await resp.text()}`);
+            const { preferenceId } = await resp.json();
+            if (!preferenceId) throw new Error("El backend no devolvió preferenceId");
 
-                const { preferenceId } = await resp.json();
-                if (!preferenceId) throw new Error("El backend no devolvió preferenceId");
-
-                // 6) Render del Wallet Brick
-                await mp.bricks().create("wallet", "wallet_container", {
-                  initialization: { preferenceId },
-                  customization: {
-                    texts: { valueProp: "security_safety", action: "pay" },
-                    visual: { style: { theme: "dark" }, buttonBackground: "black", }
-                  }
-                });
-              } catch (err) {
-                console.error("Error al cargar el botón de pago:", err);
-                document.getElementById("wallet_container").innerHTML =
-                  "<p style='color:red'>No se pudo iniciar el pago. Revisa consola.</p>";
+            await mp.bricks().create("wallet", "wallet_container", {
+              initialization: { preferenceId },
+              customization: {
+                texts: { valueProp: "security_safety", action: "pay" },
+                visual: { style: { theme: "dark" }, buttonBackground: "black" }
               }
-            }
+            });
+          } catch (err) {
+            console.error("Error al cargar el botón de pago:", err);
+            document.getElementById("wallet_container").innerHTML =
+              "<p style='color:red'>No se pudo iniciar el pago. Revisa consola.</p>";
+          }
+        }
 
-            // Esperar a que cargue el SDK
-            if (window.MercadoPago) initMP();
-            else document.getElementById("mp-sdk").addEventListener("load", initMP);
-          </script>
+        if (window.MercadoPago) initMP();
+        else document.getElementById("mp-sdk").addEventListener("load", initMP);
+      </script>
+
 
 
 
