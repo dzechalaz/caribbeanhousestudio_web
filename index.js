@@ -4299,7 +4299,7 @@ app.post("/create_preference", async (req, res) => {
     );
     if (!carrito.length) return res.status(400).json({ error: "El carrito está vacío." });
 
-    // 2) Payer
+    // 2) Datos del pagador
     const [usrRows] = await db.promise().query(
       `SELECT nombre, correo AS email, telefono FROM Usuarios WHERE usuario_id = ?`,
       [userId]
@@ -4307,12 +4307,13 @@ app.post("/create_preference", async (req, res) => {
     const usr = usrRows?.[0] || {};
     const { name: payerName, surname: payerSurname } = splitName(usr.nombre);
 
-    // 3) Items saneados (igual que en test)
+    // 3) Construir items (sanitizados) ✅
     const items = carrito
       .map(prod => {
         const qty = parseInt(prod.cantidad, 10);
-        const price = Number(prod.precio);
+        const price = Number(prod.precio); // asegura número
         if (!qty || qty < 1 || !Number.isFinite(price) || price <= 0) return null;
+
         return {
           title: prod.color ? `${prod.nombre} (${prod.color})` : prod.nombre,
           quantity: qty,
@@ -4322,10 +4323,14 @@ app.post("/create_preference", async (req, res) => {
       })
       .filter(Boolean);
 
-    console.log("🧾 MP items payload (PROD):", JSON.stringify(items));
-    if (!items.length) return res.status(400).json({ error: "Carrito inválido." });
+    // DEBUG: ver exactamente qué se está enviando a MP
+    console.log("🧾 MP items payload:", JSON.stringify(items));
 
-    // 4) Envío/dirección
+    if (!items.length) {
+      return res.status(400).json({ error: "Carrito inválido: items vacíos o con cantidades/precios inválidos." });
+    }
+
+    // 4) Flete y dirección
     const flete = Number(carrito[0].flete || 0);
     const dir = carrito[0];
     const receiver_address = dir?.cp ? {
@@ -4335,7 +4340,7 @@ app.post("/create_preference", async (req, res) => {
       state_name: dir.estado || "",
     } : undefined;
 
-    // 5) Crear preferencia usando el client ya configurado con token PROD
+    // 5) Crear preferencia
     const preferenceClient = new Preference(client);
     const response = await preferenceClient.create({
       body: {
@@ -4357,34 +4362,34 @@ app.post("/create_preference", async (req, res) => {
           failure: `${DOMINIO}/carrito`,
           pending: `${DOMINIO}/carrito`,
         },
-        notification_url: `${DOMINIO}/api/mercadopago/webhook`, // PROD
+        notification_url: `${DOMINIO}/api/mercadopago/webhook_test`,
         payment_methods: {
           excluded_payment_types: [{ id: "ticket" }, { id: "atm" }],
         },
         auto_return: "approved",
         binary_mode: true,
-        statement_descriptor: "CARIBBEAN", // <=22 chars
+        statement_descriptor: "CARIBBEAN",
       },
     });
 
     const preferenceId = response.id;
     if (!preferenceId) return res.status(500).json({ error: "No se recibió preferenceId de Mercado Pago" });
 
-    console.log("✅ Preference PROD creada:", preferenceId);
+    console.log("✅ Preference creada con éxito:", preferenceId);
     res.json({ preferenceId });
 
   } catch (error) {
+    // Muestra bien el error que devuelve MP para que lo veas en logs
     const safe = {
       message: error?.message,
       error: error?.error,
       status: error?.status,
       cause: error?.cause,
     };
-    console.error("❌ Error al crear la preferencia (PROD):", safe);
+    console.error("❌ Error al crear la preferencia:", safe);
     res.status(500).json(safe);
   }
 });
-
 
 
 
