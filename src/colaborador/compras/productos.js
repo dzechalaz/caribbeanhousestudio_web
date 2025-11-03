@@ -54,39 +54,41 @@ document.addEventListener('DOMContentLoaded', function () {
             cargarProductos();
         });
 
-    document.getElementById('finalizar-orden').addEventListener('click', function () {
-        const seleccionados = [];
-        document.querySelectorAll('#productos-body tr').forEach(row => {
-            const checkbox = row.querySelector('.producto-checkbox');
-            if (checkbox && checkbox.checked) {
-                const codigoProducto = row.cells[1].innerText;
-                const cantidad = parseInt(row.querySelector('.cantidad-input').value);
-                seleccionados.push({ codigo: codigoProducto, cantidad });
-            }
-        });
-
-        if (seleccionados.length === 0) {
-            alert('Debes seleccionar al menos un producto.');
-            return;
-        }
-
-        fetch('/colaborador/ordenes/finalizar', {
-            method: 'POST',
-            body: JSON.stringify({ productos: seleccionados }),
-            headers: { 'Content-Type': 'application/json' }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Orden creada exitosamente.');
-                    window.location.href = '/colaborador/ordenes/crear';
-                } else {
-                    alert(data.error);
+        document.getElementById('finalizar-orden').addEventListener('click', function () {
+            const seleccionados = [];
+            document.querySelectorAll('#productos-body tr').forEach(row => {
+                const checkbox = row.querySelector('.producto-checkbox');
+                if (checkbox && checkbox.checked) {
+                    const codigoProducto = row.cells[1].innerText;
+                    const cantidad = parseInt(row.querySelector('.cantidad-input').value);
+                    // Extraer el color mostrado en la celda (índice 5)
+                    const colorSeleccionado = row.cells[5].innerText.trim();
+                    seleccionados.push({ codigo: codigoProducto, cantidad, color: colorSeleccionado });
                 }
+            });
+        
+            if (seleccionados.length === 0) {
+                alert('Debes seleccionar al menos un producto.');
+                return;
+            }
+        
+            fetch('/colaborador/ordenes/finalizar', {
+                method: 'POST',
+                body: JSON.stringify({ productos: seleccionados }),
+                headers: { 'Content-Type': 'application/json' }
             })
-            .catch(error => console.error('Error:', error));
-    });
-
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Orden creada exitosamente.');
+                        window.location.href = '/colaborador/ordenes/crear';
+                    } else {
+                        alert(data.error);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+        
     // Manejo de la barra de búsqueda
     document.getElementById('busqueda').addEventListener('input', function (e) {
         paginaActual = 1;

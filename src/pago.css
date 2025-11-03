@@ -1,0 +1,28 @@
+body {
+  font-family: 'Montserrat', sans-serif; /* Fuente Montserrat */
+  margin: 0;
+  padding: 0;
+  background-color: #fef6ed; /* Fondo cálido estilo chukum */
+}
+
+.container{
+  margin-bottom: 50px;
+  min-height: 80vh;
+
+}
+
+
+.img {
+  background-image: url('./public/080bef28e2d2463cae04d69b5960f9f82@2x.png');
+  background-size: cover;
+  background-repeat: repeat-y;
+  mix-blend-mode: multiply;
+  position: fixed; /* Se mantiene fijo y repite en Y */
+  width: 100%;
+  top: 0;
+  bottom: 0;
+  min-height: calc(100vh+900px);
+  z-index: -1;
+}
+
+

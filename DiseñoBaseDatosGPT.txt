@@ -15,20 +15,9 @@ mysql> DESCRIBE Productos_detalles;
 8 rows in set (0.11 sec)
 
 
-mysql> DESCRIBE ColoresAlternos;
-+-------------+-------------+------+-----+---------+----------------+
-| Field       | Type        | Null | Key | Default | Extra          |
-+-------------+-------------+------+-----+---------+----------------+
-| color_id    | int         | NO   | PRI | NULL    | auto_increment |
-| producto_id | int         | NO   | MUL | NULL    |                |
-| color       | varchar(50) | NO   |     | NULL    |                |
-| color_hex   | varchar(7)  | NO   |     | NULL    |                |
-| stock       | int         | NO   |     | 0       |                |
-+-------------+-------------+------+-----+---------+----------------+
-5 rows in set (0.11 sec)
 
 
-mysql> DESCRIBE Productos;          
+mysql> DESCRIBE Productos;                                     
 +-------------+---------------+------+-----+-------------------+-------------------+
 | Field       | Type          | Null | Key | Default           | Extra             |
 +-------------+---------------+------+-----+-------------------+-------------------+
@@ -41,9 +30,21 @@ mysql> DESCRIBE Productos;
 | created_at  | timestamp     | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
 | destacado   | tinyint(1)    | YES  |     | 0                 |                   |
 | precioOG    | decimal(10,2) | NO   |     | 0.00              |                   |
+| BV          | int           | YES  |     | 0                 |                   |
 +-------------+---------------+------+-----+-------------------+-------------------+
-9 rows in set (0.12 sec)
+10 rows in set (0.14 sec)
 
+mysql> DESCRIBE ColoresAlternos;
++-------------+-------------+------+-----+---------+----------------+
+| Field       | Type        | Null | Key | Default | Extra          |
++-------------+-------------+------+-----+---------+----------------+
+| color_id    | int         | NO   | PRI | NULL    | auto_increment |
+| producto_id | int         | NO   | MUL | NULL    |                |
+| color       | varchar(50) | NO   |     | NULL    |                |
+| color_hex   | varchar(7)  | NO   |     | NULL    |                |
+| stock       | int         | NO   |     | 0       |                |
++-------------+-------------+------+-----+---------+----------------+
+5 rows in set (0.11 sec)
 
 
 
@@ -65,6 +66,20 @@ mysql> DESCRIBE Compras;
 +------------------+--------------+------+-----+---------+----------------+
 11 rows in set (0.12 sec)
 
+mysql> DESCRIBE ordenes;   
++--------------+--------------+------+-----+-------------------+-------------------+
+| Field        | Type         | Null | Key | Default           | Extra             |
++--------------+--------------+------+-----+-------------------+-------------------+
+| orden_id     | int          | NO   | PRI | NULL              | auto_increment    |
+| numero_orden | varchar(50)  | NO   | UNI | NULL              |                   |
+| usuario_id   | int          | NO   | MUL | NULL              |                   |
+| referencia   | varchar(255) | YES  |     | NULL              |                   |
+| fecha_orden  | datetime     | NO   |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
+| precioTotal  | int          | YES  |     | NULL              |                   |
++--------------+--------------+------+-----+-------------------+-------------------+
+6 rows in set (0.13 sec)
+
+
 
 mysql> DESCRIBE Registros; 
 +------------+-------------------------------+------+-----+---------+----------------+
@@ -78,18 +93,6 @@ mysql> DESCRIBE Registros;
 +------------+-------------------------------+------+-----+---------+----------------+
 5 rows in set (0.12 sec)
 
-mysql> DESCRIBE ordenes;   
-+--------------+--------------+------+-----+-------------------+-------------------+
-| Field        | Type         | Null | Key | Default           | Extra             |
-+--------------+--------------+------+-----+-------------------+-------------------+
-| orden_id     | int          | NO   | PRI | NULL              | auto_increment    |
-| numero_orden | varchar(50)  | NO   | UNI | NULL              |                   |
-| usuario_id   | int          | NO   | MUL | NULL              |                   |
-| referencia   | varchar(255) | YES  |     | NULL              |                   |
-| fecha_orden  | datetime     | NO   |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
-| precioTotal  | int          | YES  |     | NULL              |                   |
-+--------------+--------------+------+-----+-------------------+-------------------+
-6 rows in set (0.13 sec)
 
 
 mysql>  DESCRIBE carrito;
@@ -121,18 +124,21 @@ mysql> DESCRIBE Usuarios;
 
 
 
-mysql> DESCRIBE Direcciones; 
-+------------------+--------------+------+-----+---------+----------------+
-| Field            | Type         | Null | Key | Default | Extra          |
-+------------------+--------------+------+-----+---------+----------------+
-| direccion_id     | int          | NO   | PRI | NULL    | auto_increment |
-| usuario_id       | int          | NO   | MUL | NULL    |                |
-| nombre_direccion | varchar(100) | NO   |     | NULL    |                |
-| calle            | varchar(255) | NO   |     | NULL    |                |
-| colonia          | varchar(100) | NO   |     | NULL    |                |
-| ciudad           | varchar(100) | NO   |     | NULL    |                |
-| estado           | varchar(100) | NO   |     | NULL    |                |
-| cp               | varchar(10)  | NO   |     | NULL    |                |
-| Seleccionada     | varchar(1)   | NO   |     | f       |                |
-+------------------+--------------+------+-----+---------+----------------+
-9 rows in set (0.14 sec)
+mysql> DESCRIBE Direcciones;
++------------------+---------------+------+-----+---------+----------------+
+| Field            | Type          | Null | Key | Default | Extra          |
++------------------+---------------+------+-----+---------+----------------+
+| direccion_id     | int           | NO   | PRI | NULL    | auto_increment |
+| usuario_id       | int           | NO   | MUL | NULL    |                |
+| nombre_direccion | varchar(100)  | NO   |     | NULL    |                |
+| calle            | varchar(255)  | NO   |     | NULL    |                |
+| colonia          | varchar(100)  | NO   |     | NULL    |                |
+| ciudad           | varchar(100)  | NO   |     | NULL    |                |
+| estado           | varchar(100)  | NO   |     | NULL    |                |
+| cp               | varchar(10)   | NO   |     | NULL    |                |
+| Seleccionada     | varchar(1)    | NO   |     | f       |                |
+| flete            | decimal(10,2) | NO   |     | 0.00    |                |
++------------------+---------------+------+-----+---------+----------------+
+10 rows in set (0.16 sec)
+
+mysql>

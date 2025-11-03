@@ -21,7 +21,29 @@
                 <button type="submit">Iniciar Sesión</button>
             </form>
             <p>¿No tienes una cuenta? <a href="/crear-cuenta">Crea una aquí</a></p>
+
+            <!-- 🔹 Botón para regresar a la página de inicio -->
+            <button onclick="window.location.href='/'" class="home-button">Ir a Inicio</button>
         </div>
     </div>
+
+    <style>
+        /* 🔹 Estilos para el botón de inicio */
+        .home-button {
+            margin-top: 20px;  
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            background-color: #afa54c;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .home-button:hover {
+            background-color: #d7c94c;
+        }
+    </style>
 </body>
 </html>

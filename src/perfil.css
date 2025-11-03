@@ -1,160 +1,142 @@
+/* ==============================
+   Perfil Page CSS (Responsive)
+   ============================== */
+
+/* 1) Base Styles */
 body {
-    font-family: 'Montserrat', sans-serif; /* Fuente Montserrat */
-    
-    
-    background-color: #d3e5f8; /* Fondo cálido estilo Shukum */ 
+  font-family: 'Montserrat', sans-serif;
+  background-color: #d3e5f8;
+  margin: 0;
+  padding: 0;
 }
-.container{
+
+.container {
   margin-bottom: 50px;
-
+  position: relative;
 }
 
-
-  .profile-container {
-    position: relative;
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
-    font-family: 'Montserrat', sans-serif;
-    background-color: #ddb98cb2; /* Color café claro tipo chukum */
-    border-radius: 15px; /* Bordes redondeados */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para darle un efecto elevado */
-     /* Borde ligeramente más oscuro para contraste */
-    top: 12vh;
-    margin-bottom: 200px;
-   
-    
-    
-  }
-  .img {
-    background-image: url('./public/080bef28e2d2463cae04d69b5960f9f82@2x.png');
-    background-size: cover;
-    background-repeat: repeat-y;
-    mix-blend-mode: multiply;
-    position: fixed; /* Se mantiene fijo y repite en Y */
-    width: 100%;
-    top: 0;
-    bottom: 0;
-    min-height: calc(100vh+900px);
-    z-index: -1;
+.profile-container {
+  position: relative;
+  max-width: 800px;
+  margin: 12vh auto 200px; /* top, horizontal center, bottom */
+  padding: 20px;
+  background-color: #ddb98cb2;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
 }
 
+.logout {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  border: none;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.5rem;
+  z-index: 2;
+}
+.logout:hover {
+  background-color: #ff3939;
+}
 
+h2 {
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 1.5rem;
+}
 
-  h2 {
-    margin-bottom: 15px;
-    color: #333;
-    font-size: 1.5rem;
-  }
-  
-  form label {
-    display: block;
-    margin: 10px 0 5px;
-    font-weight: bold;
-    color: #555;
-  }
-  
-  form input {
-    width: 50%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    max-width: 300px;
-  }
-  .tel{
-    max-width: 142px;
-  }
+/* Form styles */
+form label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: bold;
+  color: #555;
+}
+form input {
+  width: 50%;
+  max-width: 300px;
+  padding: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+form input.tel {
+  max-width: 142px;
+}
+form button {
+  margin-right: 10px;
+  padding: 10px 20px;
+  border: none;
+  background-color: #1abc9c;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+form button:hover {
+  background-color: #16a085;
+}
 
-  
-  form button {
-    margin-right: 10px;
-    padding: 10px 20px;
-    border: none;
-    background-color: #1abc9c;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-  
-  form button:hover {
-    background-color: #16a085;
-  }
-  
- 
-  ul {
-    list-style: none;
-    padding: 0;
-  }
+/* Address / Payment list */
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.address-item,
+.payment-item {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #f9f9f9;
+  max-width: 700px;
+  width: 90%;
+  box-sizing: border-box;
+}
+button.delete-address,
+button.delete-payment,
+button.edit-address {
+  margin-top: 10px;
+  padding: 5px 10px;
+  border: none;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+button.delete-address:hover,
+button.delete-payment:hover,
+button.edit-address:hover {
+  background-color: #c0392b;
+}
 
+/* Add buttons */
+button#open-add-address,
+button#add-address,
+button#add-payment {
+  margin-top: 15px;
+  padding: 10px 20px;
+  border: none;
+  background-color: #1abc9c;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+button#open-add-address:hover,
+button#add-address:hover,
+button#add-payment:hover {
+  background-color: #16a085;
+}
 
-
-  
-  
-  .address-item, .payment-item {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 15px;
-    margin-bottom: 15px;
-    background-color: #f9f9f9;
-    max-width: 700px;
-    width: 90%;
-  }
-  
-  button.edit-address, button.delete-address, button.delete-payment {
-    margin-top: 10px;
-    padding: 5px 10px;
-    border: none;
-    background-color: #e74c3c;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-  }
-
-  .logout{
-    position: relative;
-    left: 75%;
-    top: 10px;
-    z-index: 2;
-    padding: 5px 10px;
-    border: none;
-    background-color: #e74c3c;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1.5rem;
-  }
-
-  
-  
-  .logout:hover {
-    background-color: #ff3939;
-  }
-  
-  
-  button.edit-address:hover, button.delete-address:hover, button.delete-payment:hover {
-    background-color: #c0392b;
-  }
-  
-  button#add-address, button#add-payment {
-    margin-top: 15px;
-    padding: 10px 20px;
-    border: none;
-    background-color: #1abc9c;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-  
-  button#add-address:hover, button#add-payment:hover {
-    background-color: #16a085;
-  }
-  
-
-  /* Estilos para el modal */
+/* Modal */
 .modal {
   display: none;
   position: fixed;
@@ -164,21 +146,21 @@ body {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.4);
-  display: flex;
   align-items: center;
   justify-content: center;
 }
-
 .modal-content {
   background-color: white;
   padding: 20px;
   border-radius: 8px;
-  width: 40%;
+  width: 90%;
   max-width: 500px;
+  max-height: 80vh;
   text-align: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  box-sizing: border-box;
 }
-
 .close {
   position: absolute;
   right: 15px;
@@ -187,35 +169,115 @@ body {
   cursor: pointer;
 }
 
-form input {
-  width: 90%;
-  
+/* Custom select / envío */
+#ciudad {
+  width: 100%;
+  max-width: 320px;
   padding: 10px;
-  margin: 5px 0;
+  margin: 5px 0 15px;
   border: 1px solid #ccc;
   border-radius: 5px;
-}
-.personal-info, .address-section{
-  
-  max-width: 800px;
-  width: 90%;
-  left: 8%;
-  position: relative;
-  
-}
-
-
-button {
-  padding: 10px;
-  margin-top: 10px;
-  background-color: #008cba;
-  color: white;
-  border: none;
-  border-radius: 5px;
+  background-color: white;
+  font-size: 16px;
+  color: #333;
   cursor: pointer;
+  transition: all 0.3s ease;
+}
+#ciudad:focus {
+  border-color: #1abc9c;
+  outline: none;
+  box-shadow: 0 0 5px rgba(26, 188, 156, 0.5);
+}
+#costo-envio {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1abc9c;
+  margin-top: 5px;
 }
 
-button:hover {
-  background-color: #005f73;
+/* Background image overlay */
+.img {
+  background-image: url('./public/080bef28e2d2463cae04d69b5960f9f82@2x.png');
+  background-size: cover;
+  background-repeat: repeat-y;
+  mix-blend-mode: multiply;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  bottom: 0;
+  z-index: -1;
 }
 
+/* ==============================
+   Responsive (Mobile First)
+   ============================== */
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+    margin-bottom: 30px;
+  }
+
+  .profile-container {
+    margin: 6rem auto 2rem;
+    padding: 15px;
+    width: 100%;
+    max-width: none;
+    top: auto;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .logout {
+    top: 10px;
+    right: 10px;
+    font-size: 1.2rem;
+    padding: 4px 8px;
+  }
+
+  h2 {
+    margin-top: 40px;
+    font-size: 1.3rem;
+  }
+
+  form input {
+    width: 100%;
+    max-width: none;
+  }
+
+  form button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .tel {
+    max-width: 100%;
+  }
+
+  .personal-info,
+  .address-section {
+    width: 100%;
+    left: auto;
+    text-align: center;
+    padding: 0;
+  }
+
+  .address-item,
+  .payment-item {
+    width: 100%;
+    max-width: none;
+    margin: 0 auto 15px;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    max-height: 90vh;
+  }
+
+  .img {
+    min-height: 200vh;
+  }
+}
+
+#footer{
+  display: none;
+}

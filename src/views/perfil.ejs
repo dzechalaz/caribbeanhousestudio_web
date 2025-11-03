@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <title>Perfil</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="initial-scale=1, width=device-width" />
 
@@ -10,6 +11,12 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600&display=swap" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap" />
+  
+    <!-- Barra y Footer (van antes de tu propio JS) -->
+    <link rel="stylesheet" href="/barra.css" />
+    <link rel="stylesheet" href="/footer.css" />
+    <script src="/barra.js" defer></script> <!-- toggleMenu, hideSidebar -->
+    <script src="/global.js" defer></script>
 
   <title>Compras</title>
 </head>
@@ -42,51 +49,82 @@
       </section>
       
       <!-- Modal para agregar dirección -->
-    <!-- Modal para agregar dirección -->
-<div id="address-modal" class="modal" style="display: none;">
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <h2>Agregar Dirección</h2>
-    <form id="add-address-form">
-      <div class="input-group">
-        <label for="nombre_direccion">Nombre:</label>
-        <input type="text" id="nombre_direccion" placeholder="Ej. Casa, Oficina" required />
+      <div id="address-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <h2>Agregar Dirección</h2>
+          <form id="add-address-form">
+            <div class="input-group">
+              <label for="nombre_direccion">Nombre:</label>
+              <input type="text" id="nombre_direccion" placeholder="Ej. Casa, Oficina" required />
+            </div>
+      
+            <div class="input-group">
+              <label for="calle">Calle:</label>
+              <input type="text" id="calle" placeholder="Ej. Av. Siempre Viva 123" required />
+            </div>
+      
+            <div class="input-group">
+              <label for="colonia">Colonia:</label>
+              <input type="text" id="colonia" placeholder="Ej. Centro" required />
+            </div>
+      
+            <!-- ✅ Selector de Ciudad -->
+            <div class="input-group">
+              <label for="ciudad">Ciudad:</label>
+              <select id="ciudad" required>
+                <option value="">Selecciona una ciudad</option>
+                <option value="Playa del Carmen">Playa del Carmen - $500</option>
+                <option value="Puerto Morelos">Puerto Morelos - $900</option>
+                <option value="Puerto Aventuras">Puerto Aventuras - $900</option>
+                <option value="Cancún">Cancún - $1250</option>
+                <option value="Tulum">Tulum - $1250</option>
+              </select>
+            </div>
+            
+      
+            <!-- ✅ Costo de envío dinámico -->
+            <div class="input-group">
+              <label>Costo de envío:</label>
+              <p id="costo-envio">Selecciona una ciudad</p>
+            </div>
+      
+            <!-- ✅ Estado predefinido (no editable) -->
+            <div class="input-group">
+              <label for="estado">Estado:</label>
+              <input type="text" id="estado" value="Quintana Roo" readonly />
+            </div>
+      
+            <div class="input-group">
+              <label for="cp">Código Postal:</label>
+              <input type="text" id="cp" placeholder="Ej. 70000" required />
+            </div>
+      
+            <button type="submit" class="save-button">Guardar Dirección</button>
+          </form>
+        </div>
       </div>
-
-      <div class="input-group">
-        <label for="calle">Calle:</label>
-        <input type="text" id="calle" placeholder="Ej. Av. Siempre Viva 123" required />
-      </div>
-
-      <div class="input-group">
-        <label for="colonia">Colonia:</label>
-        <input type="text" id="colonia" placeholder="Ej. Centro" required />
-      </div>
-
-      <div class="input-group">
-        <label for="ciudad">Ciudad:</label>
-        <input type="text" id="ciudad" placeholder="Ej. Playa del Carmen" required />
-      </div>
-
-      <div class="input-group">
-        <label for="estado">Estado:</label>
-        <input type="text" id="estado" placeholder="Ej. Quintana Roo" required />
-      </div>
-
-      <div class="input-group">
-        <label for="cp">Código Postal:</label>
-        <input type="text" id="cp" placeholder="Ej. 70000" required />
-      </div>
-
-      <button type="submit" class="save-button">Guardar Dirección</button>
-    </form>
-  </div>
-</div>
-
+      
+      <script>
+        function actualizarFlete() {
+          const ciudadSelect = document.getElementById("ciudad");
+          const costoEnvio = document.getElementById("costo-envio");
+      
+          // Obtener el flete desde el atributo "data-flete"
+          const flete = ciudadSelect.options[ciudadSelect.selectedIndex].getAttribute("data-flete");
+      
+          if (flete) {
+            costoEnvio.textContent = `Costo de envío: $${flete} MXN`;
+          } else {
+            costoEnvio.textContent = "Selecciona una ciudad";
+          }
+        }
+      </script>
+      
     </div>
   </div>
 
-  <div id="footer" class="footer"></div>
+  <div id="footer" ></div>
   <div class="img"></div>
 
   <script>
@@ -163,29 +201,41 @@
       // Manejo del formulario de agregar dirección
       document.getElementById("add-address-form").addEventListener("submit", function (event) {
         event.preventDefault();
-    
+      
+        // Obtener la ciudad seleccionada y asignar el flete correspondiente
+        const ciudadSeleccionada = document.getElementById("ciudad").value;
+        const tarifasEnvio = {
+          "Playa del Carmen": 500,
+          "Puerto Morelos": 900,
+          "Puerto Aventuras": 900,
+          "Cancún": 1250,
+          "Tulum": 1250
+        };
+      
+        const flete = tarifasEnvio[ciudadSeleccionada] || 0;
+      
         const formData = {
           nombre_direccion: document.getElementById("nombre_direccion").value,
           calle: document.getElementById("calle").value,
           colonia: document.getElementById("colonia").value,
-          ciudad: document.getElementById("ciudad").value,
+          ciudad: ciudadSeleccionada,
           estado: document.getElementById("estado").value,
           cp: document.getElementById("cp").value,
+          flete: flete // ✅ Ahora enviamos el flete
         };
-    
+      
         fetch("/api/direcciones", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         })
         .then(() => {
-          // Cerrar el modal
           document.getElementById("address-modal").style.display = "none";
-          // Recargar la lista de direcciones sin recargar la página
           cargarDirecciones();
         })
         .catch(error => console.error("Error al agregar dirección:", error));
       });
+      
     
       function cargarDirecciones() {
         fetch("/api/direcciones")
@@ -279,85 +329,7 @@
   <script>
     // barra y footer
     
-    window.onload = function () {
-      let claseAResaltar = "vacio";
-
-      // Cargar barra.html dinámicamente
-      fetch("/Templates/barra.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("barra").innerHTML = data;
-
-          // Aplicar el estilo para el elemento resaltado
-          let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
-          if (elementoAResaltar) {
-            elementoAResaltar.style.fontWeight = "bold";
-            elementoAResaltar.style.color = "var(--color-lightseagreen)";
-          }
-
-          // Por defecto, el login-wrapper3 redirige a /login
-          const loginWrapper = document.querySelector("#login-wrapper3");
-          const loginText = document.querySelector(".login5"); // El texto dentro del botón
-
-          // Asegúrate de seleccionar cartContainer DESPUÉS de que se cargue la barra
-          const cartContainer = document.getElementById("cart-container");
-
-          if (loginWrapper) {
-            loginWrapper.onclick = function () {
-              window.location.href = "/login";
-            }; // Redirige a /login por defecto
-          }
-
-          // Verificar la sesión para modificar el botón de login/logout si es necesario
-          fetch("/api/session")
-            .then((response) => response.json())
-            .then((data) => {
-              console.log("Sesión obtenida:", data);
-
-              if (data.isAuthenticated) {
-                // Cambiamos el color del contenedor (wrapper) a rojo chukum
-                loginWrapper.setAttribute(
-                  "style",
-                  "background-color: #C19A6B; top: -10;"
-                );
-
-                // Cambiamos el texto a "Mi Perfil"
-                loginText.textContent = "Mi Perfil";
-
-                // Cambiamos la acción a ir al perfil
-                loginWrapper.onclick = function () {
-                  window.location.href = "/perfil";
-                };
-
-                // Hacer visible el cartContainer
-                if (cartContainer) {
-                  cartContainer.style.display = "flex"; // O 'block', según el diseño
-                } else {
-                  console.warn("cart-container no encontrado en el DOM");
-                }
-
-                console.log("Sesión iniciada. Usuario:", data.correo);
-              } else {
-                console.log("No hay sesión iniciada.");
-                // Ocultar el cartContainer si no está autenticado
-                if (cartContainer) {
-                  cartContainer.style.display = "none";
-                }
-              }
-            })
-            .catch((error) => console.error("Error al cargar la sesión:", error));
-        })
-        .catch((error) => console.error("Error al cargar la barra:", error));
-
-      // Cargar el footer.html dinámicamente
-      fetch("/Templates/footer.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("footer").innerHTML = data;
-        })
-        .catch((error) => console.error("Error al cargar el footer:", error));
-    };
-
+    window.onload = () => loadTemplates('perfil');
     // guardar cambios en perfil
 
     document.getElementById("personal-info-form").addEventListener("submit", function (event) {

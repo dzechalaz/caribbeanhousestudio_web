@@ -1,0 +1,434 @@
+
+
+@media screen and (min-width: 1034px) {
+.barra-pestaas5 {
+    position: fixed;
+    z-index: 6;
+    width: calc(100% + 2.1px);
+    top: -0.5px;
+    right: -2.1px;
+    left: 0;
+    height: 87px;
+    text-align: center;
+    font-size: var(--font-size-xl);
+    color: var(--color-darkslategray-100);
+    font-family: var(--font-josefin-sans);
+  }
+
+
+.component-1-13 {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    text-align: left;
+    font-size: var(--font-size-18xl);
+    color: var(--color-darkslategray-200);
+  }
+
+  .cart-text{
+    
+    text-align: center;
+    font-size: var(--font-size-xl);
+    color: #3A6EA5;
+    font-family: var(--font-josefin-sans);
+    
+  }
+  
+
+.component-1-13-child{
+    display: flex;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.13);
+    background-color: #edebeb;
+  }
+.menu-button {
+    display: none;
+    position: relative;
+    top: calc(20% - 5px);
+    left: calc(90% - 50px);
+    cursor: pointer;
+    width: 65px;  /* Ajusta el ancho del botón */
+    height: 60px; /* Ajusta la altura del botón */
+  }
+  
+.menu-button svg {
+    width: 100%;  /* El SVG tomará el 100% del contenedor */
+    height: 100%; /* El SVG tomará el 100% del contenedor */
+  }
+
+.logo5 {
+    position: absolute;
+    top: calc(50% - 16px);
+    left: 150px;
+    width: 472px;
+    height: 37px;
+    cursor: pointer;
+  }
+
+
+.caribbean-house-studio11 {
+    position: absolute;
+    width: calc(100% + 1px);
+    top: 0px;
+    left: 0;
+    font-weight: 600;
+    font-size: calc(100%) ;
+    display: inline-block;
+  }
+  @media screen and (max-width: 1750px){
+
+    .barra-pestaas5 {
+      position: fixed;
+      z-index: 6;
+      width: calc(100% + 2.1px);
+      top: -0.5px;
+      right: -2.1px;
+      left: 0;
+      height: 67px;
+      text-align: center;
+      font-size: var(--font-size-xl);
+      color: var(--color-darkslategray-100);
+      font-family: var(--font-josefin-sans);
+    }
+    .menu-items{
+      left: 250px;
+    }
+  
+
+
+    .caribbean-house-studio11 {
+      width: 0px;
+      display: none;
+    }
+    
+   
+  .login-wrapper3 {
+
+    left: 50px;
+  }
+  
+
+  
+ }
+    
+  
+  
+.logo-icon5 {
+    position: absolute;
+    height: calc(100% - 21.3px);
+    top: 10px;
+    bottom: 10.15px;
+    left: 13px;
+    max-height: 100%;
+    width: 113.1px;
+  }
+  
+
+
+  /* Contenedor de menú */
+  .menu-items {
+    position: relative;
+    display: flex;
+    align-items: center;
+    top: 50%;                 /* lo coloca a mitad de altura de su contenedor */
+    transform: translateY(-50%);
+    gap: 50px;
+    right: -650px;
+                /* lo coloca a mitad de altura de su contenedor */
+    width: 60%; /* Define el ancho del contenedor como el 60% de la página */
+  
+    justify-content: flex-start; /* Mantén los elementos alineados desde el principio del contenedor */
+}
+
+
+.login-wrapper3 {
+    position: absolute;
+    top: calc(50% - 9px);
+    right: 0px;
+    background-color: var(--color-darkslategray-100);
+    width: 180px; /* Aumenté el ancho para que el texto largo no se corte */
+    height: 35px;
+    /* Cambié a "center" para alinear el texto */
+    font-size: var(--font-size-sm);
+    color: var(--color-white); /* Verifica que el color del texto sea visible */
+    cursor: pointer; /* Cambia el cursor a manita */
+}
+
+.login5{
+  position: relative;
+  font-size: 19px;
+  color: var(--color-white);
+  align-content: center;
+  
+
+}
+
+
+.session-container {
+  display: flex;
+  align-items: center; /* Alinea los elementos verticalmente */
+  justify-content: flex-end; /* Los coloca a la derecha */
+  gap: 10px; /* Espacio entre el correo y el botón */
+  position: absolute;
+  right: 0px;
+  top: calc(50% - 9px); /* Ajusta la alineación vertical */
+}
+
+.path-74-icon5 {
+    position: absolute;
+    top: calc(50% - 13.82px);
+    left: calc(50% + 530.69px);
+    width: 11.6px;
+    height: 11.6px;
+  }
+.div26 {
+    position: absolute;
+    top: calc(50% - 13px);
+    left: calc(50% + 534.95px);
+    font-size: var(--font-size-3xs);
+    color: var(--color-white);
+  }
+.menu-container {
+    display: none; /* Oculto inicialmente */
+  }
+  
+
+  .cart-container {
+    color:#3A6EA5;
+    display: flex;
+    justify-content: center; /* Centra horizontalmente si es necesario */
+    align-items: center; /* Centra verticalmente si es necesario */
+    left: 100px;
+  }
+  
+  .carrito-container {
+    display: flex;
+    align-items: center; /* Asegura que el texto y el ícono estén alineados verticalmente */
+    gap: 8px; /* Espacio entre el ícono y el texto */
+    cursor: pointer;
+    
+  }
+  
+  .cart-icon {
+    width: 24px; /* Tamaño del ícono */
+    height: auto; /* Mantiene la proporción */
+  }
+}
+
+
+
+
+@media screen and (max-width: 1034px) {
+  /* Sidebar: los enlaces activos se pintan de verde y en negrita */
+.sidebar-burger a.active {
+  color: var(--color-lightseagreen) !important;
+  font-weight: bold                   !important;
+}
+
+  /* ─────────────────────────────────────
+     1) MOVER EL SCROLL A .canvas
+     ───────────────────────────────────── */
+  html, body {
+    height: 100%       !important;
+    margin: 0          !important;
+    overflow: hidden   !important;
+  }
+  .canvas, .home1 ,.seguimientopre, .container, .producto{
+    position: absolute                     !important;
+    top:  0px                             !important; /* alto del header */
+    left: 0                                !important;
+    right: 0                               !important;
+    bottom: 0                              !important;
+    overflow-y: auto                      !important;
+    -webkit-overflow-scrolling: touch     !important; /* suaviza scroll iOS */
+    transform: none                       !important; /* en caso de transform heredado */
+    height: auto;
+  }
+
+  /* ─────────────────────────────────────
+     2) HEADER PRINCIPAL (FIXED)
+     ───────────────────────────────────── */
+  .barra-pestaas5 {
+    font-family: var(--font-josefin-sans), sans-serif !important;
+    position: fixed        !important;
+    top: 0                 !important;
+    left: 0                !important;
+    width: 100%            !important;
+    height: 80px           !important;
+    padding: 0 1rem        !important;
+    display: flex          !important;
+    align-items: center    !important;
+    background-color: #f5f5f5 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    z-index: 1000          !important;
+  }
+  .close-btn{
+    font-family: var(--font-josefin-sans), sans-serif !important;
+  }
+
+  /* ─────────────────────────────────────
+     3) FLEX INTERNO Y ORDEN
+     ───────────────────────────────────── */
+     .component-1-13 {
+      display: grid !important;
+      grid-template-columns: auto 1fr auto !important;
+      align-items: center !important;
+      width: 94% !important;
+      
+    }
+  .component-1-13 > a                       { order: 1 !important; }
+  .component-1-13 > .logo5                 { order: 2 !important; }
+  .component-1-13 > .component-1-13-child  { order: 3 !important; }
+  
+/* El logo-link irá en la columna 1, pegado a la izquierda */
+.component-1-13 > a {
+  justify-self: start !important;
+}
+
+/* El título en la columna 2, siempre centrado */
+.component-1-13 > .logo5 {
+  justify-self: center !important;
+  text-align: center !important;
+}
+
+/* El botón hamburguesa en la columna 3, pegado a la derecha */
+.component-1-13 > .component-1-13-child {
+  justify-self: end !important;
+}
+
+  /* ─────────────────────────────────────
+     4) TAMAÑOS ESPECÍFICOS
+     ───────────────────────────────────── */
+  .logo-icon5 {
+    width: 7vh!important;
+    height: auto !important;
+    display: block !important;
+  }
+  .caribbean-house-studio11 {
+    font-size: 2.5vh !important;
+    font-weight: 600 !important;
+    color: var(--color-darkslategray-200) !important;
+  }
+  .menu-button {
+    width: 5vh !important;
+    height: auto !important;
+    cursor: pointer !important;
+    
+  }
+  .menu-button svg {
+    width: 100% !important;
+    height: 100% !important;
+    fill: var(--color-darkslategray-200) !important;
+    
+  }
+  .menu-button{
+    position: relative;
+    width: 600px;
+    left: 0px;
+  }
+
+  /* ─────────────────────────────────────
+     5) OCULTAR LO QUE NO CORRESPONDE
+     ───────────────────────────────────── */
+  .menu-items,
+  .session-container,
+  .cart-container {
+    display: none !important;
+  }
+
+/* ─────────────────────────────────────
+   OVERLAY + SIDEBAR (FIXED + SLIDE)
+   ───────────────────────────────────── */
+   .menu-container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0,0,0,0.8) !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: flex-start !important;
+    z-index: 1001 !important;
+  
+    /* ocultamos con opacity/visibility */
+    visibility: hidden !important;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease, visibility 0.3s ease !important;
+  }
+  
+  .menu-container.active {
+    /* al activar, mostramos */
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* panel lateral “fuera” de la pantalla */
+  .sidebar-burger {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 2rem !important;
+    background: #fff !important;
+    width: 250px !important;
+    height: 100vh !important;
+    box-shadow: -4px 0 8px rgba(0,0,0,0.2) !important;
+    overflow-y: auto !important;
+  
+    /* arrancamos desplazados al 100% */
+    transform: translateX(100%) !important;
+    transition: transform 0.3s ease !important;
+  }
+  
+  /* y al activar el contenedor, lo traemos a 0 */
+  .menu-container.active .sidebar-burger {
+    transform: translateX(0) !important;
+  }
+  /* Mobile sidebar: enlace de Login en azul */
+/* por defecto login en azul, perfil oculto */
+.session-container .login5,
+.sidebar-burger a.login-link {
+  color: #3A6EA5 !important;
+}
+
+/* perfil en naranja */
+.session-container .perfil-link,
+.sidebar-burger a.perfil-link {
+  color: #E65C00 !important;
+}
+
+/* hover opcional */
+.session-container .perfil-link:hover,
+.sidebar-burger a.perfil-link:hover {
+  color: #c15a00 !important;
+}
+
+  
+  /* list items */
+  .sidebar-burger li {
+    margin-bottom: 1.5rem !important;
+  }
+  .sidebar-burger li a {
+    text-decoration: none !important;
+    font-size: 1.2rem !important;
+    color: #333 !important;
+  }
+  
+  /* colores especiales */
+  .sidebar-burger li a.cart-link {
+    color: #3A6EA5 !important;
+  }
+  .sidebar-burger li a.profile-link {
+    color: #E65C00 !important;
+  }
+  
+}

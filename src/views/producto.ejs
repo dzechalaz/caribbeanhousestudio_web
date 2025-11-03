@@ -24,12 +24,67 @@ if (producto) {
       href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
     />
     
+    <!-- Barra y Footer (van antes de tu propio JS) -->
+    <link rel="stylesheet" href="/barra.css" />
+    <link rel="stylesheet" href="/footer.css" />
+    <script src="/barra.js" defer></script> <!-- toggleMenu, hideSidebar -->
+    <script src="/global.js" defer></script>
+
+    <title><%= producto.nombre %> | Caribbean House Studio</title>
+    <meta name="description" content="<%= descripcion1.slice(0, 160) %>">
+    <link rel="canonical" href="https://www.caribbeanhousestudio.com/producto/<%= producto.producto_id %>/<%= slug %>">
+
+
+    <script type="application/ld+json">
+      <%- JSON.stringify({
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": producto.nombre,
+        "image": [`${CFI}/Products/${producto.producto_id}/a.webp`],
+        "description": descripcion1,
+        "sku": producto.codigo, // ← El SKU correcto, ej: SYB0004
+        "brand": {
+          "@type": "Brand",
+          "name": "Caribbean House Studio"
+        },
+        "offers": {
+          "@type": "Offer",
+          "url": `https://www.caribbeanhousestudio.com/producto?id=${producto.producto_id}`,
+          "priceCurrency": "MXN",
+          "price": producto.precio,
+          "availability": producto.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+          "itemCondition": "https://schema.org/NewCondition"
+        }
+      }, null, 2) %>
+      </script>
+      
+      <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Caribbean House Studio",
+        "image": "https://www.caribbeanhousestudio.com/logo.png",
+        "url": "https://www.caribbeanhousestudio.com",
+        "telephone": "+52-999-000-0000",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Dirección real si aplica",
+          "addressLocality": "Mérida",
+          "addressRegion": "Yucatán",
+          "postalCode": "97000",
+          "addressCountry": "MX"
+        },
+        "openingHours": "Mo-Sa 10:00-18:00"
+      }
+      </script>
+      
+
   </head>
-  <header>
-    <div id="barra"></div>
-  </header>
+
   <body>
-    <div class="producto">
+    
+    <div class="canvas">
+      <div id="barra"></div>
       <img class="background-icon" alt="" src="/public/background@2x.png" />
 
       <div class="fondobajo"></div>
@@ -46,8 +101,7 @@ if (producto) {
         
         <div class="desc"><%- descripcion2 %></div>
 
-        
-        <div class="review">Opiniones</div>
+       
     </div>
 
       <div class="related-products">
@@ -145,11 +199,7 @@ if (producto) {
             
             
         </div>
-       
-        
-    
-        
-        
+
 
       </div>
       
@@ -167,10 +217,22 @@ if (producto) {
     
 
     <script>
+      window.onload = () => loadTemplates('catalogo');
+      let currentImagePath = "<%= CFI %>/Products/<%= producto.producto_id %>";
+
 
           document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
-            const productoId = params.get('id');
+                        let productoId = params.get('id');
+
+            if (!productoId) {
+              const pathParts = window.location.pathname.split('/');
+              // Ejemplo: ['', 'producto', '42', 'silla-frankfurt']
+              if (pathParts.length >= 3 && pathParts[1] === 'producto') {
+                productoId = pathParts[2]; // esto extrae el ID desde la URL
+              }
+            }
+
             const colorGrid = document.getElementById('color-grid');
             const colorNameElement = document.getElementById('color-name');
             const mainImage = document.getElementById('mainImage');
@@ -203,17 +265,20 @@ if (producto) {
                   // Evento para cambiar imágenes, texto del color y disponibilidad
                   colorBox.onclick = () => {
                     const rutaImagenes = color.ruta_imagenes;
-                  
+    
+                    // Actualizar la variable global
+                    currentImagePath = rutaImagenes;
+                    
                     // Actualizar las imágenes principales y miniaturas
                     mainImage.src = `${rutaImagenes}/a.webp`;
                     imageIds.forEach((id, index) => {
                       document.getElementById(id).src = `${rutaImagenes}/${String.fromCharCode(97 + index)}.webp`;
                     });
-                  
+                    
                     // Actualizar el texto del color
                     colorNameElement.textContent = color.color;
-                  
-                    // Actualizar la disponibilidad según el backend
+                    
+                    // Actualizar la disponibilidad
                     if (color.disponible > 0) {
                       availabilityStatus.textContent = 'Disponible para envío inmediato';
                       availabilityStatus.className = 'disponible';
@@ -221,7 +286,7 @@ if (producto) {
                       availabilityStatus.textContent = 'Entrega en 10-14 días';
                       availabilityStatus.className = 'no-disponible';
                     }
-                  
+                    
                     // Guardar el color seleccionado en Local Storage
                     localStorage.setItem('colorSeleccionado', JSON.stringify({
                       color_id: color.color_id,
@@ -229,7 +294,6 @@ if (producto) {
                       producto_id: productoId,
                     }));
                   };
-                  
 
                   colorGrid.appendChild(colorBox);
                 });
@@ -245,10 +309,9 @@ if (producto) {
 
 
 
-      function changeMainImage(imageName) {
-        document.getElementById('mainImage').src = "<%= CFI %>/Products/<%= producto.producto_id %>/" + imageName;
-    }
-    
+          function changeMainImage(imageName) {
+              document.getElementById('mainImage').src = currentImagePath + '/' + imageName;
+            }
 
           
 
@@ -272,109 +335,26 @@ if (producto) {
         observer.observe(scrollAnimElements[i]);
       }
 
-      
-      
-
-      
-      window.onload = function () {
-      let claseAResaltar = "catalogo";
-
-      // Cargar barra.html dinámicamente
-      fetch("/Templates/barra.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("barra").innerHTML = data;
-
-          // Aplicar el estilo para el elemento resaltado
-          let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
-          if (elementoAResaltar) {
-            elementoAResaltar.style.fontWeight = "bold";
-            elementoAResaltar.style.color = "var(--color-lightseagreen)";
-          }
-
-          // Por defecto, el login-wrapper3 redirige a /login
-          const loginWrapper = document.querySelector("#login-wrapper3");
-          const loginText = document.querySelector(".login5"); // El texto dentro del botón
-
-          // Asegúrate de seleccionar cartContainer DESPUÉS de que se cargue la barra
-          const cartContainer = document.getElementById("cart-container");
-
-          if (loginWrapper) {
-            loginWrapper.onclick = function () {
-              window.location.href = "/login";
-            }; // Redirige a /login por defecto
-          }
-
-          // Verificar la sesión para modificar el botón de login/logout si es necesario
-          fetch("/api/session")
-            .then((response) => response.json())
-            .then((data) => {
-              console.log("Sesión obtenida:", data);
-
-              if (data.isAuthenticated) {
-                // Cambiamos el color del contenedor (wrapper) a rojo chukum
-                loginWrapper.setAttribute(
-                  "style",
-                  "background-color: #C19A6B; top: -10;"
-                );
-
-                // Cambiamos el texto a "Mi Perfil"
-                loginText.textContent = "Mi Perfil";
-
-                // Cambiamos la acción a ir al perfil
-                loginWrapper.onclick = function () {
-                  window.location.href = "/perfil";
-                };
-
-                // Hacer visible el cartContainer
-                if (cartContainer) {
-                  cartContainer.style.display = "flex"; // O 'block', según el diseño
-                } else {
-                  console.warn("cart-container no encontrado en el DOM");
-                }
-
-                console.log("Sesión iniciada. Usuario:", data.correo);
-              } else {
-                console.log("No hay sesión iniciada.");
-                // Ocultar el cartContainer si no está autenticado
-                if (cartContainer) {
-                  cartContainer.style.display = "none";
-                }
-              }
-            })
-            .catch((error) => console.error("Error al cargar la sesión:", error));
-        })
-        .catch((error) => console.error("Error al cargar la barra:", error));
-
-      // Cargar el footer.html dinámicamente
-      fetch("/Templates/footer.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("footer").innerHTML = data;
-        })
-        .catch((error) => console.error("Error al cargar el footer:", error));
-    };
-
-
-
+    
       function interpolateData(data) {
         const interpolated = [];
-        
+      
         for (let i = 0; i < data.length - 1; i++) {
           const current = data[i];
           const next = data[i + 1];
-          
-          interpolated.push(current); // Agregar el punto actual
+      
+          // Agregar el punto actual
+          interpolated.push(current);
       
           const currentDate = new Date(current.time);
           const nextDate = new Date(next.time);
       
           const diffDays = Math.floor((nextDate - currentDate) / (1000 * 60 * 60 * 24));
-          
+      
           if (diffDays > 1) {
             // Interpolar valores entre los días
             const priceStep = (next.value - current.value) / diffDays;
-            
+      
             for (let j = 1; j < diffDays; j++) {
               const interpolatedDate = new Date(currentDate);
               interpolatedDate.setDate(currentDate.getDate() + j);
@@ -387,61 +367,93 @@ if (producto) {
           }
         }
       
-        interpolated.push(data[data.length - 1]); // Agregar el último punto
+        // Agregar el último punto
+        interpolated.push(data[data.length - 1]);
         return interpolated;
       }
       
+      
       document.addEventListener('DOMContentLoaded', function () {
-        const chart = LightweightCharts.createChart(document.getElementById('price-chart'), {
-          width: 1200,
-          height: 500,
+        // ① Definir container antes de usarla
+        const container = document.getElementById('price-chart-container');
+      
+        // ② Ahora sí podemos usar container.clientWidth dentro
+        function getChartOptions() {
+          const vw = window.innerWidth;
+          const w  = container.clientWidth;
+          let h, fs;
+      
+          if (vw < 768) {         // móvil
+            h  = 250;
+            fs = 12;
+          } else if (vw <= 1024) { // tablet
+            h  = 400;
+            fs = 20;
+          } else {                // desktop
+            h  = 500;
+            fs = 20;
+          }
+      
+          return { width: w, height: h, fontSize: fs };
+        }
+      
+        // ③ Obtenemos opciones y creamos el chart
+        let opts = getChartOptions();
+        const chart = LightweightCharts.createChart(container, {
+          width:   opts.width,
+          height: opts.height,
           layout: {
-            backgroundColor: { type: 'solid', color: '#eeeeee' },
-            textColor: '#333',
+            backgroundColor: '#eeeeee',
+            textColor:       '#333',
+            fontSize:        opts.fontSize
           },
           grid: {
             vertLines: { color: '#eeeeee' },
-            horzLines: { color: '#eeeeee' },
+            horzLines: { color: '#eeeeee' }
           },
           priceScale: {
             borderColor: '#cccccc',
-            autoScale: true,
+            autoScale:   true,
+            scaleMargins: { top: 0.2, bottom: 0.2 }
           },
           timeScale: {
-            borderColor: '#cccccc',
-            timeVisible: true,
-            secondsVisible: true,
+            borderColor:    '#cccccc',
+            timeVisible:    true,
+            secondsVisible: true
           },
         });
+        const lineSeries = chart.addLineSeries({ color: '#a5d1ce', lineWidth: 6 });
       
-        const lineSeries = chart.addLineSeries({
-          color: '#a5d1ce',
-          lineWidth: 6,
-        });
-      
+        // ④ Setear los datos (tu lógica existente)
         let chartData = <%- JSON.stringify(chartData) %>;
-      
         try {
-          if (Array.isArray(chartData) && chartData.length > 0) {
-            chartData = chartData.map(data => ({
-              time: data.time,
-              value: parseFloat(data.value),
-            }));
-      
-            // Aplicar interpolación
+          if (Array.isArray(chartData) && chartData.length) {
+            chartData = chartData.map(d => ({ time: d.time, value: parseFloat(d.value) }));
             chartData = interpolateData(chartData);
-      
             lineSeries.setData(chartData);
             chart.timeScale().fitContent();
-          } else {
-            console.warn('No hay datos disponibles para el historial de precios.');
           }
-        } catch (error) {
-          console.error('Error al procesar los datos del backend:', error);
+        } catch (e) {
+          console.error(e);
         }
+      
+        // ⑤ Volver responsive al resize
+        window.addEventListener('resize', () => {
+          opts = getChartOptions();
+          chart.applyOptions({
+            width:  opts.width,
+            height: opts.height,
+            layout: { fontSize: opts.fontSize }
+          });
+          chart.timeScale().fitContent();
+        });
       });
       
-      
+
+
+
+
+
         // agregar al carrito
         document.addEventListener('DOMContentLoaded', () => {
           // Seleccionar el botón

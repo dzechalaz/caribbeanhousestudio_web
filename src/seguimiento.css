@@ -48,7 +48,7 @@
   bottom: 0.04px;
   left: calc(50% - 3.05px);
   width: 6.6px;
-  background-image: url(./public/rectangle-813@3x.png);
+
   background-size: cover;
   background-repeat: no-repeat;
   background-position: top;
@@ -215,20 +215,21 @@
   right: 34.83px;
 }
 .nombre-juan-quintana {
-  margin: 0;
+  margin: 0px;
 }
-.nombre-juan-quintana-calle-container {
-  position: absolute;
-  width: calc(100% - 50.9px);
-  bottom: 16px;
-  left: 25.99px;
-  font-size: var(--font-size-lg);
-  line-height: 30px;
-  font-weight: 500;
-  color: var(--color-dimgray);
-  display: inline-block;
-  height: 146px;
+  .nombre-juan-quintana-calle-container {
+    position: absolute;
+    width: calc(100% - 50.9px);
+    bottom: 16px;
+    left: 25.99px;
+    font-size: var(--font-size-lg);
+    line-height: 30px;
+    font-weight: 500;
+    color: var(--color-dimgray);
+    display: inline-block;
+    height: 146px;
 }
+
 .package-2-icon {
   position: absolute;
   top: 12.74px;
@@ -532,7 +533,7 @@
 .entregado-icon,
 .seguimiento4 {
   position: absolute;
-  top: calc(50% + 30px);
+  top: 480px;
   right: 126.8px;
   width: 28.1px;
   height: 29.4px;
@@ -587,6 +588,7 @@
   left: 25px;
   font-size: var(--font-size-mid);
   line-height: 31px;
+  width: 410px;
 }
 .description {
   position: absolute;
@@ -599,6 +601,40 @@
   height: 271px;
   font-size: 27px;
 }
+
+
+.nombre-juan-quintana {
+  margin: 0;
+  display: block;          /* Asegura que se comporte como bloque y respete el ancho */
+  width: 100%;             /* Toma el ancho completo del contenedor padre */
+  white-space: nowrap;     /* Forzar que el texto se mantenga en una sola línea */
+  overflow: hidden;        /* Oculta el texto que se exceda */
+  text-overflow: ellipsis; /* Muestra "..." al final del texto si es muy largo */
+  box-sizing: border-box;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .credenza{
   position: absolute;
   font-family: var(--font-josefin-sans);
@@ -757,7 +793,7 @@
   color: var(--color-darkslategray-100);
 }
 .seguimiento-bloque {
-  position: absolute;
+  position: relative; 
   height: calc(100% - 624px);
   top: 135px;
   bottom: 489px;
@@ -911,7 +947,11 @@
   font-size: var(--font-size-xs);
   color: var(--color-white);
   font-family: var(--font-montserrat);
+  margin-bottom: 150px;
 }
+body{
+  background-color: var(--color-antiquewhite);
+  }
 @media screen and (max-width: 768px) {
   .direccion-parent {
     flex-direction: column;
@@ -993,7 +1033,7 @@
   opacity: 1;
 }
 /* Línea de progreso */
-.linea-Segment {
+.linea-Segment{
   position: absolute;
   top: -10px;
   left: 0;
@@ -1059,4 +1099,237 @@
   font-size: 35px;
   text-align: center;
 
+
+
+}
+
+
+
+/* ===== Carrusel de Imágenes ===== */
+.carousel-container {
+  position: relative;
+  width: 80%;
+  max-width: 700px;  /* Ajusta el ancho máximo */
+  margin: 30px auto;
+  
+  /* Forzamos una relación de aspecto 1:1 para que sea cuadrado */
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: #FFF8F0;
+  mix-blend-mode: multiply;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* Flechas (controles) */
+.carousel-control {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #D99058; /* Naranja Chukum */
+  border: none;
+  color: #FFF8F0;
+  font-size: 24px;
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  opacity: 0.8;
+  border-radius: 50%;
+  z-index: 2;
+  margin: auto 200px;
+}
+.carousel-control:hover {
+  opacity: 1;
+}
+.carousel-control.prev {
+  left: 10px;
+}
+.carousel-control.next {
+  right: 10px;
+}
+
+/* Contenedor que "enmarca" la pista */
+.carousel-track-container {
+  width: 100%;
+  height: 100%;  /* Ocupa todo el alto disponible (cuadrado) */
+  overflow: hidden;
+}
+
+/* La "pista" con todos los slides en fila */
+.carousel-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.4s ease;
+}
+
+/* Cada slide ocupa todo el contenedor (para 1 imagen a la vez) */
+.slide {
+  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Forzamos la imagen a llenar todo el slide y recortarse con object-fit */
+.slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;/* recorta si sobra */
+  border-radius: 8px;
+}
+
+/* Indicadores (puntitos) */
+.carousel-indicators {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.indicator-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin: 0 5px;
+  background-color: #C19A6B; /* Chukum claro */
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.indicator-dot.active {
+  background-color: #8EAA6D; /* Verde Chukum */
+}
+
+
+.carrusel-wrapper {
+  top: 900px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: 97%;
+  
+}
+
+.has-images {
+  height: calc(100% - 50px);
+}
+
+
+.progreso-titulo {
+  position: relatives;
+  margin-left: 20px;
+
+  text-align: left;
+ 
+  font: normal normal normal 31px/41px Josefin Sans;
+  letter-spacing: 0px;
+  color: #414141;
+  opacity: 1;
+}
+.linea-Segment2 {
+  position: absolute;
+  top: 45px;
+  left: 0;
+  right: 0;
+  border: 2px solid var(--unnamed-color-38afa7);
+  border: 2px solid #38AFA7;
+  opacity: 1; 
+}
+
+
+/* Por defecto, el vertical NO se muestra en desktop */
+.timeline-vertical { display: none; }
+
+/* ===== Escalar TODO el bloque de seguimiento por debajo de 1300px ===== */
+:root{
+  --segu-base: 1363;   /* ancho base (px) del diseño desktop de seguimiento-bloque */
+}
+
+@media (max-width: 1300px){
+  /* evita scroll horizontal por el ancho original sin escalar */
+  html, body { overflow-x: hidden; }
+
+  .seguimiento-bloque{
+    /* calcula factor de escala para llenar el ancho del viewport */
+    --gutter: 0px;  /* si quieres dejar margen lateral, pon 24px por ejemplo */
+    --scale: calc( (100vw - (var(--gutter) * 2)) / (var(--segu-base) * 1px) );
+
+    width: calc(var(--segu-base) * 1px) !important;  /* conserva ancho base */
+    max-width: none !important;
+
+    position: relative !important;
+    left: 50% !important;
+    transform-origin: top center;
+    transform: translateX(-50%) scale(var(--scale));  /* ← escala uniforme */
+    /* mantiene tu fondo/bordes y todo el contenido dentro */
+  }
+  .mueble-credenza-material-mad-container, 
+  .el-mueble-ha,
+  .detalles-de-la,
+  .nombre-juan-quintana
+  {
+    font-size: 1.5rem;
+  }
+
+  .textos-container{
+    font-size: 1.2rem;
+  }
+}
+
+/* ====== FIX SCROLL ≤600px ====== */
+@media (max-width: 200px){
+  /* 1) el documento puede crecer */
+  html, body{
+    height: auto;
+    min-height: 1900px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* 2) el wrapper principal que contiene todo */
+  .seguimiento3{
+    position: relative;
+    height: auto !important;     /* quita el alto fijo de 1503px */
+    min-height: 100vh;           /* al menos una pantalla */
+    overflow: visible;           /* deja que crezca */
+  }
+
+  /* 3) el bloque grande NO escalado y con alto auto */
+  .seguimiento-bloque{
+    width: 100% !important;
+    max-width: 100% !important;
+    left: 0 !important;
+    transform: none !important;
+    transform-origin: initial !important;
+    height: 1900px !important;     /* ← crítico */
+    min-height: 100%;            /* deja respirar */
+  }
+
+  /* 4) capas decorativas que podrían “tapar” el scroll en iOS */
+  .bef28-e2d2-463c-ae04-d69b5960f-icon2,
+  .path-253-icon3 {
+    pointer-events: none;        /* no interceptan gestos */
+  }
+
+
+  /* esconder timeline horizontal */
+  .seguimiento4,
+  .etapas-container,
+  .textos-container,
+  .linea-base,
+  .linea-Proceso,
+  .linea-naranja,
+  .linea-Segment{
+    display: none !important;
+  }
+
+  /* mostrar timeline vertical */
+  .timeline-vertical{
+    display: block !important;
+  }
+
+ 
 }

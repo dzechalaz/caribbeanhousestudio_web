@@ -9,19 +9,6 @@
   }
 }
 
-.fondo-icon {
-  background-color: var(--color-antiquewhiteDark);
-  position: fixed; /* Para que la imagen quede fija en el fondo */
-  top: 0;
-  left: 0;
-  width: 100vw; /* Ocupar todo el ancho de la ventana */
-  height: 100vh; /* Ocupar todo el alto de la ventana */
-  object-fit: cover; /* Ajusta la imagen sin distorsión y cubre toda el área */
-  opacity: 0.63;
-  mix-blend-mode: multiply; /* Mantiene la mezcla de color */
-  z-index: -1; /* Envía la imagen detrás de todos los elementos */
-}
-
 
 .profile {
   margin: 0;
@@ -70,16 +57,7 @@
   width: 22.3px;
   height: 22.3px;
 }
-.buscar {
-  position: absolute;
-  top: 5px;
-  left: calc(50% - 37px);
-  font-size: 21px;
-  font-weight: 600;
-  font-family: var(--font-montserrat);
-  color: var(--color-white);
-  text-align: center;
-}
+
 .btnbusqueda {
   cursor: pointer;
   border: 0;
@@ -88,17 +66,14 @@
   position: absolute;
   top: calc(50% - 18.5px);
   right: 100px;
-  border-radius: var(--br-xs);
+  border-radius: 10px;
+  padding: 10px;
+  color: aliceblue;
+  font-weight: 600;
   width: 160px;
-  height: 37px;
+
 }
-.seguimiento-de-compras {
-  position: absolute;
-  top: calc(50% - 15px);
-  left: 39px;
-  font-size: 32px;
-  
-}
+
 
 .seguimientoheader {
   position: fixed;
@@ -106,22 +81,20 @@
   right: 0;
   left: 0;
   z-index: 2;
-  margin-top: 7vh;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
   background-color: var(--color-steelblue-100);
-  height: 9vh;
+  height: 90px;
   text-align: center;
   font-size: var(--font-size-30xl);
   font-family: var(--font-josefin-sans);
+  padding-top: 7vh;
+
 }
-@media (max-height: 901px) {
-  .seguimientoheader {
-  
-    margin-top: 10vh;
-    
-  }
+
+
+header{
+  display: flex;
 }
-  
 
 .compra-realizada {
   left: 26px;
@@ -152,6 +125,7 @@
   right: 0;
   left: 0;
   height: 59.3px;
+  pointer-events: none;
 }
 .imagen-icon {
   position: absolute;
@@ -168,6 +142,24 @@
   top: 16px;
   left: 26px;
 }
+
+.compra-realizada{
+
+  background-color:darkgrey;
+  padding: 20px 40px 15px 50px;
+  width: 900vw;
+  overflow:hidden;
+  top: -7px;
+  left: -20px;
+ border: 0px;
+
+}
+.compra.compra.animate{
+  border: 0px;
+}
+
+
+
 .NombreProducto {
   top: 0;
   left: 0;
@@ -178,7 +170,7 @@
 }
 .informacionBasica {
   position: absolute;
-  bottom: 15px;
+  bottom: 0px;
   left: 0;
   font-size: var(--font-size-mid);
   color: #707070;
@@ -243,10 +235,11 @@
 
 }
 .reseg,
-.ver-artculo {
+.verart {
   position: absolute;
   font-size: var(--font-size-lg);
   text-align: center;
+  z-index: 600;
 }
 .reseg {
   top: calc(50% - 45.5px);
@@ -279,6 +272,7 @@
   box-sizing: border-box;
   width: 244px;
   height: 37px;
+  color: #454545;
 }
 .escribir-una-opinin {
   position: absolute;
@@ -330,6 +324,8 @@
 }
 .compra.animate {
   animation: 1s ease 0s 1 normal forwards slide-in-bottom;
+  overflow: visible;
+  
 }
 .seguimientopre {
   position: absolute;
@@ -339,7 +335,7 @@
   font-size: var(--font-size-xs);
   color: var(--color-white);
   font-family: var(--font-montserrat);
-  
+
   
 }
 
@@ -481,4 +477,323 @@
 
 .orden-header{
   border-radius: var(--br-xs);
+}
+
+#footer{
+
+  position: relative;
+  top: 390px;
+}
+
+.ima{
+ 
+  background-image: url(./public/080bef28e2d2463cae04d69b5960f9f82@2x.png);
+  background-size:cover;          /* hace que cubra todo el contenedor */
+  background-position: center;     /* centra la imagen */
+  background-repeat:no-repeat;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  z-index: -1;
+
+
+}
+
+.searchgroup
+  {
+    position: relative;
+    bottom: -52px;
+   
+  }
+  .seguimiento-de-compras {
+    position: relative;
+    bottom: -23px;
+    left: -30vw;
+    text-align: left;
+    font-size: 32px;
+    
+  }
+
+  .buscar-todas-las{
+    top:-17px;
+    background-color: aliceblue;
+    padding-left:40px ;
+    border-radius: 10px;
+    padding: 6px 0px 6px 50px;
+  }
+
+@media screen and (max-width: 1024px) {
+
+  .searchgroup, .buscar-todas-las, .btnbusqueda, .buscar, .lupa-icon
+  {
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    margin: 0px;
+  }
+
+  .seguimiento-de-compras{
+    display: none;
+  }
+
+  .seguimientoheader{
+    width: 100vw;
+    display: flex;             /* convierte en flex container */
+    flex-direction: row;       /* o column si quieres apilar */
+    justify-content: center;   /* centra en el eje horizontal */
+    align-items: center;       /* centra en el eje vertical */
+    height: 150px;
+    padding: 0;
+  }
+  .searchgroup
+  {
+    position: fixed;
+    left: -30px;
+    top: calc(80px + .5vh) ;
+  
+  }
+  .btnbusqueda{
+ 
+    position: relative;
+    width: 10vh;
+    padding: .4rem;
+    max-width: 160px;
+    top: -2px;
+    margin-left: -10px;
+
+  }
+  .buscar{
+    position: relative;
+    font-size: 1rem;
+    text-align: center;
+    
+    
+  }
+  .buscar-todas-las{
+    width: 50vw;
+    position: relative;
+    max-width: 400px;
+    padding: .2rem .2rem .2rem 30px;
+    font-size: 1rem;
+    
+    
+
+  }
+  .lupa-icon{
+    position:relative;
+    left: 45px;
+    top: 5px;
+
+    z-index: 5;
+  }
+  
+  
+
+ 
+}
+
+@media screen and (max-width: 1024px) {
+   
+ .orden-container{
+  margin: 20px;
+
+ }
+ .direccionenvio, .separador2, .separador1, .compra-icon{
+  display: none;
+ }
+ .compra.animate {
+  margin-top: 0px;
+  position: static;
+  max-width: 90vw;
+  overflow: hidden; 
+  
+ }
+ .searchgroup{
+  pointer-events: none;
+ }
+
+
+ .detalles{
+  position: relative;
+  top: 70px;
+  left: 200px;
+  right: 0px;
+  bottom: 0px; 
+ }
+
+ .detalles, .NombreProducto , .profile{
+
+  width: calc( 90vw - 400px ) ;
+ }
+
+ .compra-realizada{
+
+  background-color:darkgrey;
+  padding: 20px 40px 15px 50px;
+  width: 900vw;
+  overflow:hidden;
+  top: -7px;
+  left: -20px;
+ border: 0px;
+ 
+
+ }
+
+ .reseg,  .verart{
+  width: 20vw;
+  text-align: center;
+  overflow:visible;
+  font-size: .9rem;
+  pointer-events: auto;
+  right: 30px;
+ }
+ .ima{
+
+  background-size: cover;
+  width: 100vw;
+  height: 100vh;
+
+ }
+
+
+}
+
+
+
+@media screen and (max-width: 500px){
+
+ .orden-header, .profile, #footer{
+  display: none;
+ }
+
+ .orden-container{
+  background-color:#70707000;
+  box-shadow: none;
+  
+  padding: 0px;
+  margin-top: -35px;
+ }
+
+ .seguimientopre{
+  background-color: rgba(255, 235, 205, 0.679);
+ }
+
+ .compra-realizada{
+  font-size: 1rem;
+  padding: 20px 40px 10px 50px;
+ }
+ .imagen-icon{
+  height: 90px;
+  width: 100px;
+  top: 50px;
+  border-radius: 10px;
+  border: 2px solid #707070a9;
+  left: 10px;
+  
+  
+ }
+
+ .compra.animate{
+  height: 150px;
+  border-radius: 15px;
+ }
+
+ .detalles {
+  position: absolute;
+  left: 130px;
+  top: 50px;
+  width: 243px;
+  height: 55px;
+
+  box-sizing: border-box;
+
+  /* FLEX para centrar sólo en Y y pegar al inicio en X */
+  display: flex;
+  align-items: center;       /* centra verticalmente */
+  justify-content: flex-start; /* alinea a la izquierda */
+  padding: 0 10px;           /* un poquito de margen interno */
+}
+
+/* tu clamp de 3 líneas para el título */
+.NombreProducto {
+  width: 100%;                 /* que llene el ancho del flex */
+  font-size: 1rem;
+  font-weight: 800;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  white-space: normal;
+  hyphens: auto;
+  
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  
+
+}
+
+
+ .reseg,  .verart{
+  
+  width: 115px;
+  text-align: center;
+  font-size: .8rem;
+  height: 32px;
+  pointer-events: auto;
+  
+ }
+
+ .verart{
+  top: 109px;
+  left: 130px;
+ }
+
+ .reseg{
+  top: 108.5px;
+  left: 255px;
+ }
+
+
+}
+
+
+.compra-realizada{
+  position: relative;   /* quita el absolute */
+  top: auto; 
+  left: auto;
+  display: block;
+  width: 100%;          /* ajusta al contenedor .compra */
+  max-width: 100%;
+  box-sizing: border-box;
+  background: #bdbdbd;  /* el gris que usabas */
+  padding: 12px 16px;   /* padding más razonable */
+  border: 0;
+  border-radius: 16px 16px 0 0; /* que se integre al card */
+  overflow: hidden;
+  z-index: 1;           /* por debajo de botones/imagen si hace falta */
+}
+
+
+
+/* En pantallas muy chicas: aún más compactos */
+@media (max-width: 400px){
+  .reseg, .verart{
+    padding: 1px 1px;
+    font-style: bold;
+    left: 50%;
+    
+    
+ 
+    margin-left: 0px;
+    width: 30%;
+  }
+  .verart{
+    transform: translateX(-45%);
+  }
+  .reseg{
+    transform: translateX(60px);
+  }
 }

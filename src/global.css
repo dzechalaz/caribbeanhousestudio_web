@@ -2,6 +2,8 @@ body {
   margin: 0;
   line-height: normal;
 }
+/* en tu CSS global */
+.hidden-footer { display: none !important; }
 
 :root {
   /* fonts */

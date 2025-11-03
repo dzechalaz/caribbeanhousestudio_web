@@ -19,7 +19,15 @@
     rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
   />
+
   <title>Carrito</title>
+
+  
+    <!-- Barra y Footer (van antes de tu propio JS) -->
+    <link rel="stylesheet" href="/barra.css" />
+    <link rel="stylesheet" href="/footer.css" />
+    <script src="/barra.js" defer></script> <!-- toggleMenu, hideSidebar -->
+    <script src="/global.js" defer></script>
 </head>
 <body>
   <div id="barra"></div>
@@ -32,7 +40,7 @@
            <!-- 🔹 Campo para ingresar referencia de compra -->
         <div class="reference-container">
           <label for="purchase-reference"><b>Referencia de Compra:</b></label>
-          <input type="text" id="purchase-reference" placeholder="Ingresa una referencia" required>
+          <input type="text" class="ref" id="purchase-reference" placeholder="Ingresa una referencia" required>
         </div>
         
         <!-- Lista de productos en el carrito -->
@@ -43,8 +51,12 @@
         <!-- Resumen del carrito -->
         <div class="cart-summary">
           <p>Total de productos: <span class="total-items">0</span></p>
-          <p>Total: <span class="total-price">$0.00</span></p>
+          <p>Subtotal: <span class="total-price">$0.00</span></p>
+          <p id="shipping-cost-display">Costo de envío: <span class="shipping-cost">$0.00</span></p>
+         
+          <p><strong>Total (con envío):</strong> <span class="final-total">$0.00</span></p> <!-- 🔹 Agregado -->
         </div>
+        
 
         <!-- Selección de dirección de envío -->
         <div class="shipping-address">
@@ -68,7 +80,9 @@
               
         <!-- Botones de acción -->
         <div class="cart-actions">
-          <button id="proceed-to-checkout" class="checkout-btn">Proceder al Pago</button>
+          
+        
+          
           <button id="continue-shopping" class="continue-btn">Seguir Comprando</button>
           <script>
             // Seleccionamos el botón por su ID
@@ -77,94 +91,76 @@
               window.location.href = '/catalogo';
             });
           </script>
+
+
+          <!-- SDK MP (v3) -->
+          <script src="https://sdk.mercadopago.com/js/v2" id="mp-sdk"></script>
+
+          <!-- Contenedor del botón -->
+          <div id="wallet_container"></div>
+
+          <script>
+        async function initMP() {
+          try {
+            const { mode } = await fetch("/debug/env").then(r => r.json());
+
+            // 👇 OJO: EJS correcto con % no con &
+            const PUBLIC_KEY_TEST = "<%= MP_PUBLIC_KEY_TEST %>";
+            const PUBLIC_KEY_PROD = "<%= MP_PUBLIC_KEY %>";
+
+            const publicKey = mode === "test" ? PUBLIC_KEY_TEST : PUBLIC_KEY_PROD;
+            const createUrl = mode === "test" ? "/create_preference_test" : "/create_preference";
+
+            const mp = new window.MercadoPago(publicKey, { locale: "es-MX" });
+
+            const resp = await fetch(createUrl, { method: "POST", headers: { "Content-Type": "application/json" } });
+            if (!resp.ok) throw new Error(`No se pudo crear la preferencia: HTTP ${resp.status} – ${await resp.text()}`);
+
+            const { preferenceId } = await resp.json();
+            if (!preferenceId) throw new Error("El backend no devolvió preferenceId");
+
+            await mp.bricks().create("wallet", "wallet_container", {
+              initialization: { preferenceId },
+              customization: {
+                texts: { valueProp: "security_safety", action: "pay" },
+                visual: { style: { theme: "dark" } }
+              }
+            });
+
+          } catch (err) {
+            console.error("Error al cargar el botón de pago:", err);
+            document.getElementById("wallet_container").innerHTML =
+              "<p style='color:red'>No se pudo iniciar el pago. Revisa consola.</p>";
+          }
+        }
+
+        if (window.MercadoPago) initMP();
+        else document.getElementById("mp-sdk").addEventListener("load", initMP);
+      </script>
+
+
+
+
+          
         </div>
+        
+
+
+      </div>
+    
+     
+
       </div>
     </div>
-    </div>
+    <div id="footer" style="display: none;"></div>
 
 
-  <div id="footer" class="footer"></div>
-  <div id="img" class="img"></div>
+
   <script src="./carrito.js"></script>
 
   <script>
     // barra y footer
-    window.onload = function () {
-      // Cargar barra y footer simultáneamente
-      Promise.all([
-        fetch("/Templates/barra.html").then((response) => response.text()),
-        fetch("/Templates/footer.html").then((response) => response.text()),
-      ])
-        .then(([barraHTML, footerHTML]) => {
-          // Insertar HTML de barra y footer en sus respectivos contenedores
-          document.getElementById("barra").innerHTML = barraHTML;
-          document.getElementById("footer").innerHTML = footerHTML;
-    
-          // Inicializar lógica adicional una vez que todo esté cargado
-          inicializarBarra();
-        })
-        .catch((error) => console.error("Error al cargar los templates:", error));
-    };
-    
-    // Función para inicializar la barra y agregar funcionalidades adicionales
-    function inicializarBarra() {
-      let claseAResaltar = "vacio";
-    
-      // Aplicar el estilo para el elemento resaltado
-      let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
-      if (elementoAResaltar) {
-        elementoAResaltar.style.fontWeight = "bold";
-        elementoAResaltar.style.color = "var(--color-lightseagreen)";
-      }
-    
-      const loginWrapper = document.querySelector("#login-wrapper3");
-      const loginText = document.querySelector(".login5");
-      const cartContainer = document.getElementById("cart-container");
-    
-      // Configuración predeterminada para el botón de login
-      if (loginWrapper) {
-        loginWrapper.onclick = function () {
-          window.location.href = "/login";
-        };
-      }
-    
-      // Verificar la sesión para modificar el botón de login/logout
-      fetch("/api/session")
-        .then((response) => response.json())
-        .then((data) => {
-          console.log("Sesión obtenida:", data);
-    
-          if (data.isAuthenticated) {
-            // Cambiar color y acción del botón de login para usuarios autenticados
-            loginWrapper.setAttribute(
-              "style",
-              "background-color: #C19A6B; top: -10;"
-            );
-            loginText.textContent = "Mi Perfil";
-            loginWrapper.onclick = function () {
-              window.location.href = "/perfil";
-            };
-    
-            // Mostrar el contenedor del carrito si está autenticado
-            if (cartContainer) {
-              cartContainer.style.display = "flex"; // O 'block', según el diseño
-            } else {
-              console.warn("cart-container no encontrado en el DOM");
-            }
-    
-            console.log("Sesión iniciada. Usuario:", data.correo);
-          } else {
-            console.log("No hay sesión iniciada.");
-    
-            // Ocultar el contenedor del carrito si no está autenticado
-            if (cartContainer) {
-              cartContainer.style.display = "none";
-            }
-          }
-        })
-        .catch((error) => console.error("Error al cargar la sesión:", error));
-    }
-    
+    window.onload = () => loadTemplates('carrito');
   </script>
 </body>
 </html>

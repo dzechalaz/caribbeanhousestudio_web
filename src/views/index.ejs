@@ -1,71 +1,92 @@
 <!DOCTYPE html>
 <html lang="es">
   <head>
+    <title>Caribbean House Studio</title>
     <meta charset="utf-8" />
-    <meta name="viewport" content="initial-scale=1, width=device-width" />
-
-    <link rel="stylesheet" href="./global.css" />
-    <link rel="stylesheet" href="./index.css" />
-    <script src="/global.js" defer></script>
-
-    <link rel="stylesheet" href="/Templates/footer.css" />
-
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Josefin Sans:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap"
     />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,700;1,600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600&display=swap"
     />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
     />
-  </head>
-
-  <header>
-    <div id="barra"></div>
-    
-    
-  </header>
-  <body>
-    
-    
+  
+    <!-- Hoja global de tu proyecto -->
+    <link rel="stylesheet" href="/global.css" />
+  
+    <!-- Styles específicos de cada página -->
+    <link rel="stylesheet" href="/index.css" />       <!-- para index.ejs -->
+    <!-- o en catalogo.ejs -->
+    <!-- <link rel="stylesheet" href="/catalogo.css" /> -->
+  
+    <!-- Barra y Footer (van antes de tu propio JS) -->
+    <link rel="stylesheet" href="/barra.css" />
+    <link rel="stylesheet" href="/footer.css" />
+    <script src="/barra.js" defer></script> <!-- toggleMenu, hideSidebar -->
+    <script src="/global.js" defer></script>
+  
+    <!-- Librerías de terceros -->
+    <script
+      src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"
       
-      <div class="home1">
+    ></script>
+  
+
+   
+  </head>
+  
+
+  
+    
+
+  <body>
+    <div id="barra"></div>
+
+      <div class="home1"> 
         <div class="portada"></div>
+        <div class="textos"></div>
         <div class="containerLable">
-          <label class="frase">
-            <p class="por-qu">El mejor lugar</p>
-            <p class="por-qu">te hace sentir</p>
-            <p class="por-qu">en casa</p>
-          </label>
+      
         </div>
-
-
-
         <div id="main-content">
 
 
         <div class="featured-items">
-          <div class="featured-items-title">DESTACADOS</div>
+          <div class="featured-items-title">PRODUCTOS DESTACADOS</div>
           <div class="featured-content">
             <div class="product-grid2">
               <div class="destacados-grid">
+                <% function slugify(nombre) {
+                    return nombre.toLowerCase()
+                      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                      .replace(/\s+/g, "-")
+                      .replace(/[^\w\-]+/g, "");
+                } %>
+
                 <% destacados.forEach(function(producto) { %>
-                  <div class="product-card" 
-                      data-id="<%= producto.producto_id %>" 
-                      data-color="<%= producto.color %>">
-                    <img src="<%= producto.imagePath %>" alt="<%= producto.nombre %>" class="product-image">
-                    <div class="product-details">
-                      <h3 class="product-title"><%= producto.nombre %></h3>
-                      <p class="product-price">$<%= producto.precio %></p>
+                  
+                    <div class="product-card" 
+                        data-id="<%= producto.producto_id %>" 
+                        data-color="<%= producto.color %>">
+                      <img src="<%= producto.imagePath %>" alt="<%= producto.nombre %>" class="product-image">
+                      <div class="product-details">
+                        <h3 class="product-title"><%= producto.nombre %></h3>
+                        <% function formatPrice(price) { 
+                          return new Intl.NumberFormat("es-MX", { minimumFractionDigits: 2 }).format(price);
+                        } %>
+                        <p class="product-price">$<%= formatPrice(producto.precio) %></p>
+                      </div>
                     </div>
-                  </div>
+                  </a>
                 <% }); %>
+
               </div>
             </div>
             <!-- Contenedor de la gráfica -->
@@ -79,10 +100,6 @@
             </div>
           </div>
         </div>
-                
-                
-        
-        
 
           <div class="categorias">
 
@@ -184,16 +201,50 @@
           
               
         
-          <div id="footer"></div>
+          
 
         </div>
-
+        <div id="footer"></div>
       </div>
+      
+       
+      
     </div>
 
-
+   
 
     <script>
+
+      
+
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const productos = document.querySelectorAll(".product-card2, .product-card");
+    
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.style.opacity = 1;
+                        entry.target.style.transform = "translateX(0)"; // Se mueve a su posición original
+                    }, index * 200); // 🔥 Esto agrega un retraso para que salgan en secuencia
+                }
+            });
+        }, { threshold: 0.3 }); // Se activa cuando el 30% del elemento es visible
+    
+        productos.forEach(producto => observer.observe(producto));
+    });
+    
+    
+
+      window.addEventListener("scroll", function () {
+        let scrollY = window.scrollY;
+      
+      
+        document.querySelector(".portada").style.transform = `translateY(${scrollY * -0.3}px)`;
+        document.querySelector(".textos").style.transform = `translateY(${scrollY * -0.6}px)`;
+      });
+      
 
 
       async function cargarAnuncio() {
@@ -233,173 +284,311 @@
     
       // Llamar la función al cargar la página
       cargarAnuncio();
+      
+      // ########################################### CARGAR DATOS EN GRAFCA
 
 
-          document.addEventListener('DOMContentLoaded', async () => {
-          const productos = document.querySelectorAll('.product-card');
-          const chartContainer = document.getElementById('price-chart-container');
-          const productoLink = document.getElementById('producto-link');
-
-          let chart = LightweightCharts.createChart(chartContainer, {
-            width: chartContainer.offsetWidth,
-            height: chartContainer.offsetHeight,
-            layout: {
-              backgroundColor: 'rgba(0, 0, 0, 0)',
-              textColor: '#000',
-              fontSize: 20,
-            },
-            grid: {
-              vertLines: { color: '#eeeeee' },
-              horzLines: { color: '#eeeeee' },
-            },
-            priceScale: {
-              borderColor: '#cccccc',
-            },
-            timeScale: {
-              borderColor: '#cccccc',
-              timeVisible: true,
-            },
-          });
-
-          let lineSeries = chart.addLineSeries();
-
-          const updateChart = async (productoId, color) => {
-            try {
-              const response = await fetch(`/producto-historial/${productoId}`);
-              const chartData = await response.json();
-
-              // Cambiar el color de la línea
-              lineSeries.applyOptions({ color });
-
-              // Actualizar la gráfica
-              lineSeries.setData(chartData);
-              chart.timeScale().fitContent();
-
-              productoLink.href = `/producto?id=${productoId}`;
-
-            } catch (err) {
-              console.error('Error al actualizar la gráfica:', err);
+      document.addEventListener('DOMContentLoaded', async () => {
+        const productos = document.querySelectorAll('.product-card');
+        const chartContainer = document.getElementById('price-chart-container');
+        const productoLink = document.getElementById('producto-link');
+      
+        if (!chartContainer) {
+          console.error("⚠️ Falta el contenedor de la gráfica (#price-chart-container).");
+          return;
+        }
+      
+        // Mapa para nombres de producto (usado en el tooltip)
+        let productNamesMap = new Map();
+      
+        // 1) Cargar nombres de los productos
+        async function cargarNombresProductos() {
+          try {
+            const response = await fetch('/colaborador/productos/data');
+            const data = await response.json();
+            if (data.productos && data.productos.length > 0) {
+              data.productos.forEach(producto => {
+                productNamesMap.set(producto.producto_id, producto.nombre);
+              });
             }
-          };
-
-          // Cargar el primer producto destacado por defecto
-          if (productos.length > 0) {
-            const firstProduct = productos[0];
-            const firstProductId = firstProduct.getAttribute('data-id');
-            const firstProductColor = firstProduct.getAttribute('data-color');
-            await updateChart(firstProductId, firstProductColor);
+          } catch (error) {
+            console.error("❌ Error al cargar nombres de productos:", error);
           }
-
-          // Agregar eventos a las tarjetas
-          productos.forEach((producto) => {
-            producto.addEventListener('click', async () => {
-              
-              const productoId = producto.getAttribute('data-id');
-              const color = producto.getAttribute('data-color');
-              await updateChart(productoId, color);
-            });
+        }
+      
+        // Cargar nombres antes de usar la gráfica
+        await cargarNombresProductos();
+         // ② Ahora sí podemos usar container.clientWidth dentro
+         function getChartOptions() {
+          const vw = window.innerWidth;
+          let h, fs;
+      
+          if (vw < 768) {         // móvil
+            fs = 16;
+          } else if (vw <= 1024) { // tablet
+            fs = 20;
+          } else {                // desktop
+            fs = 20;
+          }
+      
+          return { fontSize: fs };
+        }
+        let opts = getChartOptions();
+      
+        // 2) Crear la gráfica con LightweightCharts
+        let chart = LightweightCharts.createChart(chartContainer, {
+          width: chartContainer.offsetWidth,
+          height: chartContainer.offsetHeight,
+          layout: {
+            backgroundColor: 'rgba(0, 0, 0, 0)',
+            textColor: '#000',
+            fontSize: opts.fontSize,
+          },
+          grid: {
+            vertLines: { color: '#eeeeee' },
+            horzLines: { color: '#eeeeee' },
+          },
+          priceScale: {
+            autoScale: true,
+            borderVisible: false,
+            position: 'none',
+          },
+          timeScale: {
+            borderColor: '#cccccc',
+            timeVisible: true,
+          },
+          crosshair: {
+            mode: LightweightCharts.CrosshairMode.Normal,
+          },
+        });
+      
+        // 2a) Generar la “línea fantasma” en y=0 para todo el año
+        function generateZeroLineData() {
+          let data = [];
+          let now = new Date();
+          for (let i = 0; i < 13; i++) {
+            let d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            let iso = d.toISOString().split('T')[0];
+            data.push({ time: iso, value: 0 });
+          }
+          data.sort((a, b) => (a.time > b.time ? 1 : -1));
+          return data;
+        }
+      
+        // Crear la serie fantasma (invisible) para que el eje Y incluya 0
+        let zeroLineSeries = chart.addLineSeries({
+          lineWidth: 2,
+          color: 'rgba(0, 0, 0, 0)', // invisible
+        });
+        zeroLineSeries.setData(generateZeroLineData());
+      
+        // Variables globales para la serie principal
+        let currentSeries = null;       // La serie del producto activo
+        let currentProductId = null;    // ID del producto activo
+        let originalDataMap = new Map();// Para tooltip
+      
+        // 3) Obtener datos de un producto (sin normalizar)
+        async function fetchProductData(productoId) {
+          try {
+            const response = await fetch(`/producto-historial/${productoId}`);
+            const chartData = await response.json();
+      
+            if (!chartData || chartData.length === 0) {
+              console.warn(`⚠️ No hay datos para el producto ${productoId}`);
+              return [];
+            }
+      
+            // Convertir la respuesta a { time, value } con valores reales
+            return chartData.map(d => ({
+              time: d.time,
+              value: parseFloat(d.value),
+              nombre: d.nombre || ''
+            }));
+          } catch (err) {
+            console.error('❌ Error al obtener datos del producto:', err);
+            return [];
+          }
+        }
+      
+        // 4) Función para MOSTRAR la gráfica de un producto con fade de 1s
+        async function fadeToProduct(productoId, color) {
+          // a) Iniciar fade-out (1s)
+          chartContainer.style.transition = 'opacity 500ms';
+          chartContainer.style.opacity = 0;
+      
+          // b) Esperar ~1s para notar el fade-out
+          await new Promise(resolve => setTimeout(resolve, 500));
+      
+          // c) Eliminar la serie previa
+          if (currentSeries) {
+            chart.removeSeries(currentSeries);
+            currentSeries = null;
+            if (currentProductId) {
+              originalDataMap.delete(currentProductId);
+            }
+          }
+      
+          // d) Obtener datos del nuevo producto
+          let data = await fetchProductData(productoId);
+          if (data.length === 0) {
+            // Si no hay datos, resetear el fade
+            chartContainer.style.opacity = 1;
+            return;
+          }
+      
+          // e) Crear la nueva serie
+          currentSeries = chart.addLineSeries({
+            lineWidth: 6,         // grosor de la línea
+            color: color || '#FF0000',
+          });
+          currentSeries.setData(data);
+      
+          currentProductId = productoId;
+          originalDataMap.set(productoId, data);
+      
+          // Ajustar la vista
+          chart.timeScale().fitContent();
+      
+          // f) Fade-in
+          chartContainer.style.opacity = 1;
+        }
+      
+        // 5) Al hacer clic en un producto → se detiene la rotación y se muestra ese producto
+        let autoRotate = true;  // bandera para saber si la rotación está activa
+        let rotateInterval;     // para guardar el setInterval
+      
+        productos.forEach(producto => {
+          producto.addEventListener('click', async () => {
+            // Detener la rotación automática
+            autoRotate = false;
+            clearInterval(rotateInterval);
+      
+            let selectedProductId = parseInt(producto.getAttribute('data-id'));
+            let color = producto.getAttribute('data-color') || '#FF0000';
+ 
+      
+            await fadeToProduct(selectedProductId, color);
+      
+            // Actualizar enlace "Ver Producto"
+            if (productoLink) {
+              productoLink.href = `/producto?id=${selectedProductId}`;
+              productoLink.style.opacity = 1;
+            }
           });
         });
-
-
-            
-    
-        window.onload = function () {
-      let claseAResaltar = "inicio";
-
-      // Cargar barra.html dinámicamente
-      fetch("/Templates/barra.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("barra").innerHTML = data;
-
-          // Aplicar el estilo para el elemento resaltado
-          let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
-          if (elementoAResaltar) {
-            elementoAResaltar.style.fontWeight = "bold";
-            elementoAResaltar.style.color = "var(--color-lightseagreen)";
-          }
-
-          // Por defecto, el login-wrapper3 redirige a /login
-          const loginWrapper = document.querySelector("#login-wrapper3");
-          const loginText = document.querySelector(".login5"); // El texto dentro del botón
-
-          // Asegúrate de seleccionar cartContainer DESPUÉS de que se cargue la barra
-          const cartContainer = document.getElementById("cart-container");
-
-          if (loginWrapper) {
-            loginWrapper.onclick = function () {
-              window.location.href = "/login";
-            }; // Redirige a /login por defecto
-          }
-
-          // Verificar la sesión para modificar el botón de login/logout si es necesario
-          fetch("/api/session")
-            .then((response) => response.json())
-            .then((data) => {
-              console.log("Sesión obtenida:", data);
-
-              if (data.isAuthenticated) {
-                // Cambiamos el color del contenedor (wrapper) a rojo chukum
-                loginWrapper.setAttribute(
-                  "style",
-                  "background-color: #C19A6B; top: -10;"
-                );
-
-                // Cambiamos el texto a "Mi Perfil"
-                loginText.textContent = "Mi Perfil";
-
-                // Cambiamos la acción a ir al perfil
-                loginWrapper.onclick = function () {
-                  window.location.href = "/perfil";
-                };
-
-                // Hacer visible el cartContainer
-                if (cartContainer) {
-                  cartContainer.style.display = "flex"; // O 'block', según el diseño
-                } else {
-                  console.warn("cart-container no encontrado en el DOM");
-                }
-
-                console.log("Sesión iniciada. Usuario:", data.correo);
-              } else {
-                console.log("No hay sesión iniciada.");
-                // Ocultar el cartContainer si no está autenticado
-                if (cartContainer) {
-                  cartContainer.style.display = "none";
-                }
-              }
-            })
-            .catch((error) => console.error("Error al cargar la sesión:", error));
-        })
-        .catch((error) => console.error("Error al cargar la barra:", error));
-
-      // Cargar el footer.html dinámicamente
-      fetch("/Templates/footer.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("footer").innerHTML = data;
-        })
-        .catch((error) => console.error("Error al cargar el footer:", error));
-    };
-
-
-
-
-
-
-
       
-      function toggleMenu() {
-        const menu = document.querySelector('.menu-container');
-        menu.classList.toggle('active'); // Activa o desactiva el menú
-      }
+        // 6) Rotación automática cada 7s si autoRotate es true
+        let currentIndex = 0;
+        function startAutoSwitch() {
+          rotateInterval = setInterval(async () => {
+            if (!autoRotate) return; // Si se desactiva la rotación, no hacer nada
+      
+            let product = productos[currentIndex];
+            let productoId = parseInt(product.getAttribute('data-id'));
+            let color = product.getAttribute('data-color') || '#FF0000';
+      
+          
+            await fadeToProduct(productoId, color);
+      
+            // Actualizar enlace "Ver Producto"
+            if (productoLink) {
+              productoLink.href = `/producto?id=${productoId}`;
+              productoLink.style.opacity = 1;
+            }
+      
+            // Modo circular
+            currentIndex = (currentIndex + 1) % productos.length;
+          }, 3000); // cada 7 segundos
+        }
+      
+        // 7) Mostrar el PRIMER producto inmediatamente (sin esperar)
+        if (productos.length > 0) {
+          const firstId = parseInt(productos[0].getAttribute('data-id'));
+          const firstColor = productos[0].getAttribute('data-color') || '#FF0000';
+      
+          // Mostrar el primer producto
+          await fadeToProduct(firstId, firstColor);
+      
+          // Ajustar currentIndex a 1 para que en la primera transición salte al segundo producto
+          currentIndex = 1;
+      
+          // Iniciar rotación (solo si hay más de 1 producto)
+          if (productos.length > 1) {
+            startAutoSwitch();
+          }
+        }
+      
+        // 8) Tooltip para mostrar nombre y precio real
+        const toolTip = document.createElement('div');
+        toolTip.style.position = 'absolute';
+        toolTip.style.background = '#bfdcd8';
+        toolTip.style.padding = '6px 10px';
+        toolTip.style.border = '1px solid #ccc';
+        toolTip.style.borderRadius = '4px';
+        toolTip.style.fontSize = '20px';
+        toolTip.style.color = '#333';
+        toolTip.style.display = 'none';
+        toolTip.style.pointerEvents = 'none';
+        toolTip.style.whiteSpace = 'nowrap';
+        toolTip.style.zIndex = '5';
+        chartContainer.appendChild(toolTip);
+      
+        chart.subscribeCrosshairMove((param) => {
+          if (!param || !param.time || param.seriesData.size === 0) {
+            toolTip.style.display = 'none';
+            return;
+          }
+      
+          let text = '';
+          let hasData = false;
+      
+          param.seriesData.forEach((data, series) => {
+            if (series === currentSeries && originalDataMap.has(currentProductId)) {
+              const realData = originalDataMap
+                .get(currentProductId)
+                .find(d => d.time === param.time);
+      
+              if (realData) {
+                let productName = productNamesMap.get(currentProductId) 
+                               || realData.nombre 
+                               || "Producto Desconocido";
+      
+                // Limpiar “ALT” y flecha ↳ (opcional)
+                productName = productName
+                  .replace(/↳/g, '')
+                  .replace(/ ALT\\d+/g, '')
+                  .trim();
+      
+                text += `<strong>${productName}:</strong> $${realData.value.toFixed(2)}<br>`;
+                hasData = true;
+              }
+            }
+          });
+      
+          if (!hasData) {
+            toolTip.style.display = 'none';
+            return;
+          }
+      
+          toolTip.innerHTML = text;
+          toolTip.style.left = `${param.point.x + 10}px`;
+          toolTip.style.top = `${param.point.y - 30}px`;
+          toolTip.style.display = 'block';
+        });
+      
+        // Ocultar tooltip al hacer clic
+        chart.subscribeClick(() => {
+          toolTip.style.display = 'none';
+        });
+      });
+      
+       
 
-      function hideSidebar() {
-        const menu = document.querySelector('.menu-container');
-        menu.classList.remove('active'); // Oculta el menú
-      }
-     
+
+      //########################################################
+
+      window.onload = () => loadTemplates('inicio');
+    
     </script>
     
     
@@ -407,5 +596,5 @@
       
   </body>
   <script src="https://unpkg.com/lightweight-charts@4.0.0/dist/lightweight-charts.standalone.production.js"></script>
-  <script src="/global.js" defer></script>
+
 </html>

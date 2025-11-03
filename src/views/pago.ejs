@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1, width=device-width" />
+  
+  <link rel="stylesheet" href="./global.css" />
+  <link rel="stylesheet" href="./pago.css" />
+  
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap"
+  />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600&display=swap"
+  />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Literata:wght@400&display=swap"
+  />
+  
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
+  
+  <title>Método de pago</title>
+</head>
+<body>
+  <div id="barra"></div>
+
+  
+
+    <div class="pago">
+     
+      <h1>Selecciona tu Método de Pago</h1>
+      
+
+      <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+          
+          
+          const mp = new MercadoPago('TEST-55cc3902-654d-43e4-a9fb-8f69981a6e60');
+          const bricksBuilder = mp.bricks();
+
+
+        
+          mp.bricks().create("wallet", "wallet_container", {
+            initialization: {
+                preferenceId: "<PREFERENCE_ID>",
+            },
+          customization: {
+          texts: {
+          valueProp: 'smart_option',
+          },
+          },
+          });
+
+      </script>
+
+      <div id="wallet_container"></div>
+
+    </div>
+
+ 
+
+  <div id="footer" class="footer"></div>
+  <div id="img" class="img"></div>
+  
+
+  
+  <script>
+    // barra y footer
+    window.onload = function () {
+      // Cargar barra y footer simultáneamente
+      Promise.all([
+        fetch("/Templates/barra.html").then((response) => response.text()),
+        fetch("/Templates/footer.html").then((response) => response.text()),
+      ])
+        .then(([barraHTML, footerHTML]) => {
+          // Insertar HTML de barra y footer en sus respectivos contenedores
+          document.getElementById("barra").innerHTML = barraHTML;
+          document.getElementById("footer").innerHTML = footerHTML;
+    
+          // Inicializar lógica adicional una vez que todo esté cargado
+          inicializarBarra();
+        })
+        .catch((error) => console.error("Error al cargar los templates:", error));
+    };
+    
+    // Función para inicializar la barra y agregar funcionalidades adicionales
+    function inicializarBarra() {
+      let claseAResaltar = "vacio";
+    
+      // Aplicar el estilo para el elemento resaltado
+      let elementoAResaltar = document.querySelector(`.${claseAResaltar}`);
+      if (elementoAResaltar) {
+        elementoAResaltar.style.fontWeight = "bold";
+        elementoAResaltar.style.color = "var(--color-lightseagreen)";
+      }
+    
+      const loginWrapper = document.querySelector("#login-wrapper3");
+      const loginText = document.querySelector(".login5");
+      const cartContainer = document.getElementById("cart-container");
+    
+      // Configuración predeterminada para el botón de login
+      if (loginWrapper) {
+        loginWrapper.onclick = function () {
+          window.location.href = "/login";
+        };
+      }
+    
+      // Verificar la sesión para modificar el botón de login/logout
+      fetch("/api/session")
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Sesión obtenida:", data);
+    
+          if (data.isAuthenticated) {
+            // Cambiar color y acción del botón de login para usuarios autenticados
+            loginWrapper.setAttribute(
+              "style",
+              "background-color: #C19A6B; top: -10;"
+            );
+            loginText.textContent = "Mi Perfil";
+            loginWrapper.onclick = function () {
+              window.location.href = "/perfil";
+            };
+    
+            // Mostrar el contenedor del carrito si está autenticado
+            if (cartContainer) {
+              cartContainer.style.display = "flex"; // O 'block', según el diseño
+            } else {
+              console.warn("cart-container no encontrado en el DOM");
+            }
+    
+            console.log("Sesión iniciada. Usuario:", data.correo);
+          } else {
+            console.log("No hay sesión iniciada.");
+    
+            // Ocultar el contenedor del carrito si no está autenticado
+            if (cartContainer) {
+              cartContainer.style.display = "none";
+            }
+          }
+        })
+        .catch((error) => console.error("Error al cargar la sesión:", error));
+    }
+    
+  </script>
+</body>
+</html>
