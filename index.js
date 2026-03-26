@@ -33,39 +33,46 @@ const FROM_EMAIL     = "noreply.caribbeanhousestudio@gmail.com"; // remitente ve
 const EMPRESA_EMAIL = "contacto@caribbeanhousestudio.com"; 
 
 
-async function sendEmailHTTP({ to, subject, html, attachments = [] }) {
-  // 1. Configuramos Nodemailer para usar tu cuenta de Gmail
-  const transporter = nodemailer.createTransport({
-      service: "gmail",
-      // 👇 Agrega estas dos líneas para que la consola te cuente todo el chisme
-      logger: true,
-      debug: true, 
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
-
-  // 2. Preparamos los archivos adjuntos (imágenes del pedido custom)
-  const formatedAttachments = attachments.map(a => ({
-    filename: a.filename,
-    content: Buffer.from(a.contentBase64, 'base64')
-  }));
-
-  // 3. Opciones del correo
-  const mailOptions = {
-    from: `"Caribbean House Studio" <${process.env.EMAIL_USER}>`,
-    to: Array.isArray(to) ? to.join(', ') : to,
-    subject: subject,
-    html: html,
-    attachments: formatedAttachments
+// Le agregamos 'from' y 'reply_to' con valores por defecto. 
+// Así es flexible, pero si no le mandas nada, usa los que ya sabemos que funcionan.
+async function sendEmailHTTP({ 
+  to, 
+  subject, 
+  html, 
+  attachments = [], 
+  fromEmail = "pedidos@caribbeanhousestudio.com",
+  replyToEmail = "noreply.caribbeanhousestudio@gmail.com" 
+}) {
+  const body = {
+    from: fromEmail, 
+    to: Array.isArray(to) ? to : [to],
+    reply_to: replyToEmail, 
+    subject,
+    html,
   };
 
-  // 4. Enviamos el correo a través de Google
-  const info = await transporter.sendMail(mailOptions);
-  return info;
-}
+  if (attachments.length) {
+    body.attachments = attachments.map(a => ({
+      filename: a.filename,
+      content: a.contentBase64,
+    }));
+  }
 
+  const resp = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.RESEND_API_KEY}`, 
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`Resend ${resp.status}: ${text}`);
+  }
+  return resp.json();
+}
 
 import cors from "cors";
 
