@@ -2629,7 +2629,6 @@ app.get('/colores', async (req, res) => {
 });
 
 
-
 app.get('/catalogo', (req, res) => {
   const productosPorPagina = 15;
   const paginaActual = parseInt(req.query.page) || 1;
@@ -2637,11 +2636,23 @@ app.get('/catalogo', (req, res) => {
   const categoriaSeleccionada = req.query.categoria || 'Todos';
   const searchQuery = req.query.query || '';
 
+  // 1. Definimos el orden de prioridad solicitado
+  const ordenPrioridad = {
+    'Sillas y bancos': 1,
+    'Mesas': 2,
+    'Exterior': 3,
+    'Recámara': 4,
+    'Decoración': 5,
+    'Salas': 6,
+    'Almacenaje': 7,
+    'Outlet': 8,
+    'Varios': 9
+  };
+
   let queryProductos = 'SELECT producto_id, nombre, precio, codigo, stock, categoria FROM Productos';
   let values = [];
   let whereConditions = [];
 
-  // Agregar filtros dinámicos
   if (categoriaSeleccionada !== 'Todos') {
       whereConditions.push('categoria = ?');
       values.push(categoriaSeleccionada);
@@ -2651,12 +2662,24 @@ app.get('/catalogo', (req, res) => {
       values.push(`%${searchQuery}%`, `%${searchQuery}%`);
   }
 
-  // Agregar la cláusula WHERE solo si hay condiciones
   if (whereConditions.length > 0) {
       queryProductos += ' WHERE ' + whereConditions.join(' AND ');
   }
 
-  // Agregar paginación
+  // 2. Agregamos el ordenamiento personalizado por CASE
+  // Esto asigna el número de prioridad a cada fila antes de paginar
+  queryProductos += ` ORDER BY CASE categoria 
+                        WHEN 'Sillas y bancos' THEN 1
+                        WHEN 'Mesas' THEN 2
+                        WHEN 'Exterior' THEN 3
+                        WHEN 'Recámara' THEN 4
+                        WHEN 'Decoración' THEN 5
+                        WHEN 'Salas' THEN 6
+                        WHEN 'Almacenaje' THEN 7
+                        WHEN 'Outlet' THEN 8
+                        WHEN 'Varios' THEN 9
+                        ELSE 10 END, created_at DESC`;
+
   queryProductos += ' LIMIT ? OFFSET ?';
   values.push(productosPorPagina, offset);
 
@@ -2668,17 +2691,15 @@ app.get('/catalogo', (req, res) => {
 
       productos.forEach(producto => {
           producto.imagePath = `${CFI}/Products/${producto.producto_id}/a.webp`;
-          
       });
 
-      // **Consulta de conteo corregida**
       let queryCount = 'SELECT COUNT(*) AS total FROM Productos';
-      let countValues = [...values]; // Copiar los valores
+      let countValues = []; 
 
       if (whereConditions.length > 0) {
           queryCount += ' WHERE ' + whereConditions.join(' AND ');
-      } else {
-          countValues = []; // Si no hay condiciones, evitar valores basura
+          // Extraemos solo los valores de búsqueda/categoría, no el limit/offset
+          countValues = values.slice(0, whereConditions.length); 
       }
 
       db.query(queryCount, countValues, (err, countResults) => {
@@ -2690,7 +2711,6 @@ app.get('/catalogo', (req, res) => {
           const totalProductos = countResults[0].total;
           const totalPaginas = Math.ceil(totalProductos / productosPorPagina);
 
-          // Obtener categorías correctamente
           let queryCategorias = 'SELECT categoria, COUNT(*) AS cantidad FROM Productos GROUP BY categoria';
 
           db.query(queryCategorias, (err, categorias) => {
@@ -2699,16 +2719,19 @@ app.get('/catalogo', (req, res) => {
                   return res.status(500).send('Error fetching categories');
               }
 
-              // Obtener total de productos sin filtrar
               db.query('SELECT COUNT(*) AS cantidad FROM Productos', (err, resultadoTotal) => {
                   if (err) {
                       console.error('Error fetching total product count:', err);
                       return res.status(500).send('Error fetching total product count');
                   }
 
+                  // 3. Opcional: También ordenamos la lista de categorías de la barra lateral
+                  categorias.sort((a, b) => {
+                    return (ordenPrioridad[a.categoria] || 99) - (ordenPrioridad[b.categoria] || 99);
+                  });
+
                   categorias.unshift({ categoria: 'Todos', cantidad: resultadoTotal[0].cantidad });
 
-                  // Renderizar la vista con datos corregidos
                   res.render('catalogo', {
                       productos: productos,
                       paginaActual: paginaActual,
@@ -2722,8 +2745,6 @@ app.get('/catalogo', (req, res) => {
       });
   });
 });
-
-
 
 
 app.get('/buscar', (req, res) => {
