@@ -33,41 +33,35 @@ const FROM_EMAIL     = "noreply.caribbeanhousestudio@gmail.com"; // remitente ve
 const EMPRESA_EMAIL = "contacto@caribbeanhousestudio.com"; 
 
 
-
-
 async function sendEmailHTTP({ to, subject, html, attachments = [] }) {
-  // attachments: [{ filename, contentBase64 }]
-  const body = {
-    from: FROM_EMAIL,
-    to: Array.isArray(to) ? to : [to],
-    subject,
-    html,
-  };
-  if (attachments.length) {
-    body.attachments = attachments.map(a => ({
-      filename: a.filename,
-      content: a.contentBase64,
-    }));
-  }
-
-  const resp = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
+  // 1. Configuramos Nodemailer para usar tu cuenta de Gmail
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER, // Tu correo
+      pass: process.env.EMAIL_PASS  // La contraseña de 16 letras (sin espacios)
+    }
   });
 
-  if (!resp.ok) {
-    const text = await resp.text();
-    throw new Error(`Resend ${resp.status}: ${text}`);
-  }
-  return resp.json();
+  // 2. Preparamos los archivos adjuntos (imágenes del pedido custom)
+  const formatedAttachments = attachments.map(a => ({
+    filename: a.filename,
+    content: Buffer.from(a.contentBase64, 'base64')
+  }));
+
+  // 3. Opciones del correo
+  const mailOptions = {
+    from: `"Caribbean House Studio" <${process.env.EMAIL_USER}>`,
+    to: Array.isArray(to) ? to.join(', ') : to,
+    subject: subject,
+    html: html,
+    attachments: formatedAttachments
+  };
+
+  // 4. Enviamos el correo a través de Google
+  const info = await transporter.sendMail(mailOptions);
+  return info;
 }
-
-
-
 
 
 import cors from "cors";
