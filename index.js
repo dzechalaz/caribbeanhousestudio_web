@@ -36,12 +36,15 @@ const EMPRESA_EMAIL = "contacto@caribbeanhousestudio.com";
 async function sendEmailHTTP({ to, subject, html, attachments = [] }) {
   // 1. Configuramos Nodemailer para usar tu cuenta de Gmail
   const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER, // Tu correo
-      pass: process.env.EMAIL_PASS  // La contraseña de 16 letras (sin espacios)
-    }
-  });
+      service: "gmail",
+      // 👇 Agrega estas dos líneas para que la consola te cuente todo el chisme
+      logger: true,
+      debug: true, 
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
 
   // 2. Preparamos los archivos adjuntos (imágenes del pedido custom)
   const formatedAttachments = attachments.map(a => ({
