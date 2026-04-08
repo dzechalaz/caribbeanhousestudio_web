@@ -27,7 +27,7 @@ const dominio = "https://www.caribbeanhousestudio.com"; // ✅ URL actual en uso
 
 
 // ====== EMAIL CONFIG (SIN ENV VARS) ======
-const RESEND_API_KEY = "re_YNWga2b4_6taJChiqdj4LXJfkgJF2UqQV";  // <-- pega aquí tu key
+ // <-- pega aquí tu key
 const FROM_EMAIL     = "noreply.caribbeanhousestudio@gmail.com"; // remitente verificado en Resend
 //const EMPRESA_EMAIL = "diochoglez@gmail.com"; // Aquí defines el correo de la empresa contacto@caribbeanhousestudio.com
 const EMPRESA_EMAIL = "contacto@caribbeanhousestudio.com"; 
@@ -2752,10 +2752,21 @@ app.get('/catalogo', (req, res) => {
 
       if (whereConditions.length > 0) {
           queryCount += ' WHERE ' + whereConditions.join(' AND ');
-          // Extraemos solo los valores de búsqueda/categoría, no el limit/offset
-          countValues = values.slice(0, whereConditions.length); 
+          
+          // Reconstruimos exactamente los valores que necesita la consulta de conteo
+          if (categoriaSeleccionada !== 'Todos') {
+              countValues.push(categoriaSeleccionada);
+          }
+          if (searchQuery) {
+              countValues.push(`%${searchQuery}%`, `%${searchQuery}%`);
+          }
       }
 
+      console.log("=== DEBUG CONTEO ===");
+      console.log("SQL QUERY:", queryCount);
+      console.log("VALORES:", countValues);
+      console.log("LONGITUD VALORES:", countValues.length);
+      console.log("====================");
       db.query(queryCount, countValues, (err, countResults) => {
           if (err) {
               console.error('Error counting products:', err);

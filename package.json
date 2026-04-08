@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-     "bs": "browser-sync start --proxy \"localhost:3000\" --files \"src/**/*.css\" --port 5500 --no-ui --no-notify"
-  
+    "dev": "nodemon -e js,ejs,css,html index.js",
+    "bs": "browser-sync start --proxy \"localhost:3000\" --files \"src/**/*.css\" --port 5500 --no-ui --no-notify"
   },
   "keywords": [],
   "author": "",
@@ -44,9 +44,7 @@
   },
   "description": " ",
   "devDependencies": {
-    "live-server": "^1.2.2"
+    "live-server": "^1.2.2",
+    "nodemon": "^3.1.14"
   }
-  
 }
-
- 

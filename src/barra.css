@@ -49,7 +49,7 @@
     bottom: 0;
     left: 0;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.13);
-    background-color: #edebeb;
+    background-color: #f2dfd0;
   }
 .menu-button {
     display: none;
@@ -124,16 +124,18 @@
   
   
 .logo-icon5 {
-    position: absolute;
-    height: calc(100% - 21.3px);
-    top: 10px;
-    bottom: 10.15px;
-    left: 13px;
-    max-height: 100%;
-    width: 113.1px;
-  }
+  filter: drop-shadow(5px 5px 3px rgba(0, 0, 0,.6));
+  /* Agrega esto para forzar el renderizado del filtro */
+  transform: translateZ(0);
   
-
+  position: absolute;
+  height: calc(100% - 21.3px);
+  top: 10px;
+  bottom: 10.15px;
+  left: 13px;
+  max-height: 100%;
+  width: 113.1px;
+}
 
   /* Contenedor de menú */
   .menu-items {
@@ -146,7 +148,7 @@
     right: -650px;
                 /* lo coloca a mitad de altura de su contenedor */
     width: 60%; /* Define el ancho del contenedor como el 60% de la página */
-  
+    font-size: 20px;
     justify-content: flex-start; /* Mantén los elementos alineados desde el principio del contenedor */
 }
 
@@ -155,19 +157,19 @@
     position: absolute;
     top: calc(50% - 9px);
     right: 0px;
-    background-color: var(--color-darkslategray-100);
+    background-color: powderblue;
     width: 180px; /* Aumenté el ancho para que el texto largo no se corte */
     height: 35px;
     /* Cambié a "center" para alinear el texto */
     font-size: var(--font-size-sm);
-    color: var(--color-white); /* Verifica que el color del texto sea visible */
+    color: dimgray; /* Verifica que el color del texto sea visible */
     cursor: pointer; /* Cambia el cursor a manita */
 }
 
 .login5{
   position: relative;
   font-size: 19px;
-  color: var(--color-white);
+  color: var(--color-darkslategray-100);
   align-content: center;
   
 
@@ -182,6 +184,7 @@
   position: absolute;
   right: 0px;
   top: calc(50% - 9px); /* Ajusta la alineación vertical */
+
 }
 
 .path-74-icon5 {
@@ -284,6 +287,7 @@
       grid-template-columns: auto 1fr auto !important;
       align-items: center !important;
       width: 94% !important;
+      height: 120%;
       
     }
   .component-1-13 > a                       { order: 1 !important; }

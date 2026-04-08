@@ -15,7 +15,7 @@ body {
     left: 0;
     width: 100%; /* Cubre todo el ancho */
     height: 100%; /* Cubre todo el alto */
-    background-image: url('/public/@2x.png'); /* Imagen de fondo */
+    background-image: url('./public/loginfoto.png'); /* Imagen de fondo */
     background-size: cover; /* Ajusta la imagen para cubrir todo el contenedor */
     background-blend-mode: multiply;
     background-position: center; /* Centra la imagen */
