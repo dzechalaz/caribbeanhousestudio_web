@@ -402,7 +402,7 @@
 }
 
 .portada, .textos {
-  margin-top: 7vh;
+  margin-top: 5vh;
   width: 90%;
   height: 100%; /* Para que cada capa cubra toda la pantalla */
   position: fixed;

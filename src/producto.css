@@ -8,16 +8,16 @@
 }
 .background-icon {
   position: absolute;
-  width: calc(100% + 3px);
+
   top: -1283px;
-  right: -3px;
+  right: 0px;
   left: 0;
-  max-width: 100%;
+  max-width: 155%;
   overflow: hidden;
   height: 3371px;
-  object-fit: cover;
- 
-
+  object-fit: contain;
+  opacity: 25%;
+  mix-blend-mode: multiply;
 }
 .fondobajo,
 .path-253-icon6 {
@@ -201,7 +201,8 @@
   position:relative;
   display: flex;
   top: 678px;
-  left: 700px
+  left: 700px;
+
 }
 
 
@@ -212,15 +213,17 @@
 }
 .addcart {
   bottom: 28px;
-  background-color: #838a6b;
+  background-color:#9ccdcd;
   width: 300px;
   height: 62px;
   color: var(--color-white);
   font-family: var(--font-montserrat);
   cursor: pointer;
+  border-radius: 50px;
+  
 }
 .addcart:hover{
-  background-color: #a9aa65;
+  background-color: #85e5e5;
 }
 
 .adding {
@@ -327,7 +330,7 @@
   position: absolute;
   bottom: 0;
   left: 0;
-  background-color: var(--color-powderblue);
+  background-color:#371800;
   width: 600px;
   height: 175px;
   cursor:pointer;
@@ -1053,6 +1056,7 @@
     display: flex;
     justify-content: center;
     pointer-events: none; /* para que solo el hijo reciba el click */
+    background-color: powderblue;
   }
 
   .addcart{
